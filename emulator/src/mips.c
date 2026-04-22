@@ -172,6 +172,7 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
 void mips_step(mips_cpu *cpu) {
     if (cpu->halted) return;
     u32 pc   = cpu->pc;
+    cpu->bus->last_pc = pc;
     u32 insn = fetch(cpu, pc);
     if (mips_trace) {
         fprintf(stderr, "%08x: %08x\n", pc, insn);

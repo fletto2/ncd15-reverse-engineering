@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
         .ctx    = lance, .name = "lance",
     });
 
-    struct crtc *cr = crtc_new();
+    struct crtc *cr = crtc_new(&b);
     bus_add_mmio(&b, (mmio_region){
         .start  = NCD15_CRTC_PHYS, .length = 0x100,
         .read   = crtc_read, .write = crtc_write,

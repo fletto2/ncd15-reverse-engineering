@@ -185,13 +185,33 @@ typedef struct crtc {
     u32 regs[64];
     u64 read_hist[256];
     u64 write_hist[256];
-    u32 write_vals[256];    /* last value written to each offset */
+    u32 write_vals[256];
+    /* PC histogram of callers that read offset 0x00 (the hot poll). */
+    u32 pc_hist[64];
+    u64 pc_count[64];
+    bus *b;                 /* to get caller PC */
 } crtc;
-struct crtc *crtc_new(void) { return (crtc*)calloc(1, sizeof(crtc)); }
+struct crtc *crtc_new(bus *b) {
+    crtc *c = (crtc*)calloc(1, sizeof(crtc));
+    c->b = b;
+    return c;
+}
 u32 crtc_read(void *ctx, u32 off, unsigned size) {
     crtc *c = (crtc*)ctx;
     (void)size;
     if (off < 256) c->read_hist[off]++;
+    if (off == 0x00) {
+        /* Log the calling PC into a small bucket table. */
+        u32 pc = c->b->last_pc;
+        size_t slot = 0; u64 mc = ~(u64)0;
+        for (size_t i = 0; i < 64; i++) {
+            if (c->pc_hist[i] == pc) { c->pc_count[i]++; goto pc_done; }
+            if (c->pc_count[i] < mc) { mc = c->pc_count[i]; slot = i; }
+        }
+        c->pc_hist[slot] = pc;
+        c->pc_count[slot] = 1;
+pc_done: ;
+    }
     c->poll_count++;
     /* Offsets we've identified via diagnostics:
      *  +0x00: a register the monitor reads millions of times. Written
@@ -226,5 +246,16 @@ void crtc_dump_hist(void *ctx) {
         if (c->write_hist[i])
             fprintf(stderr, "  W +0x%02x: %llu  last=0x%x\n", i,
                 (unsigned long long)c->write_hist[i], c->write_vals[i]);
+    }
+    fprintf(stderr, "\n--- CRTC +0x00 reader PCs (top) ---\n");
+    for (int iter = 0; iter < 10; iter++) {
+        u64 mc = 0; int mi = -1;
+        for (int i = 0; i < 64; i++) {
+            if (c->pc_count[i] > mc) { mc = c->pc_count[i]; mi = i; }
+        }
+        if (mi < 0 || mc == 0) break;
+        fprintf(stderr, "  caller pc=0x%08x  reads=%llu\n",
+                c->pc_hist[mi], (unsigned long long)mc);
+        c->pc_count[mi] = 0;
     }
 }

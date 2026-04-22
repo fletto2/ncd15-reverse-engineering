@@ -90,6 +90,7 @@ typedef struct bus {
     mmio_region regions[MAX_MMIO_REGIONS];
     size_t nregions;
     bool trace;           /* log every access */
+    u32 last_pc;          /* updated by the CPU before each access */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
@@ -132,7 +133,7 @@ void memctl_write(void *ctx, u32 offset, u32 value, unsigned size);
 /* --- CRTC stub (0xBE380000). Toggles the vsync bit so the monitor's
  * vsync-polling loops advance. --- */
 struct crtc;
-struct crtc *crtc_new(void);
+struct crtc *crtc_new(bus *b);
 u32  crtc_read(void *ctx, u32 offset, unsigned size);
 void crtc_write(void *ctx, u32 offset, u32 value, unsigned size);
 void crtc_dump_hist(void *ctx);
