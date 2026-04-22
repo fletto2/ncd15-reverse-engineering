@@ -117,21 +117,54 @@ blit helper. Identifying that function precisely is future work.
   probably the same draw routine) was carried forward into the
   later R4600-based MIPS X-terminal generation.
 
-## What to do with it next
+## Update — the font appears to be dead ROM
 
-1. Extract each of the 60 unique glyphs by walking the pointer
-   table and using the next-pointer delta as the glyph-data
-   length.
-2. Render them side by side — probably at 16 wide, heights 8–20,
-   padded with zero rows where necessary.
-3. Map pointer-table index → ASCII character by printing the
-   pangram (index by its 52 characters into the table) and
-   visually matching shapes. That also recovers the mapping
-   function (character → table index).
-4. Emit as a BDF or PSF for archival.
+Follow-up search for the *rendering* function that walks the
+pointer table shows it does not exist in any of the three
+disassemblies (monitor, NVRAM setup, Xncd15r). Specifically:
 
-File references:
+- No `lui` + `addiu`/`ori` pair in the monitor computes the
+  base `0x0EC27B48` (or any address in `0x0EC27B00-0x0EC27EFF`).
+- No `lw` with an offset that would reach the table from any
+  register known to hold an `0x0EC2xxxx` upper half.
+- No 32-bit word equal to `0x0EC27B48` appears anywhere in the
+  ROM as data (i.e. no one loads the address indirectly from a
+  pointer constant).
+- The only code that looks like a "table indexed by input value
+  ×8, base = address near the font" is `0x0EC0B4E8` — but it
+  indexes **`0x0EC25B48`**, not `0x0EC27B48`. Inspecting that
+  data shows `(char, scancode)` 16-bit pairs: it is a **keymap**
+  dispatch, not a font one.
+- `Xncd15r.dis` has zero references to the monitor's font
+  region, pangram address, or pointer table.
+- The monitor performs only **three** VRAM stores in the entire
+  32 K lines of disassembly, all within the VRAM-sizing probe
+  (see `FRAMEBUFFER.md`).
+
+Combined with the earlier finding that the monitor defers all
+screen drawing to Xncd15r via the slot-`0x0EC008B0` callback,
+the most plausible reading is that **this font is inherited
+firmware, not active code**. The comment in `monitor.dis`
+line 50536 — "byte-identical to HMX PRO V2.7.2 font at its file
+0x27EC0" — is itself evidence: the shared codebase put the font
+in both ROMs, but the NCD15 boot path does not draw characters
+on its own framebuffer.
+
+Practical upshot:
+
+- The 60 extracted glyphs in `monitor-font/` are still a valid
+  historical artifact — they are real bitmaps of a font that
+  the HMX-family firmware can render. They just are not
+  rendered by *this* firmware.
+- Recovering the exact ASCII mapping therefore requires looking
+  at a live HMX PRO or its ROM, not this one. The monitor-font
+  dump here is useful for cross-referencing against an HMX
+  rendering dump.
+
+## File references
 
 - `disasm/monitor.dis` line 50535 — original "Console bitmap
   font" annotation.
 - ROM file `NCD15-19rBM-V271-splice.u8`, offsets listed above.
+- `FRAMEBUFFER.md` — the live on-screen drawing path (callback
+  into Xncd15r, no direct font use).
