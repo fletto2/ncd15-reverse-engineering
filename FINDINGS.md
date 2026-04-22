@@ -437,7 +437,9 @@ byte pair-writes on 0xAF00_0000±0x4 — strong evidence the NCD15 RAMDAC is
 
 **Framebuffer inference from NCD16 analogy:** NCD16 uses a 1024×1024 mono
 linear framebuffer (128 KB = 1024 rows × 128 bytes). NCD15 is a 15" mono
-display — likely 1024×768 or 1152×900 at 1 bpp (~110-130 KB). In the NCD68k
+display — confirmed 1024×800 @ 70 Hz at 1 bpp (100 KB, see Corrections
+section at top of file; the "1024×768 or 1152×900" guess here predates
+the HW-owner update). In the NCD68k
 design this VRAM is **directly CPU-mapped** (install_ram) with no register
 interface, so the monitor would only touch it when actually drawing; the bulk
 of framebuffer writes happen from Xncd15r. That explains why no "VRAM-shaped"

@@ -153,11 +153,13 @@ See `FINDINGS.md` for the slot-by-slot mapping (derived from
 
 ## Deployment
 
-1. `objcopy -O binary` → raw image
-2. Serve via TFTP/NFS at the bootpath stored in NVRAM
-3. Power-cycle the NCD15 — monitor loads, copies to 0x0ED00000,
-   jumps to `_start`
-4. Recovery = power cycle (no persistent state altered)
+1. `mips-elf-objcopy -O binary out.elf out.raw` → flat blob
+2. `ncd15-ecoff-wrap out.raw out.bin` → ECOFF image (required)
+3. Serve via TFTP/NFS at the bootpath stored in NVRAM
+4. Power-cycle the NCD15 — monitor parses the ECOFF, copies the
+   `.text` section to `s_paddr` (default `0x0ED00000`), jumps to
+   the aout-header entry point
+5. Recovery = power cycle (no persistent state altered)
 
 ## Known gotchas
 

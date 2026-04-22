@@ -71,11 +71,21 @@ commands with the sources from `BUILD.md`. Save the `start.S` /
 CFLAGS="-march=mips1 -mabi=32 -EB -G0 -fno-pic -mno-abicalls \
   -nostdlib -nostartfiles -ffreestanding -O2 -Wall"
 mips-elf-gcc $CFLAGS -T link.ld -o xncd15r.elf start.S main.c
-mips-elf-objcopy -O binary xncd15r.elf xncd15r.bin
+mips-elf-objcopy -O binary xncd15r.elf xncd15r.raw
+ncd15-ecoff-wrap xncd15r.raw xncd15r.bin
 ```
 
-First 4 bytes of `xncd15r.bin` should be `3C 1D 0E D3` (big-endian
-`lui $sp, 0x0ED3`).
+The `ncd15-ecoff-wrap` step is **mandatory**: the NCD15 boot
+monitor is an ECOFF loader and rejects flat binaries — see
+`BUILD.md` and `xncd15r-mini/README.md` for the full story. The
+tool ships under `xncd15r-mini/ncd15-ecoff-wrap` in this repo and
+is installed into `/opt/cross/mips-elf/bin/` by the toolchain
+recipe (when building via WSL2 following `BUILD.md`).
+
+First 2 bytes of `xncd15r.bin` should be `01 60` (ECOFF MIPS-BE
+magic). The first 4 bytes of the *payload* — at file offset
+`0xC4`, where the ECOFF loader copies from — should be
+`3C 1D 0E D3` (big-endian `lui $sp, 0x0ED3`).
 
 ### Serve over TFTP from Windows
 
