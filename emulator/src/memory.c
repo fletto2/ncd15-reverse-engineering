@@ -92,6 +92,7 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
     if (r) {
         u32 off = pa - r->start;
         u32 v = r->read(r->ctx, off, size);
+        r->read_count++;
         if (b->trace)
             fprintf(stderr, "  R [%s+0x%05x]%d = 0x%x\n", r->name, off, size*8, v);
         return v;
@@ -120,6 +121,7 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     mmio_region *r = find_mmio(b, pa);
     if (r) {
         u32 off = pa - r->start;
+        r->write_count++;
         if (b->trace)
             fprintf(stderr, "  W [%s+0x%05x]%d = 0x%x\n", r->name, off, size*8, value);
         r->write(r->ctx, off, value, size);

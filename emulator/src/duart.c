@@ -165,6 +165,10 @@ void vidctl_write(void *ctx, u32 off, u32 val, unsigned size) {
     (void)ctx; (void)off; (void)val; (void)size;
 }
 
+/* --- CRTC stub (0xBE380000) — enough to get past the monitor's vsync
+ * polling. The monitor polls offset 0x13 for bit 8 (vsync) to
+ * alternate; we toggle it every N accesses. --- */
+
 typedef struct memctl { u32 regs[32]; } memctl;
 struct memctl *memctl_new(void) { return (memctl*)calloc(1, sizeof(memctl)); }
 u32  memctl_read (void *ctx, u32 off, unsigned size) {
@@ -174,4 +178,53 @@ u32  memctl_read (void *ctx, u32 off, unsigned size) {
 void memctl_write(void *ctx, u32 off, u32 val, unsigned size) {
     memctl *m = (memctl*)ctx; (void)size;
     m->regs[(off >> 2) & 31] = val;
+}
+
+typedef struct crtc {
+    u32 poll_count;
+    u32 regs[64];
+    u64 read_hist[256];
+    u64 write_hist[256];
+    u32 write_vals[256];    /* last value written to each offset */
+} crtc;
+struct crtc *crtc_new(void) { return (crtc*)calloc(1, sizeof(crtc)); }
+u32 crtc_read(void *ctx, u32 off, unsigned size) {
+    crtc *c = (crtc*)ctx;
+    (void)size;
+    if (off < 256) c->read_hist[off]++;
+    c->poll_count++;
+    /* Offsets we've identified via diagnostics:
+     *  +0x00: a register the monitor reads millions of times. Written
+     *         exactly once with magic 0xBB831F1D — looks like a
+     *         write-then-read handshake. Return the last written
+     *         value as a readback. */
+    if (off == 0x00)  return c->write_vals[0x00];
+    /* Generic status reads: toggle a handful of common "ready/retrace"
+     * bits so polling loops can advance. */
+    u32 v = 0;
+    if ((c->poll_count >> 3) & 1) v |= 0x01;    /* DE */
+    if ((c->poll_count >> 5) & 1) v |= 0x08;    /* VRT */
+    if ((c->poll_count >> 5) & 1) v |= 0x100;   /* alt vsync */
+    if (off == 0x13) v = ((c->poll_count >> 4) & 1) ? 0x100 : 0;
+    return v;
+}
+void crtc_write(void *ctx, u32 off, u32 val, unsigned size) {
+    crtc *c = (crtc*)ctx;
+    (void)size;
+    if (off < 256) { c->write_hist[off]++; c->write_vals[off] = val; }
+    c->regs[(off >> 2) & 0x3f] = val;
+}
+void crtc_dump_hist(void *ctx) {
+    crtc *c = (crtc*)ctx;
+    fprintf(stderr, "\n--- CRTC per-offset read counts ---\n");
+    for (int i = 0; i < 256; i++) {
+        if (c->read_hist[i])
+            fprintf(stderr, "  R +0x%02x: %llu\n", i, (unsigned long long)c->read_hist[i]);
+    }
+    fprintf(stderr, "\n--- CRTC per-offset write counts (and last value) ---\n");
+    for (int i = 0; i < 256; i++) {
+        if (c->write_hist[i])
+            fprintf(stderr, "  W +0x%02x: %llu  last=0x%x\n", i,
+                (unsigned long long)c->write_hist[i], c->write_vals[i]);
+    }
 }

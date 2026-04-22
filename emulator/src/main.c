@@ -11,13 +11,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Stub per-address access counters. Buckets are 16-byte wide so we
+ * group DUART-register-sized neighbourhoods together. */
+#define STUB_BUCKETS 512
+static struct { u32 addr; u64 count; } stub_hot[STUB_BUCKETS];
+
 static u32 stub_read(void *ctx, u32 off, unsigned sz) {
-    (void)ctx; (void)off; (void)sz;
-    /* Return "all ones" so polling loops looking for ready/idle bits
-     * in undocumented devices advance past their init waits. When we
-     * identify the specific device at an offset, register a dedicated
-     * MMIO handler before this catch-all. */
+    (void)ctx; (void)sz;
+    /* off is OFFSET-from-stub-start (0x10000000). Recover phys addr
+     * and bucket it.  */
+    u32 phys = 0x10000000u + off;
+    u32 bucket_addr = phys & ~0xfu;
+    /* Small LRU-ish bucket: linear scan, evict the least-hit slot. */
+    size_t slot = 0; u64 min_count = ~(u64)0;
+    for (size_t i = 0; i < STUB_BUCKETS; i++) {
+        if (stub_hot[i].addr == bucket_addr) { stub_hot[i].count++; goto done; }
+        if (stub_hot[i].count < min_count) { min_count = stub_hot[i].count; slot = i; }
+    }
+    stub_hot[slot].addr = bucket_addr;
+    stub_hot[slot].count = 1;
+done:
     return 0xffffffffu;
+}
+
+static void stub_dump(void) {
+    fprintf(stderr, "\n--- hot unmapped-MMIO buckets (16-byte granularity) ---\n");
+    for (int iter = 0; iter < 10; iter++) {
+        u64 mc = 0; size_t mi = 0;
+        for (size_t i = 0; i < STUB_BUCKETS; i++) {
+            if (stub_hot[i].count > mc) { mc = stub_hot[i].count; mi = i; }
+        }
+        if (mc == 0) break;
+        fprintf(stderr, "  phys 0x%08x..0x%08x  reads=%llu\n",
+                stub_hot[mi].addr, stub_hot[mi].addr + 0xf,
+                (unsigned long long)mc);
+        stub_hot[mi].count = 0;
+    }
 }
 static void stub_write(void *ctx, u32 off, u32 v, unsigned sz) {
     (void)ctx; (void)off; (void)v; (void)sz;
@@ -105,6 +134,13 @@ int main(int argc, char **argv) {
         .ctx    = lance, .name = "lance",
     });
 
+    struct crtc *cr = crtc_new();
+    bus_add_mmio(&b, (mmio_region){
+        .start  = NCD15_CRTC_PHYS, .length = 0x100,
+        .read   = crtc_read, .write = crtc_write,
+        .ctx    = cr, .name = "crtc",
+    });
+
     /* Catch-all MMIO for devices we haven't emulated yet. Responds
      * with 0 on read, swallows writes. Covers everything from 0x10000000
      * up through 0x0FFFFFFF (KSEG1 = 0xB0000000..0xBFFFFFFF) — the
@@ -135,5 +171,18 @@ int main(int argc, char **argv) {
                 (unsigned long long)cpu.cycles);
         mips_dump(&cpu);
     }
+
+    fprintf(stderr, "\n--- MMIO access counts ---\n");
+    for (size_t i = 0; i < b.nregions; i++) {
+        mmio_region *r = &b.regions[i];
+        if (r->read_count || r->write_count) {
+            fprintf(stderr, "  %-10s [0x%08x..%08x]  R=%llu W=%llu\n",
+                    r->name, r->start, r->start + r->length - 1,
+                    (unsigned long long)r->read_count,
+                    (unsigned long long)r->write_count);
+        }
+    }
+    stub_dump();
+    crtc_dump_hist(cr);
     return cpu.halted ? 1 : 0;
 }

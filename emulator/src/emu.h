@@ -27,15 +27,17 @@ typedef int64_t  i64;
 #define NCD15_DRAM_SIZE     0x00400000u
 #define NCD15_DRAM_ALIAS    0x03D00000u  /* wraps every this many bytes */
 
-#define NCD15_VRAM_PHYS     0x0F000000u  /* 1 MiB, KSEG1 access at 0xAF000000 */
+/* KSEG1 accesses subtract 0xA0000000 to get physical addresses. So
+ * KSEG1 0xBE880000 → phys 0x1E880000, etc. */
+#define NCD15_VRAM_PHYS     0x0F000000u  /* KSEG1 0xAF000000 (phys 0xAF..-0xA0..) */
 #define NCD15_VRAM_SIZE     0x00100000u
 
-#define NCD15_DUART_PHYS    0x0E880000u  /* KSEG1 0xBE880000 = phys 0x0E880000 */
-#define NCD15_LANCE_PHYS    0x0E482000u  /* KSEG1 0xBE482000 */
-#define NCD15_CRTC_PHYS     0x0E380000u  /* KSEG1 0xBE380000 */
-#define NCD15_KBD_PHYS      0x0EC80000u  /* KSEG1 0xAEC80000 — bit-banged NVRAM+kbd */
+#define NCD15_DUART_PHYS    0x1E880000u  /* KSEG1 0xBE880000 */
+#define NCD15_LANCE_PHYS    0x1E482000u  /* KSEG1 0xBE482000 */
+#define NCD15_CRTC_PHYS     0x1E380000u  /* KSEG1 0xBE380000 */
+#define NCD15_KBD_PHYS      0x0EC80000u  /* KSEG1 0xAEC80000 = phys 0x0EC80000 */
 #define NCD15_MEMCTL_PHYS   0xFFFE0000u  /* KSEG2 pass-through on R3052 */
-#define NCD15_VIDCTL_PHYS   0x0F000000u  /* KSEG1 0xAF000000 — same as VRAM base first 4 bytes = cart ID */
+#define NCD15_VIDCTL_PHYS   0x0F000000u  /* KSEG1 0xAF000000 */
 
 /* --- MIPS-I CPU state --- */
 
@@ -75,6 +77,8 @@ typedef struct mmio_region {
     void (*write)(void *ctx, u32 offset, u32 value, unsigned size);
     void *ctx;
     const char *name;
+    u64 read_count;       /* reads tallied for hot-device diagnostics */
+    u64 write_count;
 } mmio_region;
 
 #define MAX_MMIO_REGIONS 16
@@ -124,5 +128,13 @@ struct memctl;
 struct memctl *memctl_new(void);
 u32  memctl_read(void *ctx, u32 offset, unsigned size);
 void memctl_write(void *ctx, u32 offset, u32 value, unsigned size);
+
+/* --- CRTC stub (0xBE380000). Toggles the vsync bit so the monitor's
+ * vsync-polling loops advance. --- */
+struct crtc;
+struct crtc *crtc_new(void);
+u32  crtc_read(void *ctx, u32 offset, unsigned size);
+void crtc_write(void *ctx, u32 offset, u32 value, unsigned size);
+void crtc_dump_hist(void *ctx);
 
 #endif

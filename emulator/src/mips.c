@@ -7,6 +7,7 @@
 #include "emu.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static u32 sign_ext16(u16 v) { return (i32)(i16)v; }
 static u32 sign_ext8 (u8  v) { return (i32)(i8)v; }
@@ -309,38 +310,46 @@ void mips_step(mips_cpu *cpu) {
 }
 
 void mips_run(mips_cpu *cpu, u64 max_cycles) {
-    /* Simple hot-PC sampler: every STRIDE cycles, bump a counter for
-     * the current PC. Dump the top-N on completion. */
-    enum { SAMPLE_STRIDE = 1024, HOT_SLOTS = 32 };
-    u32 hot_pc[HOT_SLOTS] = {0};
-    u64 hot_count[HOT_SLOTS] = {0};
+    /* PC histogram bucketed by 4-byte cells for the phase we care about.
+     * Reset at cycle RESET_AT so we get a clean picture of the post-
+     * DRAM-copy main-monitor phase, not diluted by the 50M-cycle reset
+     * phase. Covers a 128 KB window around the main monitor VA range. */
+    enum { RESET_AT = 40000000ULL, SAMPLE_STRIDE = 256 };
+    #define WIN_BASE 0x0EC00000u
+    #define WIN_SIZE 0x00040000u       /* 256 KB */
+    #define WIN_CELLS (WIN_SIZE / 4)
+    static u32 hist[WIN_CELLS];
+    bool reset_done = false;
 
     while (!cpu->halted && (max_cycles == 0 || cpu->cycles < max_cycles)) {
         mips_step(cpu);
+        if (!reset_done && cpu->cycles >= RESET_AT) {
+            memset(hist, 0, sizeof(hist));
+            reset_done = true;
+        }
         if ((cpu->cycles & (SAMPLE_STRIDE - 1)) == 0) {
             u32 p = cpu->pc;
-            int slot = -1, victim = 0;
-            u64 min_count = ~(u64)0;
-            for (int i = 0; i < HOT_SLOTS; i++) {
-                if (hot_pc[i] == p) { slot = i; break; }
-                if (hot_count[i] < min_count) { min_count = hot_count[i]; victim = i; }
+            if (p >= WIN_BASE && p < WIN_BASE + WIN_SIZE) {
+                hist[(p - WIN_BASE) / 4]++;
             }
-            if (slot < 0) { hot_pc[victim] = p; hot_count[victim] = 1; }
-            else hot_count[slot]++;
         }
     }
 
-    fprintf(stderr, "\n--- hot PCs (sample every %d cycles) ---\n", SAMPLE_STRIDE);
-    for (int iter = 0; iter < 10; iter++) {
-        u64 maxc = 0; int mi = -1;
-        for (int i = 0; i < HOT_SLOTS; i++) {
-            if (hot_count[i] > maxc) { maxc = hot_count[i]; mi = i; }
+    /* Top-15 in the main-monitor window */
+    fprintf(stderr, "\n--- hot PCs in 0x0EC00000..0x0EC40000 (sample/%d after cycle %llu) ---\n",
+            SAMPLE_STRIDE, (unsigned long long)RESET_AT);
+    for (int iter = 0; iter < 15; iter++) {
+        u32 maxc = 0, mi = 0;
+        for (u32 i = 0; i < WIN_CELLS; i++) {
+            if (hist[i] > maxc) { maxc = hist[i]; mi = i; }
         }
-        if (mi < 0 || maxc == 0) break;
-        fprintf(stderr, "  pc=0x%08x  samples=%llu\n",
-                hot_pc[mi], (unsigned long long)maxc);
-        hot_count[mi] = 0;
+        if (maxc == 0) break;
+        fprintf(stderr, "  pc=0x%08x  samples=%u\n", WIN_BASE + mi*4, maxc);
+        hist[mi] = 0;
     }
+    #undef WIN_BASE
+    #undef WIN_SIZE
+    #undef WIN_CELLS
 }
 
 void mips_dump(const mips_cpu *cpu) {
