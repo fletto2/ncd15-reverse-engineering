@@ -98,6 +98,13 @@ int main(int argc, char **argv) {
         .ctx    = mc, .name = "memctl",
     });
 
+    void *lance = lance_glue_new(&b);
+    bus_add_mmio(&b, (mmio_region){
+        .start  = NCD15_LANCE_PHYS, .length = 0x10,
+        .read   = lance_glue_read, .write = lance_glue_write,
+        .ctx    = lance, .name = "lance",
+    });
+
     /* Catch-all MMIO for devices we haven't emulated yet. Responds
      * with 0 on read, swallows writes. Covers everything from 0x10000000
      * up through 0x0FFFFFFF (KSEG1 = 0xB0000000..0xBFFFFFFF) — the

@@ -81,7 +81,7 @@ static void exec_special(mips_cpu *cpu, u32 pc, u32 insn) {
     case 0x06: wr_reg(cpu, rd, t >> (s & 31)); break;                 /* SRLV */
     case 0x07: wr_reg(cpu, rd, (u32)((i32)t >> (s & 31))); break;     /* SRAV */
     case 0x08: do_branch(cpu, s); break;                              /* JR */
-    case 0x09: wr_reg(cpu, rd, cpu->next_pc + 4); do_branch(cpu, s); break; /* JALR */
+    case 0x09: wr_reg(cpu, rd, pc + 8); do_branch(cpu, s); break;     /* JALR */
     case 0x0C: fprintf(stderr, "syscall at 0x%08x\n", pc); cpu->halted = true; break;
     case 0x0D: fprintf(stderr, "break at 0x%08x code=%x\n", pc, (insn>>6)&0xfffff); cpu->halted = true; break;
     case 0x10: wr_reg(cpu, rd, cpu->hi); break;                       /* MFHI */
@@ -123,13 +123,13 @@ static void exec_special(mips_cpu *cpu, u32 pc, u32 insn) {
 static void exec_regimm(mips_cpu *cpu, u32 pc, u32 insn) {
     unsigned rs = RS(insn), rt = RT(insn);
     i32 s = (i32)cpu->r[rs];
-    u32 target = cpu->next_pc + (sign_ext16(IMM(insn)) << 2);
+    u32 target = (pc + 4) + (sign_ext16(IMM(insn)) << 2);
 
     switch (rt) {
     case 0x00: if (s <  0) do_branch(cpu, target); break;                 /* BLTZ */
     case 0x01: if (s >= 0) do_branch(cpu, target); break;                 /* BGEZ */
-    case 0x10: wr_reg(cpu, 31, cpu->next_pc + 4); if (s <  0) do_branch(cpu, target); break; /* BLTZAL */
-    case 0x11: wr_reg(cpu, 31, cpu->next_pc + 4); if (s >= 0) do_branch(cpu, target); break; /* BGEZAL */
+    case 0x10: wr_reg(cpu, 31, pc + 8); if (s <  0) do_branch(cpu, target); break; /* BLTZAL */
+    case 0x11: wr_reg(cpu, 31, pc + 8); if (s >= 0) do_branch(cpu, target); break; /* BGEZAL */
     default: unhandled(cpu, pc, insn, "REGIMM"); break;
     }
 }
@@ -176,11 +176,19 @@ void mips_step(mips_cpu *cpu) {
         fprintf(stderr, "%08x: %08x\n", pc, insn);
     }
 
-    /* Advance PC before we execute; branches will override `next_pc`
-     * via branch_taken / branch_target. */
-    u32 saved_next = cpu->next_pc;
-    cpu->pc = cpu->next_pc;
-    cpu->next_pc = cpu->next_pc + 4;
+    /* Two-PC delay-slot semantics.
+     *
+     *   cpu->pc      = address of THIS instruction (being executed)
+     *   cpu->next_pc = address of the instruction AFTER this one
+     *                  — normally pc+4; during a branch's delay slot
+     *                  it holds the branch target.
+     *
+     * A branch instruction sets branch_taken + branch_target here. At
+     * the end of this function we:
+     *   pc := next_pc              (advance to delay slot / next insn)
+     *   next_pc := branch_target   (if a branch just fired)
+     *           or pc + 4          (normal straight-line advance)
+     */
     cpu->branch_taken = false;
 
     switch (OP(insn)) {
@@ -188,26 +196,26 @@ void mips_step(mips_cpu *cpu) {
     case 0x01: exec_regimm (cpu, pc, insn); break;
     case 0x02: {                                                       /* J */
         cpu->branch_taken = true;
-        cpu->branch_target = (cpu->next_pc & 0xf0000000u) | (TARGET(insn) << 2);
+        cpu->branch_target = ((pc + 4) & 0xf0000000u) | (TARGET(insn) << 2);
         break;
     }
     case 0x03: {                                                       /* JAL */
-        wr_reg(cpu, 31, cpu->next_pc + 4);
+        wr_reg(cpu, 31, pc + 8);
         cpu->branch_taken = true;
-        cpu->branch_target = (cpu->next_pc & 0xf0000000u) | (TARGET(insn) << 2);
+        cpu->branch_target = ((pc + 4) & 0xf0000000u) | (TARGET(insn) << 2);
         break;
     }
     case 0x04: if (cpu->r[RS(insn)] == cpu->r[RT(insn)])               /* BEQ */
-                   do_branch(cpu, cpu->next_pc + (sign_ext16(IMM(insn)) << 2));
+                   do_branch(cpu, (pc + 4) + (sign_ext16(IMM(insn)) << 2));
                break;
     case 0x05: if (cpu->r[RS(insn)] != cpu->r[RT(insn)])               /* BNE */
-                   do_branch(cpu, cpu->next_pc + (sign_ext16(IMM(insn)) << 2));
+                   do_branch(cpu, (pc + 4) + (sign_ext16(IMM(insn)) << 2));
                break;
     case 0x06: if ((i32)cpu->r[RS(insn)] <= 0)                          /* BLEZ */
-                   do_branch(cpu, cpu->next_pc + (sign_ext16(IMM(insn)) << 2));
+                   do_branch(cpu, (pc + 4) + (sign_ext16(IMM(insn)) << 2));
                break;
     case 0x07: if ((i32)cpu->r[RS(insn)] >  0)                          /* BGTZ */
-                   do_branch(cpu, cpu->next_pc + (sign_ext16(IMM(insn)) << 2));
+                   do_branch(cpu, (pc + 4) + (sign_ext16(IMM(insn)) << 2));
                break;
     case 0x08: /* ADDI */
     case 0x09: wr_reg(cpu, RT(insn), cpu->r[RS(insn)] + sign_ext16(IMM(insn))); break; /* ADDIU */
@@ -272,21 +280,50 @@ void mips_step(mips_cpu *cpu) {
     default: unhandled(cpu, pc, insn, "OP"); break;
     }
 
-    /* Branch taken on THIS instruction fires AFTER the NEXT (delay
-     * slot) instruction. The classic two-PC implementation: we just
-     * override next_pc — but one instruction later. Simplest: queue
-     * it.  We set `branch_taken` on the fetch that DID the branch;
-     * after the delay slot runs we apply it. */
-    (void)saved_next;
+    /* Advance pc to next_pc (delay slot or next linear instruction).
+     * Then compute the new next_pc: the branch target if a branch
+     * just fired in THIS instruction, else pc+4 (linear). */
+    cpu->pc = cpu->next_pc;
     if (cpu->branch_taken) {
         cpu->next_pc = cpu->branch_target;
+    } else {
+        cpu->next_pc = cpu->pc + 4;
     }
     cpu->cycles++;
 }
 
 void mips_run(mips_cpu *cpu, u64 max_cycles) {
+    /* Simple hot-PC sampler: every STRIDE cycles, bump a counter for
+     * the current PC. Dump the top-N on completion. */
+    enum { SAMPLE_STRIDE = 1024, HOT_SLOTS = 32 };
+    u32 hot_pc[HOT_SLOTS] = {0};
+    u64 hot_count[HOT_SLOTS] = {0};
+
     while (!cpu->halted && (max_cycles == 0 || cpu->cycles < max_cycles)) {
         mips_step(cpu);
+        if ((cpu->cycles & (SAMPLE_STRIDE - 1)) == 0) {
+            u32 p = cpu->pc;
+            int slot = -1, victim = 0;
+            u64 min_count = ~(u64)0;
+            for (int i = 0; i < HOT_SLOTS; i++) {
+                if (hot_pc[i] == p) { slot = i; break; }
+                if (hot_count[i] < min_count) { min_count = hot_count[i]; victim = i; }
+            }
+            if (slot < 0) { hot_pc[victim] = p; hot_count[victim] = 1; }
+            else hot_count[slot]++;
+        }
+    }
+
+    fprintf(stderr, "\n--- hot PCs (sample every %d cycles) ---\n", SAMPLE_STRIDE);
+    for (int iter = 0; iter < 10; iter++) {
+        u64 maxc = 0; int mi = -1;
+        for (int i = 0; i < HOT_SLOTS; i++) {
+            if (hot_count[i] > maxc) { maxc = hot_count[i]; mi = i; }
+        }
+        if (mi < 0 || maxc == 0) break;
+        fprintf(stderr, "  pc=0x%08x  samples=%llu\n",
+                hot_pc[mi], (unsigned long long)maxc);
+        hot_count[mi] = 0;
     }
 }
 

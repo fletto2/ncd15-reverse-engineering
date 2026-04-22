@@ -113,6 +113,11 @@ struct vidctl *vidctl_new(void);
 u32  vidctl_read(void *ctx, u32 offset, unsigned size);
 void vidctl_write(void *ctx, u32 offset, u32 value, unsigned size);
 
+/* --- LANCE Ethernet (Am79C90) at 0xBE482000 --- */
+void *lance_glue_new(bus *b);
+u32   lance_glue_read(void *ctx, u32 off, unsigned sz);
+void  lance_glue_write(void *ctx, u32 off, u32 v, unsigned sz);
+
 /* --- Memory controller stub (0xFFFE0000) --- */
 
 struct memctl;
