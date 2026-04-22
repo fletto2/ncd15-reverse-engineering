@@ -1,9 +1,8 @@
-# The full vendor/gxemul and vendor/mame trees stay local — they're
-# pristine upstream sources, best re-cloned than mirrored into the
-# repo. We check in SOURCES.md telling readers where to get them.
+# Vendor trees (re-clone per SOURCES.md)
 vendor/gxemul/
 vendor/mame/
 # Build artifacts
 build/
 *.o
 *.a
+ncd15-emu
