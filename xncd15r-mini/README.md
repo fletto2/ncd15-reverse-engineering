@@ -40,6 +40,36 @@ sudo python3 tftpd.py . --bind 0.0.0.0
 Port 69 requires root. `--port 6969` works for local testing but the
 NCD15's TFTP client only talks to 69.
 
+### Windows
+
+Same script, no Unix-only deps. From an **Administrator** PowerShell
+or Command Prompt (admin is required to bind UDP/69):
+
+```powershell
+cd xncd15r-mini
+python tftpd.py . --bind 0.0.0.0
+```
+
+Notes:
+
+- Use Python 3.8+ from python.org or the Microsoft Store. `py
+  tftpd.py …` works too.
+- If Windows Firewall pops a prompt on first run, allow the script
+  on **Private** networks (at minimum) so UDP/69 replies reach the
+  NCD15.
+- Stop any other TFTP services first — the built-in Windows TFTP
+  client is fine to leave enabled, but a running TFTP **server**
+  (e.g. SolarWinds, Tftpd64, the RIS/WDS role) will already own
+  UDP/69 and the bind will fail with `WinError 10048`.
+- Serial console to the NCD15's DUART: use PuTTY, Tera Term, or
+  `plink -serial COM3 -sercfg 9600,8,n,1,N`. Settings are 9600 8N1,
+  no flow control.
+- For the monitor's `BT` command, use your Windows host's LAN IP
+  (check with `ipconfig`), not `127.0.0.1`.
+
+Everything after this section (monitor CLI, `BT` recipe, debugging
+table) works identically on Windows.
+
 ## Drive the NCD15 monitor
 
 If autoboot is running, hit the serial console's stop key (or remove
