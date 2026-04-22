@@ -211,7 +211,38 @@ load address only affects the execution view (both hit the same
 physical RAM); using KSEG0 is just the canonical convention and
 keeps cached fetch explicit in kernel mode.
 
-## 10. Stuff still worth chasing
+## 10. ECOFF support in the toolchain
+
+Binutils 2.42 declares `mips-*-ecoff` obsolete and refuses to
+configure with that target triplet. The ECOFF BFD vectors
+(`ecoff-bigmips`, `ecoff-littlemips`) are still present in the
+tree, just not wired up by `--target=mips-elf`. Rebuilding with
+
+```
+../binutils-2.42/configure --target=mips-elf \
+  --prefix=/opt/cross/mips-elf \
+  --enable-targets=mips-netbsd \
+  --with-sysroot --disable-nls --disable-werror --disable-multilib
+```
+
+adds `ecoff-bigmips` / `ecoff-littlemips` to `mips-elf-objcopy
+--info`, enabling
+
+```
+mips-elf-objcopy -O ecoff-bigmips in.elf out.ecoff
+mips-elf-ld --oformat=ecoff-bigmips ...
+```
+
+…but the output still fails the NCD15 monitor's loader checks
+because binutils hard-codes `f_flags = 0x0060` and aout magic
+`0x0207` (NMAGIC), while the monitor demands `f_flags ∈ [3..7]`
+and magic `0x0107` (OMAGIC). Native BFD output therefore needs
+the same post-processing our `ncd15-ecoff-wrap` already does, so
+the Python wrapper stays the canonical path. A companion helper
+`ncd15-ecoff-dump` (same directory) prints the structured header
+for `diff` comparison against the real Xncd15r.
+
+## 11. Stuff still worth chasing
 
 - The four-byte board-ID semantics (per-byte → per-config-path).
   Reading `sub_0ec02bfc` carefully should reveal whether each

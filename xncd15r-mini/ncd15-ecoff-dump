@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Human-readable ECOFF MIPS-BE dump for `diff` comparison."""
+import sys, struct
+
+def dump(path):
+    d = open(path,'rb').read()
+    out = []
+    out.append(f'FILE: {path}')
+    out.append(f'SIZE: {len(d)} bytes')
+    out.append('')
+    fh = struct.unpack('>HHIIIHH', d[:20])
+    out.append('=== File header (20 bytes) ===')
+    out.append(f'  f_magic    = 0x{fh[0]:04x}')
+    out.append(f'  f_nscns    = {fh[1]}')
+    out.append(f'  f_timdat   = 0x{fh[2]:08x}')
+    out.append(f'  f_symptr   = 0x{fh[3]:08x}')
+    out.append(f'  f_nsyms    = {fh[4]}')
+    out.append(f'  f_opthdr   = 0x{fh[5]:04x}  ({fh[5]} bytes)')
+    out.append(f'  f_flags    = 0x{fh[6]:04x}')
+    out.append('')
+    nscns = fh[1]
+    oh = struct.unpack('>HHIIIIIIIIIIIII', d[20:20+0x38])
+    out.append('=== Aout opt header (56 bytes) ===')
+    out.append(f'  magic      = 0x{oh[0]:04x}')
+    out.append(f'  vstamp     = {oh[1]}')
+    out.append(f'  tsize      = 0x{oh[2]:08x}')
+    out.append(f'  dsize      = 0x{oh[3]:08x}')
+    out.append(f'  bsize      = 0x{oh[4]:08x}')
+    out.append(f'  entry      = 0x{oh[5]:08x}')
+    out.append(f'  text_start = 0x{oh[6]:08x}')
+    out.append(f'  data_start = 0x{oh[7]:08x}')
+    out.append(f'  bss_start  = 0x{oh[8]:08x}')
+    out.append(f'  gprmask    = 0x{oh[9]:08x}')
+    out.append(f'  cprmask[0] = 0x{oh[10]:08x}')
+    out.append(f'  cprmask[1] = 0x{oh[11]:08x}')
+    out.append(f'  cprmask[2] = 0x{oh[12]:08x}')
+    out.append(f'  cprmask[3] = 0x{oh[13]:08x}')
+    out.append(f'  gp_value   = 0x{oh[14]:08x}')
+    out.append('')
+    out.append(f'=== Section headers ({nscns} × 40 bytes) ===')
+    base = 20 + 0x38
+    for i in range(nscns):
+        off = base + i*40
+        name = d[off:off+8].split(b'\x00',1)[0].decode('ascii', errors='replace')
+        sh = struct.unpack('>IIIIIIHHI', d[off+8:off+40])
+        out.append(f'  --- section {i} ({name!r}) ---')
+        out.append(f'    s_paddr   = 0x{sh[0]:08x}')
+        out.append(f'    s_vaddr   = 0x{sh[1]:08x}')
+        out.append(f'    s_size    = 0x{sh[2]:08x}  ({sh[2]} bytes)')
+        out.append(f'    s_scnptr  = 0x{sh[3]:08x}')
+        out.append(f'    s_relptr  = 0x{sh[4]:08x}')
+        out.append(f'    s_lnnoptr = 0x{sh[5]:08x}')
+        out.append(f'    s_nreloc  = {sh[6]}')
+        out.append(f'    s_nlnno   = {sh[7]}')
+        out.append(f'    s_flags   = 0x{sh[8]:08x}')
+    return '\n'.join(out)
+
+if __name__ == '__main__':
+    print(dump(sys.argv[1]))

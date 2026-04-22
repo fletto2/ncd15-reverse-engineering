@@ -42,12 +42,33 @@ ncd15-ecoff-wrap out.raw xncd15r.bin
 
 The tool defaults load/entry to `0x8ED00000` — the KSEG0 cached
 view of physical `0x0ED00000` — which matches the real Xncd15r
-ECOFF header (check with `mips-elf-objdump -h Xncd15r`). The
-monitor loader masks the top 3 bits of `s_paddr` before writing,
-so `0x8ED00000` (KSEG0) and `0x0ED00000` (KUSEG) produce the
-same physical destination; using the KSEG0 form is just the
-canonical convention and keeps kernel-mode cached fetch
-explicit. Override with `--load` / `--entry` for anything else.
+ECOFF header. The monitor loader masks the top 3 bits of
+`s_paddr` before writing, so `0x8ED00000` (KSEG0) and
+`0x0ED00000` (KUSEG) produce the same physical destination;
+using the KSEG0 form is just the canonical convention and keeps
+kernel-mode cached fetch explicit. Override with `--load` /
+`--entry` for anything else.
+
+A companion `ncd15-ecoff-dump` (also installed to
+`/opt/cross/mips-elf/bin/`) prints the ECOFF file / aout / section
+headers as plain text so `diff` can compare two images directly:
+
+```bash
+ncd15-ecoff-dump xncd15r.bin      > ours.dump
+ncd15-ecoff-dump /path/to/Xncd15r > real.dump
+diff ours.dump real.dump
+```
+
+### Why not just use `mips-elf-objcopy -O ecoff-bigmips`?
+
+Binutils 2.42 can produce ECOFF output natively (rebuild with
+`--enable-targets=mips-netbsd` adds `ecoff-bigmips` to
+`mips-elf-objcopy --info`), but the BFD writer hard-codes
+`f_flags = 0x0060` and aout magic `0x0207`. The NCD15 monitor
+only accepts `f_flags ∈ [3..7]` and magic `0x0107`, so native
+ECOFF output requires the same post-processing the wrapper
+performs. This is why `ncd15-ecoff-wrap` remains the canonical
+tool.
 
 ## Prerequisites
 
