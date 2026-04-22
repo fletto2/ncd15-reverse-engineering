@@ -299,7 +299,7 @@
   bed4005c:  03e00008  jr      $ra
   bed40060:  00000000  nop     
 
-; ---- sub_bed40064 (10 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_43 /* sub_bed40064 @ 0xBED40064 */ (10 insns, 4 call sites) ----
 ;   callers: sub_bed44290
   bed40064:  27bdffe8  addiu   $sp, $sp, -0x18
   bed40068:  3c020ec0  lui     $v0, 0xec0
@@ -312,14 +312,14 @@
   bed40084:  03e00008  jr      $ra
   bed40088:  00000000  nop     
 
-; ---- sub_bed4008c (4 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_44 /* sub_bed4008c @ 0xBED4008C */ (4 insns, 4 call sites) ----
 ;   callers: sub_bed40f2c, sub_bed411b4_d_d_d_d, sub_bed4150c, sub_bed415e8_d_d
   bed4008c:  2482ffd0  addiu   $v0, $a0, -0x30
   bed40090:  304200ff  andi    $v0, $v0, 0xff
   bed40094:  03e00008  jr      $ra
   bed40098:  2c42000a  sltiu   $v0, $v0, 0xa
 
-; ---- sub_bed4009c (8 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_14 /* sub_bed4009c @ 0xBED4009C */ (8 insns, 6 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d, sub_bed415e8_d_d, sub_bed41a78_24s_s, sub_bed42264, sub_bed437b0 (+1)
   bed4009c:  3c020ec0  lui     $v0, 0xec0
   bed400a0:  8c4205f8  lw      $v0, 0x5f8($v0)  ; → g_0ec005f8
@@ -330,7 +330,7 @@
   bed400b4:  03e00008  jr      $ra
   bed400b8:  0002102b  sltu    $v0, $zero, $v0
 
-; ---- sub_bed400bc (6 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_55 /* sub_bed400bc @ 0xBED400BC */ (6 insns, 1 call sites) ----
 ;   callers: sub_bed4150c
   bed400bc:  3082ffff  andi    $v0, $a0, 0xffff
   bed400c0:  00021202  srl     $v0, $v0, 8
@@ -339,7 +339,7 @@
   bed400cc:  03e00008  jr      $ra
   bed400d0:  3042ffff  andi    $v0, $v0, 0xffff
 
-; ---- sub_bed400d4 (32 insns, 1 call sites) ----
+; ---- fn_ramdac_1 /* sub_bed400d4 @ 0xBED400D4 */ (32 insns, 1 call sites) ----
 ;   callers: sub_bed4328c_105_Group
 ;   calls:   sub_bed447e0
   bed400d4:  8c820000  lw      $v0, ($a0)
@@ -375,7 +375,7 @@
   bed4014c:  03e00008  jr      $ra
   bed40150:  00000000  nop     
 
-; ---- sub_bed40154 (38 insns, 8 call sites) ----
+; ---- fn_ramdac_helper_3 /* sub_bed40154 @ 0xBED40154 */ (38 insns, 8 call sites) ----
 ;   callers: sub_bed4053c_s_s, sub_bed40c00, sub_bed40ea4, sub_bed410f8, sub_bed41138 (+2)
   bed40154:  27bdffd8  addiu   $sp, $sp, -0x28
   bed40158:  afb00010  sw      $s0, 0x10($sp)
@@ -416,7 +416,7 @@
   bed401e4:  03e00008  jr      $ra
   bed401e8:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed401ec (57 insns, 17 call sites) ----
+; ---- fn_ramdac_helper_15 /* sub_bed401ec @ 0xBED401EC */ (57 insns, 17 call sites) ----
 ;   callers: sub_bed4053c_s_s, sub_bed40778, sub_bed40af8_32s, sub_bed40c00, sub_bed40cd0 (+4)
   bed401ec:  27bdffd0  addiu   $sp, $sp, -0x30
   bed401f0:  afb1001c  sw      $s1, 0x1c($sp)
@@ -476,7 +476,7 @@
   bed402c8:  03e00008  jr      $ra
   bed402cc:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed402d0 (127 insns, 5 call sites) ----
+; ---- fn_ramdac_helper_16 /* sub_bed402d0 @ 0xBED402D0 */ (127 insns, 5 call sites) ----
 ;   callers: sub_bed4053c_s_s, sub_bed40c00, sub_bed40cd0, sub_bed41014, sub_bed41ef4
   bed402d0:  27bdffc8  addiu   $sp, $sp, -0x38
   bed402d4:  afb40020  sw      $s4, 0x20($sp)
@@ -606,7 +606,7 @@
   bed404c4:  03e00008  jr      $ra
   bed404c8:  27bd0038  addiu   $sp, $sp, 0x38
 
-; ---- sub_bed404cc (28 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_28 /* sub_bed404cc @ 0xBED404CC */ (28 insns, 2 call sites) ----
 ;   callers: sub_bed4061c, sub_bed40778
 ;   calls:   sub_bed449f8
   bed404cc:  27bdffe0  addiu   $sp, $sp, -0x20
@@ -638,7 +638,7 @@
   bed40534:  03e00008  jr      $ra
   bed40538:  27bd0020  addiu   $sp, $sp, 0x20
 
-; ---- sub_bed4053c_s_s (56 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_29 /* sub_bed4053c_s_s @ 0xBED4053C */ (56 insns, 1 call sites) ----
 ;   callers: sub_bed4061c
 ;   calls:   sub_bed449f8, sub_bed40154, sub_bed440c0, sub_bed401ec, sub_bed402d0
 ;   refs:    "%s%s"
@@ -699,7 +699,7 @@
   bed40614:  03e00008  jr      $ra
   bed40618:  27bd0078  addiu   $sp, $sp, 0x78
 
-; ---- sub_bed4061c (87 insns, 5 call sites) ----
+; ---- fn_ramdac_helper_17 /* sub_bed4061c @ 0xBED4061C */ (87 insns, 5 call sites) ----
 ;   callers: sub_bed40e30, sub_bed42a10, sub_bed43104, sub_bed4328c_105_Group, sub_bed439cc_Original_NVRAM_values_ar
 ;   calls:   sub_bed449f8, sub_bed404cc, sub_bed4053c_s_s
   bed4061c:  27bdffc8  addiu   $sp, $sp, -0x38
@@ -790,7 +790,7 @@
   bed40770:  03e00008  jr      $ra
   bed40774:  27bd0038  addiu   $sp, $sp, 0x38
 
-; ---- sub_bed40778 (224 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_18 /* sub_bed40778 @ 0xBED40778 */ (224 insns, 6 call sites) ----
 ;   callers: sub_bed40e30, sub_bed4328c_105_Group, sub_bed43974
 ;   calls:   sub_bed449f8, sub_bed440c0, sub_bed401ec, sub_bed404cc
   bed40778:  27bdff68  addiu   $sp, $sp, -0x98
@@ -1018,7 +1018,7 @@
   bed40af0:  03e00008  jr      $ra
   bed40af4:  27bd0078  addiu   $sp, $sp, 0x78
 
-; ---- sub_bed40af8_32s (66 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_30 /* sub_bed40af8_32s @ 0xBED40AF8 */ (66 insns, 4 call sites) ----
 ;   callers: sub_bed42514_24s_s, sub_bed437b0
 ;   calls:   sub_bed440c0, sub_bed401ec
 ;   refs:    "%-32s"
@@ -1089,7 +1089,7 @@
   bed40bf8:  03e00008  jr      $ra
   bed40bfc:  27bd0078  addiu   $sp, $sp, 0x78
 
-; ---- sub_bed40c00 (52 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_19 /* sub_bed40c00 @ 0xBED40C00 */ (52 insns, 6 call sites) ----
 ;   callers: sub_bed40cd0, sub_bed42264, sub_bed42514_24s_s, sub_bed43974, sub_bed439cc_Original_NVRAM_values_ar
 ;   calls:   sub_bed449f8, sub_bed40154, sub_bed401ec, sub_bed402d0
   bed40c00:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -1145,7 +1145,7 @@
   bed40cc8:  03e00008  jr      $ra
   bed40ccc:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed40cd0 (88 insns, 3 call sites) ----
+; ---- fn_ramdac_helper_4 /* sub_bed40cd0 @ 0xBED40CD0 */ (88 insns, 3 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed449f8, sub_bed401ec, sub_bed402d0, sub_bed40c00
   bed40cd0:  27bdffc8  addiu   $sp, $sp, -0x38
@@ -1237,7 +1237,7 @@
   bed40e28:  03e00008  jr      $ra
   bed40e2c:  27bd0038  addiu   $sp, $sp, 0x38
 
-; ---- sub_bed40e30 (29 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_5 /* sub_bed40e30 @ 0xBED40E30 */ (29 insns, 2 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed4061c, sub_bed40778
   bed40e30:  27bdffd0  addiu   $sp, $sp, -0x30
@@ -1270,7 +1270,7 @@
   bed40e9c:  03e00008  jr      $ra
   bed40ea0:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed40ea4 (34 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_31 /* sub_bed40ea4 @ 0xBED40EA4 */ (34 insns, 6 call sites) ----
 ;   callers: sub_bed4193c, sub_bed41d20_25s_d, sub_bed42514_24s_s
 ;   calls:   sub_bed40154, sub_bed401ec
   bed40ea4:  27bdffd0  addiu   $sp, $sp, -0x30
@@ -1308,7 +1308,7 @@
   bed40f24:  03e00008  jr      $ra
   bed40f28:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed40f2c (58 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_45 /* sub_bed40f2c @ 0xBED40F2C */ (58 insns, 4 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d
 ;   calls:   sub_bed4008c
   bed40f2c:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -1370,7 +1370,7 @@
   bed4100c:  03e00008  jr      $ra
   bed41010:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed41014 (57 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_46 /* sub_bed41014 @ 0xBED41014 */ (57 insns, 4 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d, sub_bed415e8_d_d
 ;   calls:   sub_bed449f8, sub_bed401ec, sub_bed402d0
   bed41014:  27bdffd0  addiu   $sp, $sp, -0x30
@@ -1431,7 +1431,7 @@
   bed410f0:  03e00008  jr      $ra
   bed410f4:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed410f8 (16 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_47 /* sub_bed410f8 @ 0xBED410F8 */ (16 insns, 6 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d, sub_bed415e8_d_d
 ;   calls:   sub_bed40154
   bed410f8:  27bdffe0  addiu   $sp, $sp, -0x20
@@ -1451,7 +1451,7 @@
   bed41130:  03e00008  jr      $ra
   bed41134:  00000000  nop     
 
-; ---- sub_bed41138 (31 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_48 /* sub_bed41138 @ 0xBED41138 */ (31 insns, 2 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d, sub_bed415e8_d_d
 ;   calls:   sub_bed40154, sub_bed440c0, sub_bed401ec
   bed41138:  27bdff98  addiu   $sp, $sp, -0x68
@@ -1486,7 +1486,7 @@
   bed411ac:  03e00008  jr      $ra
   bed411b0:  27bd0068  addiu   $sp, $sp, 0x68
 
-; ---- sub_bed411b4_d_d_d_d (214 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_32 /* sub_bed411b4_d_d_d_d @ 0xBED411B4 */ (214 insns, 1 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed447e0, sub_bed440c0, sub_bed4008c, sub_bed40f2c, sub_bed41014, sub_bed44830 (+3)
 ;   refs:    "%d.%d.%d.%d"
@@ -1705,7 +1705,7 @@
   bed41504:  03e00008  jr      $ra
   bed41508:  27bd0060  addiu   $sp, $sp, 0x60
 
-; ---- sub_bed4150c (55 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_49 /* sub_bed4150c @ 0xBED4150C */ (55 insns, 4 call sites) ----
 ;   callers: sub_bed415e8_d_d
 ;   calls:   sub_bed4008c, sub_bed400bc
   bed4150c:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -1764,7 +1764,7 @@
   bed415e0:  03e00008  jr      $ra
   bed415e4:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed415e8_d_d (213 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_33 /* sub_bed415e8_d_d @ 0xBED415E8 */ (213 insns, 1 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed447e0, sub_bed440c0, sub_bed4008c, sub_bed41014, sub_bed44830, sub_bed4009c (+3)
 ;   refs:    "%d.%d"
@@ -1982,7 +1982,7 @@
   bed41934:  03e00008  jr      $ra
   bed41938:  27bd0060  addiu   $sp, $sp, 0x60
 
-; ---- sub_bed4193c (79 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_34 /* sub_bed4193c @ 0xBED4193C */ (79 insns, 2 call sites) ----
 ;   callers: sub_bed41a78_24s_s, sub_bed42514_24s_s
 ;   calls:   sub_bed447e0, sub_bed449f8, sub_bed440c0, sub_bed44830, sub_bed40ea4
   bed4193c:  3c030ec0  lui     $v1, 0xec0
@@ -2065,7 +2065,7 @@
   bed41a70:  03e00008  jr      $ra
   bed41a74:  27bd0128  addiu   $sp, $sp, 0x128
 
-; ---- sub_bed41a78_24s_s (170 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_35 /* sub_bed41a78_24s_s @ 0xBED41A78 */ (170 insns, 1 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed447e0, sub_bed440c0, sub_bed4009c, sub_bed4193c
 ;   refs:    "%-24s %s_"
@@ -2240,7 +2240,7 @@
   bed41d18:  03e00008  jr      $ra
   bed41d1c:  27bd0080  addiu   $sp, $sp, 0x80
 
-; ---- sub_bed41d20_25s_d (34 insns, 3 call sites) ----
+; ---- fn_ramdac_helper_50 /* sub_bed41d20_25s_d @ 0xBED41D20 */ (34 insns, 3 call sites) ----
 ;   callers: sub_bed41e50, sub_bed42264
 ;   calls:   sub_bed440c0, sub_bed40ea4
 ;   refs:    "%-25sDisabled"
@@ -2280,7 +2280,7 @@
   bed41da0:  03e00008  jr      $ra
   bed41da4:  27bd0060  addiu   $sp, $sp, 0x60
 
-; ---- sub_bed41da8 (42 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_51 /* sub_bed41da8 @ 0xBED41DA8 */ (42 insns, 2 call sites) ----
 ;   callers: sub_bed41e50, sub_bed42264
   bed41da8:  24020008  addiu   $v0, $zero, 8
   bed41dac:  10820016  beq     $a0, $v0, 0xbed41e08
@@ -2325,7 +2325,7 @@
   bed41e48:  03e00008  jr      $ra
   bed41e4c:  00000000  nop     
 
-; ---- sub_bed41e50 (25 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_36 /* sub_bed41e50 @ 0xBED41E50 */ (25 insns, 2 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed41da8, sub_bed41d20_25s_d
   bed41e50:  27bdffd0  addiu   $sp, $sp, -0x30
@@ -2354,7 +2354,7 @@
   bed41eac:  03e00008  jr      $ra
   bed41eb0:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed41eb4 (16 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_52 /* sub_bed41eb4 @ 0xBED41EB4 */ (16 insns, 6 call sites) ----
 ;   callers: sub_bed41ef4, sub_bed42264
 ;   calls:   sub_bed40154
   bed41eb4:  27bdffe0  addiu   $sp, $sp, -0x20
@@ -2374,7 +2374,7 @@
   bed41eec:  03e00008  jr      $ra
   bed41ef0:  00000000  nop     
 
-; ---- sub_bed41ef4 (59 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_57 /* sub_bed41ef4 @ 0xBED41EF4 */ (59 insns, 1 call sites) ----
 ;   callers: sub_bed41fe0_This_priority_level_is_b
 ;   calls:   sub_bed449f8, sub_bed401ec, sub_bed402d0, sub_bed41eb4
   bed41ef4:  27bdffd0  addiu   $sp, $sp, -0x30
@@ -2437,7 +2437,7 @@
   bed41fd8:  03e00008  jr      $ra
   bed41fdc:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed41fe0_This_priority_level_is_b (12 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_56 /* sub_bed41fe0_This_priority_level_is_b @ 0xBED41FE0 */ (12 insns, 4 call sites) ----
 ;   callers: sub_bed42010
 ;   calls:   sub_bed41ef4
 ;   refs:    "This priority level is being used by another"
@@ -2455,7 +2455,7 @@
   bed42008:  03e00008  jr      $ra
   bed4200c:  00000000  nop     
 
-; ---- sub_bed42010 (149 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_53 /* sub_bed42010 @ 0xBED42010 */ (149 insns, 4 call sites) ----
 ;   callers: sub_bed42264
 ;   calls:   sub_bed41fe0_This_priority_level_is_b
   bed42010:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -2608,7 +2608,7 @@
   bed4225c:  03e00008  jr      $ra
   bed42260:  00000000  nop     
 
-; ---- sub_bed42264 (172 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_37 /* sub_bed42264 @ 0xBED42264 */ (172 insns, 1 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed40c00, sub_bed4009c, sub_bed41da8, sub_bed41d20_25s_d, sub_bed41eb4, sub_bed42010 (+1)
   bed42264:  27bdffc0  addiu   $sp, $sp, -0x40
@@ -2784,7 +2784,7 @@
   bed4250c:  03e00008  jr      $ra
   bed42510:  27bd0040  addiu   $sp, $sp, 0x40
 
-; ---- sub_bed42514_24s_s (319 insns, 8 call sites) ----
+; ---- fn_ramdac_helper_20 /* sub_bed42514_24s_s @ 0xBED42514 */ (319 insns, 8 call sites) ----
 ;   callers: sub_bed42264, sub_bed42a10, sub_bed43104
 ;   calls:   sub_bed449f8, sub_bed440c0, sub_bed40c00, sub_bed40ea4, sub_bed4193c, sub_bed40af8_32s (+6)
 ;   refs:    "%-33s%d.%d.%d.%d_"
@@ -3113,7 +3113,7 @@
   bed42a08:  03e00008  jr      $ra
   bed42a0c:  27bd00a8  addiu   $sp, $sp, 0xa8
 
-; ---- sub_bed42a10 (71 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_6 /* sub_bed42a10 @ 0xBED42A10 */ (71 insns, 1 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed4061c, sub_bed42514_24s_s
   bed42a10:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -3188,7 +3188,7 @@
   bed42b24:  03e00008  jr      $ra
   bed42b28:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed42b2c (175 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_21 /* sub_bed42b2c @ 0xBED42B2C */ (175 insns, 2 call sites) ----
 ;   callers: sub_bed43104, sub_bed43c0c
 ;   calls:   sub_bed447e0, sub_bed44830
   bed42b2c:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -3367,7 +3367,7 @@
   bed42de0:  03e00008  jr      $ra
   bed42de4:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed42de8 (32 insns, 6 call sites) ----
+; ---- fn_ramdac_helper_38 /* sub_bed42de8 @ 0xBED42DE8 */ (32 insns, 6 call sites) ----
 ;   callers: sub_bed42e68
 ;   calls:   sub_bed449f8, sub_bed44830
   bed42de8:  27bdffc0  addiu   $sp, $sp, -0x40
@@ -3403,7 +3403,7 @@
   bed42e60:  03e00008  jr      $ra
   bed42e64:  27bd0040  addiu   $sp, $sp, 0x40
 
-; ---- sub_bed42e68 (167 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_22 /* sub_bed42e68 @ 0xBED42E68 */ (167 insns, 2 call sites) ----
 ;   callers: sub_bed43104
 ;   calls:   sub_bed447e0, sub_bed449f8, sub_bed44830, sub_bed42de8
   bed42e68:  27bdffc8  addiu   $sp, $sp, -0x38
@@ -3574,7 +3574,7 @@
   bed430fc:  03e00008  jr      $ra
   bed43100:  27bd0038  addiu   $sp, $sp, 0x38
 
-; ---- sub_bed43104 (77 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_7 /* sub_bed43104 @ 0xBED43104 */ (77 insns, 1 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed4061c, sub_bed42514_24s_s, sub_bed42b2c, sub_bed42e68
   bed43104:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -3655,7 +3655,7 @@
   bed43230:  03e00008  jr      $ra
   bed43234:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed43238 (21 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_23 /* sub_bed43238 @ 0xBED43238 */ (21 insns, 4 call sites) ----
 ;   callers: sub_bed4328c_105_Group, sub_bed437b0
   bed43238:  00803021  move    $a2, $a0
   bed4323c:  84820008  lh      $v0, 8($a0)
@@ -3679,7 +3679,7 @@
   bed43284:  03e00008  jr      $ra
   bed43288:  00000000  nop     
 
-; ---- sub_bed4328c_105_Group (329 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_8 /* sub_bed4328c_105_Group @ 0xBED4328C */ (329 insns, 1 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed4061c, sub_bed40778, sub_bed43238, sub_bed400d4
 ;   refs:    "123 Group "
@@ -4019,7 +4019,7 @@
   bed437a8:  03e00008  jr      $ra
   bed437ac:  27bd0050  addiu   $sp, $sp, 0x50
 
-; ---- sub_bed437b0 (113 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_24 /* sub_bed437b0 @ 0xBED437B0 */ (113 insns, 1 call sites) ----
 ;   callers: sub_bed42514_24s_s
 ;   calls:   sub_bed4009c, sub_bed40af8_32s, sub_bed43238
   bed437b0:  27bdffc0  addiu   $sp, $sp, -0x40
@@ -4136,7 +4136,7 @@
   bed4396c:  03e00008  jr      $ra
   bed43970:  27bd0040  addiu   $sp, $sp, 0x40
 
-; ---- sub_bed43974 (22 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_25 /* sub_bed43974 @ 0xBED43974 */ (22 insns, 4 call sites) ----
 ;   callers: sub_bed439cc_Original_NVRAM_values_ar
 ;   calls:   sub_bed40c00, sub_bed40778
   bed43974:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -4162,7 +4162,7 @@
   bed439c4:  03e00008  jr      $ra
   bed439c8:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed439cc_Original_NVRAM_values_ar (144 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_9 /* sub_bed439cc_Original_NVRAM_values_ar @ 0xBED439CC */ (144 insns, 2 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed40c00, sub_bed4061c, sub_bed4009c, sub_bed43974
 ;   refs:    "Original NVRAM values are restored"
@@ -4311,7 +4311,7 @@
   bed43c04:  03e00008  jr      $ra
   bed43c08:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_bed43c0c (84 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_10 /* sub_bed43c0c @ 0xBED43C0C */ (84 insns, 2 call sites) ----
 ;   callers: sub_bed43d5c
 ;   calls:   sub_bed44830, sub_bed42b2c
   bed43c0c:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -4399,7 +4399,7 @@
   bed43d54:  03e00008  jr      $ra
   bed43d58:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_bed43d5c (213 insns, 1 call sites) ----
+; ---- fn_ramdac_2 /* sub_bed43d5c @ 0xBED43D5C */ (213 insns, 1 call sites) ----
 ;   callers: sub_bed40008
 ;   calls:   sub_bed447e0, sub_bed40154, sub_bed40cd0, sub_bed40e30, sub_bed43c0c, sub_bed439cc_Original_NVRAM_values_ar (+3)
   bed43d5c:  27bdffc8  addiu   $sp, $sp, -0x38
@@ -4616,14 +4616,14 @@
   bed440a8:  27bd0038  addiu   $sp, $sp, 0x38
   bed440ac:  00000000  nop     
 
-; ---- sub_bed440b0 (4 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_39 /* sub_bed440b0 @ 0xBED440B0 */ (4 insns, 2 call sites) ----
 ;   callers: sub_bed4440c
   bed440b0:  2482ff9f  addiu   $v0, $a0, -0x61
   bed440b4:  304200ff  andi    $v0, $v0, 0xff
   bed440b8:  03e00008  jr      $ra
   bed440bc:  2c42001a  sltiu   $v0, $v0, 0x1a
 
-; ---- sub_bed440c0 (19 insns, 17 call sites) ----
+; ---- fn_ramdac_helper_26 /* sub_bed440c0 @ 0xBED440C0 */ (19 insns, 17 call sites) ----
 ;   callers: sub_bed4053c_s_s, sub_bed40778, sub_bed40af8_32s, sub_bed41138, sub_bed411b4_d_d_d_d (+5)
 ;   calls:   sub_bed4440c
   bed440c0:  afa60008  sw      $a2, 8($sp)
@@ -4660,7 +4660,7 @@
   bed44130:  03e00008  jr      $ra
   bed44134:  00000000  nop     
 
-; ---- sub_bed44138 (33 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_40 /* sub_bed44138 @ 0xBED44138 */ (33 insns, 2 call sites) ----
 ;   callers: sub_bed44138, sub_bed4440c
 ;   calls:   sub_bed44138
   bed44138:  27bdffe0  addiu   $sp, $sp, -0x20
@@ -4697,7 +4697,7 @@
   bed441b4:  03e00008  jr      $ra
   bed441b8:  27bd0020  addiu   $sp, $sp, 0x20
 
-; ---- sub_bed441bc (40 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_54 /* sub_bed441bc @ 0xBED441BC */ (40 insns, 2 call sites) ----
 ;   callers: sub_bed441bc, sub_bed4425c
 ;   calls:   sub_bed441bc
   bed441bc:  27bdffe0  addiu   $sp, $sp, -0x20
@@ -4741,7 +4741,7 @@
   bed44254:  03e00008  jr      $ra
   bed44258:  27bd0020  addiu   $sp, $sp, 0x20
 
-; ---- sub_bed4425c (13 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_41 /* sub_bed4425c @ 0xBED4425C */ (13 insns, 1 call sites) ----
 ;   callers: sub_bed4440c
 ;   calls:   sub_bed441bc
   bed4425c:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -4758,7 +4758,7 @@
   bed44288:  03e00008  jr      $ra
   bed4428c:  00000000  nop     
 
-; ---- sub_bed44290 (95 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_42 /* sub_bed44290 @ 0xBED44290 */ (95 insns, 2 call sites) ----
 ;   callers: sub_bed4440c
 ;   calls:   sub_bed40064
   bed44290:  27bdffc8  addiu   $sp, $sp, -0x38
@@ -4857,7 +4857,7 @@
   bed44404:  03e00008  jr      $ra
   bed44408:  27bd0038  addiu   $sp, $sp, 0x38
 
-; ---- sub_bed4440c (245 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_27 /* sub_bed4440c @ 0xBED4440C */ (245 insns, 2 call sites) ----
 ;   callers: sub_bed440c0, sub_bed4410c
 ;   calls:   sub_bed449f8, sub_bed44138, sub_bed44290, sub_bed440b0, sub_bed4425c
   bed4440c:  27bdff88  addiu   $sp, $sp, -0x78
@@ -5106,7 +5106,7 @@
   bed447d8:  00000000  nop     
   bed447dc:  00000000  nop     
 
-; ---- sub_bed447e0 (20 insns, 16 call sites) ----
+; ---- fn_ramdac_helper_11 /* sub_bed447e0 @ 0xBED447E0 */ (20 insns, 16 call sites) ----
 ;   callers: sub_bed400d4, sub_bed411b4_d_d_d_d, sub_bed415e8_d_d, sub_bed4193c, sub_bed41a78_24s_s (+3)
   bed447e0:  18a00010  blez    $a1, 0xbed44824
   bed447e4:  00000000  nop     
@@ -5129,7 +5129,7 @@
   bed44828:  00000000  nop     
   bed4482c:  00000000  nop     
 
-; ---- sub_bed44830 (114 insns, 23 call sites) ----
+; ---- fn_ramdac_helper_12 /* sub_bed44830 @ 0xBED44830 */ (114 insns, 23 call sites) ----
 ;   callers: sub_bed411b4_d_d_d_d, sub_bed415e8_d_d, sub_bed4193c, sub_bed42b2c, sub_bed42de8 (+2)
   bed44830:  27bdffe8  addiu   $sp, $sp, -0x18
   bed44834:  afb20008  sw      $s2, 8($sp)
@@ -5246,7 +5246,7 @@
   bed449f0:  03e00008  jr      $ra
   bed449f4:  27bd0010  addiu   $sp, $sp, 0x10
 
-; ---- sub_bed449f8 (1410 insns, 25 call sites) ----
+; ---- fn_ramdac_helper_13 /* sub_bed449f8 @ 0xBED449F8 */ (1410 insns, 25 call sites) ----
 ;   callers: sub_bed404cc, sub_bed4053c_s_s, sub_bed4061c, sub_bed40778, sub_bed40c00 (+8)
 ;   calls:   ext_bb509880, ext_bb509750, ext_bb5098c0, ext_bb50a160, ext_bb50a090, ext_bb5099d0 (+88)
   bed449f8:  0bb51281  j       0xbed44a04

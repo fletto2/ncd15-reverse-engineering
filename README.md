@@ -14,9 +14,9 @@ you can serve to confirm the deployment path.
 ├── FINDINGS.md                 ← canonical structural writeup
 ├── BUILD.md                    ← MIPS-I cross-toolchain build recipe
 ├── disasm/
-│   ├── monitor.dis             ← NCD15 boot monitor (52K lines, 622 fns)
-│   ├── nvram_setup.dis         ← standalone NVRAM-setup tool (5.7K lines)
-│   └── Xncd15r.dis             ← X server (242K lines, 4800 fns)
+│   ├── monitor.dis             ← NCD15 boot monitor (52K lines, 626 fns, 76% topic-tagged)
+│   ├── nvram_setup.dis         ← standalone NVRAM-setup tool (5.7K lines, 97% topic-tagged)
+│   └── Xncd15r.dis             ← X server (242K lines, 4800 fns, 79% topic-tagged, 13% ground-truth named)
 └── xncd15r-mini/
     ├── tftpd.py                ← host-side TFTP server (RFC 1350)
     ├── xncd15r.bin             ← prebuilt 280-byte test image

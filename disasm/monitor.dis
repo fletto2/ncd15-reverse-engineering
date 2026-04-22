@@ -1351,7 +1351,7 @@
   0ec005e8:  03600008  jr      $k1
   ; >>> [R7] in-fn: HW:memctl
 
-; ---- sub_0ec00800  (21 insns, 0 call sites) ----
+; ---- fn_ramdac_14 /* sub_0ec00800 @ 0x0EC00800 */  (21 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec02760, sub_0ec023a0
   ; >>> [R6] fn prologue: allocate stack frame
@@ -1388,7 +1388,7 @@
   ; >>> [R4] in-fn: via via HW:RAMDAC
   0ec00850:  27bd0020  addiu   $sp, $sp, 0x20
 
-; ---- sub_0ec00854  (21 insns, 0 call sites) ----
+; ---- fn_ramdac_15 /* sub_0ec00854 @ 0x0EC00854 */  (21 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec023a0, fn_ramdac_caller_5 /* sub_0ec0278c */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -4249,7 +4249,7 @@
   ; >>> [R23] in-fn: sub_0ec021f4, calls: 2
   0ec0221c:  24040001  addiu   $a0, $zero, 1
 
-; ---- sub_0ec02220  (13 insns, 1 call sites) ----
+; ---- fn_Mount_helper_1 /* sub_0ec02220 @ 0x0EC02220 */  (13 insns, 1 call sites) ----
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec027e4, sub_0ec04118
 ; >>> [R23] in-fn: sub_0ec02220, calls: 3
@@ -4385,7 +4385,7 @@
   ; >>> [R7] in-fn: via via via HW:video
   0ec02338:  240200ff  addiu   $v0, $zero, 0xff
 
-; ---- sub_0ec0233c  (7 insns, 1 call sites) ----
+; ---- fn_Mount_helper_2 /* sub_0ec0233c @ 0x0EC0233C */  (7 insns, 1 call sites) ----
 ; >>> [R5] FN: via via via HW:video
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec0418c, sub_0ec041f4
@@ -4402,7 +4402,7 @@
   0ec02354:  0fb0107d  jal     0xec041f4  ; → sub_0ec041f4
   ; >>> [R7] in-fn: via via via HW:video
 
-; ---- sub_0ec02358  (3 insns, 27 call sites) ----
+; ---- fn_ramdac_16 /* sub_0ec02358 @ 0x0EC02358 */  (3 insns, 27 call sites) ----
 ; >>> [R6] FN: helper for "Using_Subnet_Mask", via calls:printf, via via HW:RAMDAC
 ;   callers: sub_0ec00800, sub_0ec00854, sub_0ec008a8, sub_0ec008fc, fn_ramdac_access /* sub_0ec00948 */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask (+17)
 ;   calls:   sub_0ec041f4
@@ -4413,7 +4413,7 @@
   0ec02360:  24040001  addiu   $a0, $zero, 1
   ; >>> [R7] in-fn: helper for "Using_Subnet_Mask", via calls:printf
 
-; ---- sub_0ec02364  (3 insns, 1 call sites) ----
+; ---- fn_Mount_helper_3 /* sub_0ec02364 @ 0x0EC02364 */  (3 insns, 1 call sites) ----
 ; >>> [R5] FN: via via via HW:video
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec0418c
@@ -4423,7 +4423,7 @@
   0ec0236c:  0fb01063  jal     0xec0418c  ; → sub_0ec0418c
   ; >>> [R7] in-fn: via via via HW:video
 
-; ---- sub_0ec02370  (3 insns, 2 call sites) ----
+; ---- fn_Mount_helper_4 /* sub_0ec02370 @ 0x0EC02370 */  (3 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for "Mount_failed"
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec041f4
@@ -4434,7 +4434,7 @@
   0ec02378:  24040001  addiu   $a0, $zero, 1
   ; >>> [R7] in-fn: helper for "Mount_failed"
 
-; ---- sub_0ec0237c  (9 insns, 8 call sites) ----
+; ---- fn_Mount_helper_5 /* sub_0ec0237c @ 0x0EC0237C */  (9 insns, 8 call sites) ----
 ; >>> [R5] FN: via via via HW:video
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec0418c, sub_0ec041f4
@@ -4454,7 +4454,7 @@
   0ec02398:  24040001  addiu   $a0, $zero, 1
   0ec0239c:  0fb0107d  jal     0xec041f4  ; → sub_0ec041f4
 
-; ---- sub_0ec023a0  (6 insns, 29 call sites) ----
+; ---- fn_ramdac_helper_41 /* sub_0ec023a0 @ 0x0EC023A0 */  (6 insns, 29 call sites) ----
 ; >>> [R5] FN: via via via HW:video
 ;   callers: sub_0ec00800, sub_0ec00854, sub_0ec008a8, sub_0ec008fc, fn_ramdac_access /* sub_0ec00948 */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask (+17)
 ;   calls:   sub_0ec0418c, sub_0ec041f4
@@ -4469,7 +4469,7 @@
   0ec023b0:  00000000  nop     
   0ec023b4:  0fb01063  jal     0xec0418c  ; → sub_0ec0418c
 
-; ---- sub_0ec023b8  (3 insns, 1 call sites) ----
+; ---- fn_duart_helper_43 /* sub_0ec023b8 @ 0x0EC023B8 */  (3 insns, 1 call sites) ----
 ;   callers: fn_duart_access /* sub_0ec01cc4 */
 ;   calls:   sub_0ec041f4
 ; >>> [R9] FN: unnamed helper
@@ -4477,7 +4477,7 @@
   0ec023bc:  0fb0107d  jal     0xec041f4  ; → sub_0ec041f4
   0ec023c0:  24040001  addiu   $a0, $zero, 1
 
-; ---- sub_0ec023c4  (6 insns, 25 call sites) ----
+; ---- fn_ramdac_17 /* sub_0ec023c4 @ 0x0EC023C4 */  (6 insns, 25 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf, HW:video, via via HW:RAMDAC
 ;   callers: sub_0ec00800, sub_0ec00854, sub_0ec008a8, sub_0ec008fc, fn_ramdac_access /* sub_0ec00948 */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask (+17)
 ;   calls:   sub_0ec041f4
@@ -4492,7 +4492,7 @@
   ; >>> [R6] branch delay-slot
   0ec023d8:  00000000  nop     
 
-; ---- sub_0ec023dc  (38 insns, 5 call sites) ----
+; ---- fn_ramdac_18 /* sub_0ec023dc @ 0x0EC023DC */  (38 insns, 5 call sites) ----
 ; >>> [R5] FN: via via via HW:video
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_duart_access /* sub_0ec01cc4 */, sub_0ec0b100, fn_ramdac_access_5 /* sub_0ec0c054 */
 ;   calls:   sub_0ec0418c, sub_0ec041f4
@@ -4858,7 +4858,7 @@
   0ec02700:  240400ff  addiu   $a0, $zero, 0xff
   0ec02704:  0fb0113a  jal     0xec044e8  ; → sub_0ec044e8
 
-; ---- sub_0ec02708  (5 insns, 3 call sites) ----
+; ---- fn_duart_helper_44 /* sub_0ec02708 @ 0x0EC02708 */  (5 insns, 3 call sites) ----
 ;   callers: sub_0ec008fc, sub_0ec06cb0, sub_0ec1a2bc
 ; >>> [R9] FN: unnamed helper
   0ec02708:  00000000  nop     
@@ -4881,7 +4881,7 @@
   ; >>> [R6] save return address
   0ec02730:  afbf001c  sw      $ra, 0x1c($sp)
 
-; ---- sub_0ec02734  (11 insns, 7 call sites) ----
+; ---- fn_ramdac_19 /* sub_0ec02734 @ 0x0EC02734 */  (11 insns, 7 call sites) ----
 ; >>> [R3] FN: via HW:RAMDAC
 ;   callers: fn_ramdac_access /* sub_0ec00948 */, sub_0ec09864, fn_lance_13 /* sub_0ec09948 */, fn_video_helper_4 /* sub_0ec0dbc0 */, fn_video_helper_6 /* sub_0ec15498 */, sub_0ec1a304
 ;   calls:   fn_ramdac_helper_4 /* sub_0ec042cc */, sub_0ec04610, sub_0ec046c4
@@ -4904,7 +4904,7 @@
   0ec0275c:  00008021  move    $s0, $zero
   ; >>> [R7] in-fn: via HW:RAMDAC
 
-; ---- sub_0ec02760  (11 insns, 14 call sites) ----
+; ---- fn_ramdac_20 /* sub_0ec02760 @ 0x0EC02760 */  (11 insns, 14 call sites) ----
 ; >>> [R3] FN: via HW:RAMDAC
 ;   callers: sub_0ec00800, sub_0ec06cb0, fn_lance_12 /* sub_0ec097b0 */, sub_0ec09864, fn_lance_13 /* sub_0ec09948 */, fn_video_helper_3 /* sub_0ec0db5c */ (+4)
 ;   calls:   sub_0ec041f4, fn_ramdac_helper_5 /* sub_0ec04404 */
@@ -4977,7 +4977,7 @@
   0ec027dc:  00000000  nop     
   0ec027e0:  3c010ec0  lui     $at, 0xec0
 
-; ---- sub_0ec027e4  (7 insns, 26 call sites) ----
+; ---- fn_lance_20 /* sub_0ec027e4 @ 0x0EC027E4 */  (7 insns, 26 call sites) ----
 ; >>> [R6] FN: helper for via via vtab:0x8D0, HW:LANCE, HW:DUART/video
 ;   callers: fn_duart_2 /* sub_0ec02118 */, sub_0ec0218c, sub_0ec021f4, sub_0ec02220, sub_0ec02254, sub_0ec06cb0 (+10)
   0ec027e4:  ac220c34  sw      $v0, 0xc34($at)
@@ -4993,7 +4993,7 @@
   0ec027fc:  ac200c34  sw      $zero, 0xc34($at)  ; → g_ramdac_c34 /* data_0x0ec00c34 */
   ; >>> [R7] in-fn: helper for via via vtab:0x8D0, HW:LANCE, HW:DUAR
 
-; ---- sub_0ec02800  (21 insns, 16 call sites) ----
+; ---- fn_video_helper_10 /* sub_0ec02800 @ 0x0EC02800 */  (21 insns, 16 call sites) ----
 ; >>> [R2] FN: vtab:0x8D8
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_video_helper_2 /* sub_0ec054a0 */, fn_lance_caller_2 /* sub_0ec05994 */, fn_video_2 /* sub_0ec0a6c4 */, fn_video_3 /* sub_0ec0a7b4 */ (+1)
 ;   calls:   sub_0ec04818
@@ -5033,7 +5033,7 @@
   ; >>> [R2] in-fn: vtab:0x8D8
   0ec02850:  3c030ec0  lui     $v1, 0xec0
 
-; ---- sub_0ec02854  (21 insns, 8 call sites) ----
+; ---- fn_duart_14 /* sub_0ec02854 @ 0x0EC02854 */  (21 insns, 8 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART/memctl/video, HW:video, "Using_Subnet_Mask"
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_duart_access_2 /* sub_0ec01e00 */, fn_video /* sub_0ec0556c */, fn_duart_caller /* sub_0ec05744 */
 ;   calls:   sub_0ec02994, sub_0ec04610
@@ -5072,7 +5072,7 @@
   ; >>> [R6] in-fn: helper for HW:DUART/memctl/video, HW:video, "
   0ec028a4:  8e620c00  lw      $v0, 0xc00($s3)
 
-; ---- sub_0ec028a8  (21 insns, 4 call sites) ----
+; ---- fn_video_helper_11 /* sub_0ec028a8 @ 0x0EC028A8 */  (21 insns, 4 call sites) ----
 ; >>> [R2] FN: vtab:0x8D8
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_video_helper /* sub_0ec03d38 */, fn_video_access /* sub_0ec03d84 */
 ;   calls:   sub_0ec089f0
@@ -5112,7 +5112,7 @@
   ; >>> [R2] in-fn: vtab:0x8D8
   0ec028f8:  afbf001c  sw      $ra, 0x1c($sp)
 
-; ---- sub_0ec028fc  (38 insns, 13 call sites) ----
+; ---- fn_lance_21 /* sub_0ec028fc @ 0x0EC028FC */  (38 insns, 13 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_duart_access_2 /* sub_0ec01e00 */, fn_video_2 /* sub_0ec0a6c4 */, fn_video_3 /* sub_0ec0a7b4 */, sub_0ec153f8 (+1)
 ;   calls:   sub_0ec02994, sub_0ec045b0, fn_ramdac_access_2 /* sub_0ec0471c */, sub_0ec045e0
@@ -5179,7 +5179,7 @@
   0ec0298c:  14400009  bnez    $v0, 0xec029b4
   0ec02990:  28a20005  slti    $v0, $a1, 5
 
-; ---- sub_0ec02994  (24 insns, 4 call sites) ----
+; ---- fn_lance_22 /* sub_0ec02994 @ 0x0EC02994 */  (24 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for "Using_Subnet_Mask", via via HW:LANCE, calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec02854, sub_0ec028fc, fn_printf_caller /* sub_0ec0d18c */
   0ec02994:  0bb0126b  j       0xec049ac
@@ -5221,7 +5221,7 @@
   ; >>> [R7] in-fn: helper for "Using_Subnet_Mask", via via HW:LANCE
   0ec029f0:  1a800050  blez    $s4, 0xec02b34
 
-; ---- sub_0ec029f4  (19 insns, 3 call sites) ----
+; ---- fn_lance_23 /* sub_0ec029f4 @ 0x0EC029F4 */  (19 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for HW:RAMDAC, via HW:LANCE / vtab:0x8EC,0x8F
 ;   callers: fn_ramdac /* sub_0ec009fc */, sub_0ec0f41c
   0ec029f4:  afb00000  sw      $s0, ($sp)
@@ -5254,7 +5254,7 @@
   0ec02a3c:  26520002  addiu   $s2, $s2, 2
   ; >>> [R7] in-fn: helper for HW:RAMDAC, via HW:LANCE / vtab:0x8EC,
 
-; ---- sub_0ec02a40  (82 insns, 1 call sites) ----
+; ---- fn_itr_1 /* sub_0ec02a40 @ 0x0EC02A40 */  (82 insns, 1 call sites) ----
 ; >>> [R2] FN: calls:itr_int_tx_bad_correlato
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   fn_itr_int_tx_bad_correla /* sub_0ec04eac */_int_tx_bad_correlato
@@ -5384,7 +5384,7 @@
   0ec02b80:  afbf0014  sw      $ra, 0x14($sp)
   0ec02b84:  0fb013ab  jal     0xec04eac  ; → fn_itr_int_tx_bad_correla /* sub_0ec04eac */_int_tx_bad_correlato
 
-; ---- sub_0ec02b88  (9 insns, 1 call sites) ----
+; ---- fn_Using_helper_1 /* sub_0ec02b88 @ 0x0EC02B88 */  (9 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ; >>> [R9] FN: unnamed helper
   0ec02b88:  02003021  move    $a2, $s0
@@ -5401,7 +5401,7 @@
   ; >>> [R10] in-fn: sub_0ec02b88
   0ec02ba8:  afa7000c  sw      $a3, 0xc($sp)
 
-; ---- sub_0ec02bac  (20 insns, 0 call sites) ----
+; ---- fn_itr_2 /* sub_0ec02bac @ 0x0EC02BAC */  (20 insns, 0 call sites) ----
 ; >>> [R2] FN: calls:itr_int_tx_bad_correlato
 ;   calls:   fn_itr_int_tx_bad_correla /* sub_0ec04eac */_int_tx_bad_correlato
   ; >>> [R6] fn prologue: allocate stack frame
@@ -5438,7 +5438,7 @@
   0ec02bf8:  12200008  beqz    $s1, 0xec02c1c
   ; >>> [R2] in-fn: calls:itr_int_tx_bad_correlato
 
-; ---- sub_0ec02bfc  (64 insns, 8 call sites) ----
+; ---- fn_max_1 /* sub_0ec02bfc @ 0x0EC02BFC */  (64 insns, 8 call sites) ----
 ; >>> [R2] FN: calls:max_cmds_exceeded,timeout
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   fn_timeout /* sub_0ec04bd8 */, fn_max_cmds_exceeded /* sub_0ec04c5c */_cmds_exceeded
@@ -6637,7 +6637,7 @@
   ; >>> [R7] in-fn: "LANCE_receive_CRC"  HW:RAMDAC  strs:LANCE recei
   0ec037b8:  00021603  sra     $v0, $v0, 0x18
 
-; ---- sub_0ec037bc  (21 insns, 1 call sites) ----
+; ---- fn_Using_helper_2 /* sub_0ec037bc @ 0x0EC037BC */  (21 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ; >>> [R9] FN: unnamed helper
   0ec037bc:  00409021  move    $s2, $v0
@@ -6814,7 +6814,7 @@
   ; >>> [R6] return
   0ec0395c:  03e00008  jr      $ra
 
-; ---- sub_0ec03960  (1 insns, 1 call sites) ----
+; ---- fn_monitor_helper_1 /* sub_0ec03960 @ 0x0EC03960 */  (1 insns, 1 call sites) ----
 ;   callers: fn_monitor_entry /* monitor_entry @ 0x0EC00000 */
 ; >>> [R9] FN: unnamed helper
   0ec03960:  27bd0040  addiu   $sp, $sp, 0x40
@@ -7264,7 +7264,7 @@
   0ec03d68:  00431021  addu    $v0, $v0, $v1
   0ec03d6c:  3c010ec0  lui     $at, 0xec0
 
-; ---- sub_0ec03d70  (5 insns, 1 call sites) ----
+; ---- fn_Mount_helper_6 /* sub_0ec03d70 @ 0x0EC03D70 */  (5 insns, 1 call sites) ----
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ; >>> [R9] FN: unnamed helper
   0ec03d70:  ac22146c  sw      $v0, 0x146c($at)
@@ -7308,7 +7308,7 @@
   0ec03dbc:  00000000  nop     
   ; >>> [R7] in-fn: HW:video
 
-; ---- sub_0ec03dc0  (16 insns, 0 call sites) ----
+; ---- fn_lance_24 /* sub_0ec03dc0 @ 0x0EC03DC0 */  (16 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   calls:   fn_lance_access /* sub_0ec06038 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -7337,7 +7337,7 @@
   ; >>> [R7] in-fn: via via HW:LANCE
   0ec03dfc:  02002021  move    $a0, $s0
 
-; ---- sub_0ec03e00  (32 insns, 1 call sites) ----
+; ---- fn_Using_helper_3 /* sub_0ec03e00 @ 0x0EC03E00 */  (32 insns, 1 call sites) ----
 ; >>> [R4] FN: via via HW:video
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec06334
@@ -7391,7 +7391,7 @@
   ; >>> [R7] in-fn: via via HW:video
   0ec03e7c:  00021403  sra     $v0, $v0, 0x10
 
-; ---- sub_0ec03e80  (51 insns, 1 call sites) ----
+; ---- fn_Using_helper_4 /* sub_0ec03e80 @ 0x0EC03E80 */  (51 insns, 1 call sites) ----
 ; >>> [R4] FN: via via HW:video
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec06334
@@ -7607,7 +7607,7 @@
   0ec04078:  04600005  bltz    $v1, 0xec04090
   ; >>> [R7] in-fn: HW:RAMDAC
 
-; ---- sub_0ec0407c  (33 insns, 12 call sites) ----
+; ---- fn_duart_15 /* sub_0ec0407c @ 0x0EC0407C */  (33 insns, 12 call sites) ----
 ; >>> [R6] FN: helper for via vtab:0x8D0, vtab:0x8E0, via HW:DUART / HW:video / call
 ;   callers: fn_duart_access_9 /* sub_0ec0c360 */, sub_0ec0f558, sub_0ec0f690, fn_duart_access_10 /* sub_0ec0f710 */
   0ec0407c:  00000000  nop     
@@ -7673,7 +7673,7 @@
   ; >>> [R10] in-fn: sub_0ec04100
   0ec04114:  24a50001  addiu   $a1, $a1, 1
 
-; ---- sub_0ec04118  (15 insns, 8 call sites) ----
+; ---- fn_Mount_helper_7 /* sub_0ec04118 @ 0x0EC04118 */  (15 insns, 8 call sites) ----
 ;   callers: sub_0ec0218c, sub_0ec021f4, sub_0ec02220, sub_0ec02254
 ; >>> [R9] FN: unnamed helper
   0ec04118:  84c300bc  lh      $v1, 0xbc($a2)
@@ -7731,7 +7731,7 @@
   ; >>> [R10] in-fn: sub_0ec04154
   0ec04188:  00000000  nop     
 
-; ---- sub_0ec0418c  (26 insns, 7 call sites) ----
+; ---- fn_Mount_helper_8 /* sub_0ec0418c @ 0x0EC0418C */  (26 insns, 7 call sites) ----
 ; >>> [R4] FN: via via HW:video
 ;   callers: sub_0ec022cc, sub_0ec0233c, sub_0ec02364, sub_0ec0237c, sub_0ec023a0, sub_0ec023dc
 ;   calls:   sub_0ec06334, sub_0ec06440
@@ -7775,7 +7775,7 @@
   0ec041ec:  00022c00  sll     $a1, $v0, 0x10
   0ec041f0:  00051403  sra     $v0, $a1, 0x10
 
-; ---- sub_0ec041f4  (24 insns, 13 call sites) ----
+; ---- fn_ramdac_21 /* sub_0ec041f4 @ 0x0EC041F4 */  (24 insns, 13 call sites) ----
 ; >>> [R6] FN: helper for via via via HW:video, via HW:RAMDAC
 ;   callers: sub_0ec0233c, sub_0ec02358, sub_0ec02370, sub_0ec0237c, sub_0ec023a0, sub_0ec023b8 (+4)
 ;   calls:   sub_0ec06440
@@ -7816,7 +7816,7 @@
   ; >>> [R7] in-fn: helper for via via via HW:video, via HW:RAMDAC
   0ec04250:  00021400  sll     $v0, $v0, 0x10
 
-; ---- sub_0ec04254  (22 insns, 2 call sites) ----
+; ---- fn_ramdac_22 /* sub_0ec04254 @ 0x0EC04254 */  (22 insns, 2 call sites) ----
 ; >>> [R3] FN: via HW:RAMDAC
 ;   callers: fn_ramdac_caller_3 /* sub_0ec02628 */
 ;   calls:   fn_ramdac_helper_7 /* sub_0ec062a0 */
@@ -8092,7 +8092,7 @@
   ; >>> [R10] in-fn: sub_0ec04474
   0ec044e4:  31220001  andi    $v0, $t1, 1
 
-; ---- sub_0ec044e8  (50 insns, 2 call sites) ----
+; ---- fn_ramdac_23 /* sub_0ec044e8 @ 0x0EC044E8 */  (50 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for via HW:RAMDAC
 ;   callers: fn_ramdac_caller_4 /* sub_0ec026c4 */, fn_ramdac_caller_5 /* sub_0ec0278c */
   0ec044e8:  1440000b  bnez    $v0, 0xec04518
@@ -8174,7 +8174,7 @@
   0ec045ac:  a10b0000  sb      $t3, ($t0)
   ; >>> [R6] in-fn: helper for via HW:RAMDAC
 
-; ---- sub_0ec045b0  (12 insns, 1 call sites) ----
+; ---- fn_lance_helper_80 /* sub_0ec045b0 @ 0x0EC045B0 */  (12 insns, 1 call sites) ----
 ;   callers: sub_0ec028fc
 ; >>> [R9] FN: unnamed helper
   0ec045b0:  10600003  beqz    $v1, 0xec045c0
@@ -8199,7 +8199,7 @@
   ; >>> [R10] in-fn: sub_0ec045b0
   0ec045dc:  1040ffe4  beqz    $v0, 0xec04570
 
-; ---- sub_0ec045e0  (12 insns, 1 call sites) ----
+; ---- fn_lance_helper_81 /* sub_0ec045e0 @ 0x0EC045E0 */  (12 insns, 1 call sites) ----
 ;   callers: sub_0ec028fc
 ; >>> [R9] FN: unnamed helper
   0ec045e0:  25290008  addiu   $t1, $t1, 8
@@ -8222,7 +8222,7 @@
   ; >>> [R10] in-fn: sub_0ec045e0
   0ec0460c:  10ec001d  beq     $a3, $t4, 0xec04684
 
-; ---- sub_0ec04610  (45 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_42 /* sub_0ec04610 @ 0x0EC04610 */  (45 insns, 2 call sites) ----
 ;   callers: sub_0ec02734, sub_0ec02854
 ; >>> [R9] FN: unnamed helper
   0ec04610:  00000000  nop     
@@ -8303,7 +8303,7 @@
   ; >>> [R10] in-fn: sub_0ec04610
   0ec046c0:  3c140ec0  lui     $s4, 0xec0
 
-; ---- sub_0ec046c4  (22 insns, 1 call sites) ----
+; ---- fn_ramdac_24 /* sub_0ec046c4 @ 0x0EC046C4 */  (22 insns, 1 call sites) ----
 ;   callers: sub_0ec02734
 ;   calls:   sub_0ec06814
 ; >>> [R9] FN: unnamed helper
@@ -8418,7 +8418,7 @@
   ; >>> [R13] data 0x0EC00C30: const-from-ROM?/HW:RAMDAC
   0ec047bc:  94c60c30  lhu     $a2, 0xc30($a2)  ; → g_ramdac_c30 /* data_0x0ec00c30 */
 
-; ---- sub_0ec047c0  (21 insns, 1 call sites) ----
+; ---- fn_Using_helper_5 /* sub_0ec047c0 @ 0x0EC047C0 */  (21 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ; >>> [R9] FN: unnamed helper
   0ec047c0:  26310008  addiu   $s1, $s1, 8
@@ -8462,7 +8462,7 @@
   ; >>> [R6] fn prologue: allocate stack frame
   0ec04814:  27bdffe8  addiu   $sp, $sp, -0x18
 
-; ---- sub_0ec04818  (12 insns, 8 call sites) ----
+; ---- fn_lance_25 /* sub_0ec04818 @ 0x0EC04818 */  (12 insns, 8 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   callers: fn_monitor_entry /* monitor_entry @ 0x0EC00000 */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_duart_access /* sub_0ec01cc4 */, sub_0ec02800, fn_ramdac_2 /* sub_0ec05ba4 */, fn_duart_access_9 /* sub_0ec0c360 */ (+1)
 ;   calls:   fn_lance_access /* sub_0ec06038 */
@@ -8547,7 +8547,7 @@
   ; >>> [R7] in-fn: via via calls:printf
   0ec048d4:  26100001  addiu   $s0, $s0, 1
 
-; ---- sub_0ec048d8  (42 insns, 4 call sites) ----
+; ---- fn_lance_helper_82 /* sub_0ec048d8 @ 0x0EC048D8 */  (42 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via via via calls:printf
 ;   callers: fn_lance_caller_2 /* sub_0ec05994 */, sub_0ec0b100, sub_0ec0c6c4, sub_0ec0da94
 ;   calls:   sub_0ec0838c, sub_0ec0d980
@@ -8619,7 +8619,7 @@
   0ec04978:  8fb20018  lw      $s2, 0x18($sp)
   0ec0497c:  8fb10014  lw      $s1, 0x14($sp)
 
-; ---- sub_0ec04980  (20 insns, 48 call sites) ----
+; ---- fn_lance_26 /* sub_0ec04980 @ 0x0EC04980 */  (20 insns, 48 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf, "Using_Subnet_Mask"
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_duart_caller /* sub_0ec05744 */, fn_duart_10 /* sub_0ec07608 */, fn_lance_4 /* sub_0ec08200 */, fn_lance_6 /* sub_0ec0844c */, sub_0ec0b100 (+33)
   0ec04980:  8fb00010  lw      $s0, 0x10($sp)
@@ -8821,7 +8821,7 @@
   ; >>> [R23] in-fn: sub_0ec04b08, calls: 2
   0ec04b4c:  02402821  move    $a1, $s2
 
-; ---- sub_0ec04b50  (4 insns, 2 call sites) ----
+; ---- fn_lance_27 /* sub_0ec04b50 @ 0x0EC04B50 */  (4 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for "LANCE_receive_CRC"
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC
   0ec04b50:  3c110ec2  lui     $s1, 0xec2
@@ -8831,7 +8831,7 @@
   ; >>> [R7] in-fn: helper for "LANCE_receive_CRC"
   0ec04b5c:  94c60bb8  lhu     $a2, 0xbb8($a2)  ; → data_0x0ec00bb8
 
-; ---- sub_0ec04b60  (16 insns, 12 call sites) ----
+; ---- fn_ramdac_25 /* sub_0ec04b60 @ 0x0EC04B60 */  (16 insns, 12 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf / vtab:0x880, HW:RAMDAC
 ;   callers: fn_printf_caller_2 /* sub_0ec0ff80 */, fn_ramdac_access_9 /* sub_0ec11928 */, fn_lance_access_13 /* sub_0ec127f4 */, fn_printf_caller_3 /* sub_0ec12f38 */, fn_printf_caller_4 /* sub_0ec1312c */, sub_0ec178d0
 ;   calls:   sub_0ec04ba0
@@ -8863,7 +8863,7 @@
   ; >>> [R7] in-fn: helper for calls:printf, via calls:printf / vtab
   0ec04b9c:  02202021  move    $a0, $s1
 
-; ---- sub_0ec04ba0  (14 insns, 252 call sites) ----
+; ---- fn_lance_helper_83 /* sub_0ec04ba0 @ 0x0EC04BA0 */  (14 insns, 252 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf, "itr_int_tx_bad_correlato"
 ;   callers: fn_ramdac /* sub_0ec009fc */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_duart_access_2 /* sub_0ec01e00 */, fn_duart_access_3 /* sub_0ec02474 */, fn_ramdac_caller_3 /* sub_0ec02628 */ (+86)
 ;   calls:   sub_0ec04ba0
@@ -9639,7 +9639,7 @@
   ; >>> [R6] branch delay-slot
   0ec0527c:  00000000  nop     
 
-; ---- sub_0ec05280  (13 insns, 6 call sites) ----
+; ---- fn_duart_16 /* sub_0ec05280 @ 0x0EC05280 */  (13 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART, HW:LANCE
 ;   callers: fn_duart_10 /* sub_0ec07608 */, sub_0ec0838c, fn_lance_8 /* sub_0ec0851c */, sub_0ec1a9f8, sub_0ec1b3b0
 ;   calls:   sub_0ec04ba0
@@ -9669,7 +9669,7 @@
   ; >>> [R6] branch delay-slot
   0ec052b0:  00000000  nop     
 
-; ---- sub_0ec052b4  (5 insns, 0 call sites) ----
+; ---- fn_lance_28 /* sub_0ec052b4 @ 0x0EC052B4 */  (5 insns, 0 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   calls:   fn_duart_access_6 /* sub_0ec08098 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -9682,7 +9682,7 @@
   0ec052c0:  00000000  nop     
   0ec052c4:  3c020ec0  lui     $v0, 0xec0
 
-; ---- sub_0ec052c8  (10 insns, 17 call sites) ----
+; ---- fn_lance_29 /* sub_0ec052c8 @ 0x0EC052C8 */  (10 insns, 17 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, "LANCE_receive_CRC", via calls:printf / vtab:0
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, fn_printf_caller_3 /* sub_0ec0fd50 */, fn_printf_caller_2 /* sub_0ec0ff80 */, fn_ramdac_access_8 /* sub_0ec110ac */, sub_0ec11330, fn_printf_caller_6 /* sub_0ec12234 */ (+5)
 ;   calls:   sub_0ec0d980
@@ -9704,7 +9704,7 @@
   0ec052ec:  3c020ec0  lui     $v0, 0xec0
   ; >>> [R6] in-fn: helper for calls:printf, "LANCE_receive_CRC",
 
-; ---- sub_0ec052f0  (8 insns, 7 call sites) ----
+; ---- fn_printf_helper_31 /* sub_0ec052f0 @ 0x0EC052F0 */  (8 insns, 7 call sites) ----
 ; >>> [R2] FN: vtab:0x880
 ;   callers: fn_printf_caller_3 /* sub_0ec0fd50 */, fn_printf_caller_2 /* sub_0ec0ff80 */, sub_0ec10154, sub_0ec11330, fn_lance_access_14 /* sub_0ec12cd4 */, sub_0ec14a30
   ; >>> [R1] Monitor vtable load (0x0EC00880)
@@ -9723,7 +9723,7 @@
   ; >>> [R6] branch delay-slot
   0ec0530c:  00000000  nop     
 
-; ---- sub_0ec05310  (11 insns, 1 call sites) ----
+; ---- fn_lance_helper_117 /* sub_0ec05310 @ 0x0EC05310 */  (11 insns, 1 call sites) ----
 ;   callers: sub_0ec1a48c
   ; >>> [R6] fn prologue: allocate stack frame
   0ec05310:  27bdff28  addiu   $sp, $sp, -0xd8
@@ -9862,7 +9862,7 @@
   0ec05438:  3c040ec2  lui     $a0, 0xec2
   0ec0543c:  2484e654  addiu   $a0, $a0, -0x19ac  ; → data_0x0ec1e654
 
-; ---- sub_0ec05440  (24 insns, 7 call sites) ----
+; ---- fn_printf_helper_32 /* sub_0ec05440 @ 0x0EC05440 */  (24 insns, 7 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, vtab:0x8D0, via calls:printf
 ;   callers: sub_0ec133c0, fn_printf_caller_9 /* sub_0ec13530 */, fn_printf_caller_10 /* sub_0ec136dc */, sub_0ec137d4, sub_0ec138dc, fn_printf_caller_14 /* sub_0ec1459c */ (+1)
 ;   calls:   sub_0ec04ba0, sub_0ec0d8fc, sub_0ec0d880, sub_0ec0e9e4
@@ -9970,7 +9970,7 @@
   ; >>> [R7] in-fn: HW:video
   0ec0552c:  0bb01ed3  j       0xec07b4c
 
-; ---- sub_0ec05530  (15 insns, 21 call sites) ----
+; ---- fn_duart_helper_45 /* sub_0ec05530 @ 0x0EC05530 */  (15 insns, 21 call sites) ----
 ; >>> [R6] FN: helper for via HW:video, via via calls:printf, "Keyboard_Controller_UW_
 ;   callers: sub_0ec07bf0, sub_0ec07c54, sub_0ec07c60, sub_0ec07cb4, sub_0ec07cfc, fn_video_caller /* sub_0ec08a44 */ (+1)
   0ec05530:  00000000  nop     
@@ -10433,7 +10433,7 @@
   ; >>> [R6] branch delay-slot
   0ec05960:  00000000  nop     
 
-; ---- sub_0ec05964  (12 insns, 2 call sites) ----
+; ---- fn_LANCE_helper_3 /* sub_0ec05964 @ 0x0EC05964 */  (12 insns, 2 call sites) ----
 ; >>> [R3] FN: via vtab:0x8D0
 ;   callers: fn_LANCE_receive_CRC_2 /* sub_0ec0399c */_receive_CRC
 ;   calls:   sub_0ec0e054, sub_0ec11510, sub_0ec0e360
@@ -10866,7 +10866,7 @@
   0ec05d2c:  960406a6  lhu     $a0, 0x6a6($s0)  ; → g_const_6a6 /* data_0x0ec006a6 */
   ; >>> [R7] in-fn: HW:DUART
 
-; ---- sub_0ec05d30  (21 insns, 6 call sites) ----
+; ---- fn_duart_17 /* sub_0ec05d30 @ 0x0EC05D30 */  (21 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART, "Using_Subnet_Mask", "Mount_failed"
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_duart_3 /* sub_0ec05cb4 */, fn_duart_6 /* sub_0ec06de0 */, sub_0ec0a164, fn_printf_caller /* sub_0ec0d18c */
 ;   calls:   sub_0ec0d67c, sub_0ec07b8c
@@ -11169,7 +11169,7 @@
   0ec06000:  27bd0030  addiu   $sp, $sp, 0x30
   ; >>> [R2] in-fn: HW:DUART
 
-; ---- sub_0ec06004  (13 insns, 0 call sites) ----
+; ---- fn_lance_30 /* sub_0ec06004 @ 0x0EC06004 */  (13 insns, 0 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   calls:   fn_duart_access_6 /* sub_0ec08098 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -11546,7 +11546,7 @@
   0ec0632c:  afb20018  sw      $s2, 0x18($sp)
   0ec06330:  00021782  srl     $v0, $v0, 0x1e
 
-; ---- sub_0ec06334  (22 insns, 6 call sites) ----
+; ---- fn_video_8 /* sub_0ec06334 @ 0x0EC06334 */  (22 insns, 6 call sites) ----
 ; >>> [R3] FN: via HW:video
 ;   callers: sub_0ec03e00, sub_0ec03e80, sub_0ec0418c
 ;   calls:   fn_video_helper_2 /* sub_0ec054a0 */
@@ -11667,7 +11667,7 @@
   ; >>> [R7] in-fn: via via via calls:printf
   0ec0643c:  8fb10014  lw      $s1, 0x14($sp)
 
-; ---- sub_0ec06440  (3 insns, 4 call sites) ----
+; ---- fn_lance_31 /* sub_0ec06440 @ 0x0EC06440 */  (3 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for via HW:LANCE, via via HW:video
 ;   callers: sub_0ec0418c, sub_0ec041f4, fn_ramdac_access_2 /* sub_0ec0471c */
   0ec06440:  8fb00010  lw      $s0, 0x10($sp)
@@ -11676,7 +11676,7 @@
   0ec06448:  27bd0020  addiu   $sp, $sp, 0x20
   ; >>> [R7] in-fn: helper for via HW:LANCE, via via HW:video
 
-; ---- sub_0ec0644c  (27 insns, 0 call sites) ----
+; ---- fn_duart_18 /* sub_0ec0644c @ 0x0EC0644C */  (27 insns, 0 call sites) ----
 ;   calls:   sub_0ec0838c, fn_duart_access_7 /* sub_0ec083e0 */
   ; >>> [R6] fn prologue: allocate stack frame
   0ec0644c:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -12070,7 +12070,7 @@
   0ec06810:  00021400  sll     $v0, $v0, 0x10
   ; >>> [R7] in-fn: HW:RAMDAC
 
-; ---- sub_0ec06814  (6 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_43 /* sub_0ec06814 @ 0x0EC06814 */  (6 insns, 2 call sites) ----
 ;   callers: sub_0ec04154, sub_0ec046c4
 ; >>> [R9] FN: unnamed helper
   0ec06814:  00021403  sra     $v0, $v0, 0x10
@@ -12387,7 +12387,7 @@
   0ec06b04:  00021400  sll     $v0, $v0, 0x10
   ; >>> [R2] in-fn: HW:RAMDAC
 
-; ---- sub_0ec06b08  (9 insns, 1 call sites) ----
+; ---- fn_duart_helper_46 /* sub_0ec06b08 @ 0x0EC06B08 */  (9 insns, 1 call sites) ----
 ;   callers: fn_duart_caller /* sub_0ec05744 */
 ; >>> [R9] FN: unnamed helper
   0ec06b08:  0441ffe1  bgez    $v0, 0xec06a90
@@ -12565,7 +12565,7 @@
   0ec06ca8:  03e00008  jr      $ra
   0ec06cac:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_0ec06cb0  (76 insns, 0 call sites) ----
+; ---- fn_duart_19 /* sub_0ec06cb0 @ 0x0EC06CB0 */  (76 insns, 0 call sites) ----
 ; >>> [R2] FN: HW:DUART/video
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec02760, sub_0ec023a0, sub_0ec02708, sub_0ec08d20, sub_0ec027e4, sub_0ec173f8
   ; >>> [R6] fn prologue: allocate stack frame
@@ -12965,7 +12965,7 @@
   0ec07068:  80650000  lb      $a1, ($v1)  ; → g_state_000 /* data_0x0ec00000 */
   ; >>> [R7] in-fn: HW:DUART
 
-; ---- sub_0ec0706c  (5 insns, 3 call sites) ----
+; ---- fn_duart_20 /* sub_0ec0706c @ 0x0EC0706C */  (5 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via via calls:printf, via HW:DUART / HW:video / call
 ;   callers: sub_0ec05080, sub_0ec0c31c, fn_duart_access_9 /* sub_0ec0c360 */
 ;   calls:   sub_0ec08d20
@@ -13224,7 +13224,7 @@
   0ec072b0:  a62206a2  sh      $v0, 0x6a2($s1)
   ; >>> [R7] in-fn: HW:DUART
 
-; ---- sub_0ec072b4  (23 insns, 6 call sites) ----
+; ---- fn_lance_32 /* sub_0ec072b4 @ 0x0EC072B4 */  (23 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for HW:video, via vtab:0x8F4 / calls:printf, HW:LANCE
 ;   callers: fn_duart_caller /* sub_0ec05744 */, sub_0ec0cc18, sub_0ec0cc90, sub_0ec0ccec, fn_lance_14 /* sub_0ec0ce60 */, sub_0ec0d44c
 ;   calls:   sub_0ec08d20
@@ -14203,7 +14203,7 @@
   0ec07b84:  0fb05b19  jal     0xec16c64  ; → sub_0ec16c64
   0ec07b88:  02202021  move    $a0, $s1
 
-; ---- sub_0ec07b8c  (6 insns, 2 call sites) ----
+; ---- fn_lance_helper_84 /* sub_0ec07b8c @ 0x0EC07B8C */  (6 insns, 2 call sites) ----
 ;   callers: fn_lance_caller_2 /* sub_0ec05994 */, sub_0ec05d30
 ; >>> [R9] FN: unnamed helper
   0ec07b8c:  02001021  move    $v0, $s0
@@ -14295,7 +14295,7 @@
   ; >>> [R23] in-fn: sub_0ec07bf0, calls: 7
   0ec07c50:  00402021  move    $a0, $v0
 
-; ---- sub_0ec07c54  (3 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_44 /* sub_0ec07c54 @ 0x0EC07C54 */  (3 insns, 1 call sites) ----
 ;   callers: fn_ramdac_access_5 /* sub_0ec0c054 */
 ;   calls:   sub_0ec05530
 ; >>> [R9] FN: unnamed helper
@@ -14303,7 +14303,7 @@
   0ec07c58:  24849b0c  addiu   $a0, $a0, -0x64f4  ; → data_0x0ec09b0c
   0ec07c5c:  0fb0154c  jal     0xec05530  ; → sub_0ec05530
 
-; ---- sub_0ec07c60  (14 insns, 3 call sites) ----
+; ---- fn_ramdac_helper_45 /* sub_0ec07c60 @ 0x0EC07C60 */  (14 insns, 3 call sites) ----
 ; >>> [R4] FN: via via calls:printf
 ;   callers: fn_ramdac_helper_8 /* sub_0ec064b8 */, fn_Keyboard_Controller_UW /* sub_0ec08e5c */_Controller_UW_1, fn_lance_14 /* sub_0ec0ce60 */
 ;   calls:   sub_0ec05530, sub_0ec09b0c, sub_0ec09ac0
@@ -14344,7 +14344,7 @@
   0ec07cac:  0fb02366  jal     0xec08d98  ; → sub_0ec08d98
   0ec07cb0:  afb00010  sw      $s0, 0x10($sp)
 
-; ---- sub_0ec07cb4  (18 insns, 2 call sites) ----
+; ---- fn_duart_21 /* sub_0ec07cb4 @ 0x0EC07CB4 */  (18 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART, via via via calls:printf
 ;   callers: fn_duart_4 /* sub_0ec05d84 */, sub_0ec063e0
 ;   calls:   sub_0ec05530, sub_0ec09488, sub_0ec09548, sub_0ec09608
@@ -15134,7 +15134,7 @@
   0ec08384:  2404006a  addiu   $a0, $zero, 0x6a
   0ec08388:  960306a4  lhu     $v1, 0x6a4($s0)
 
-; ---- sub_0ec0838c  (21 insns, 15 call sites) ----
+; ---- fn_lance_33 /* sub_0ec0838c @ 0x0EC0838C */  (21 insns, 15 call sites) ----
 ; >>> [R6] FN: helper for "LANCE_receive_CRC", HW:RAMDAC, "Keyboard_Controller_UW_1"
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, sub_0ec048d8, sub_0ec0644c, fn_Keyboard_Controller_UW /* sub_0ec08e5c */_Controller_UW_1, sub_0ec0b8bc, sub_0ec0b8dc (+4)
 ;   calls:   sub_0ec16c64, sub_0ec05280
@@ -15829,7 +15829,7 @@
   0ec089e8:  30420040  andi    $v0, $v0, 0x40
   0ec089ec:  1440000c  bnez    $v0, 0xec08a20
 
-; ---- sub_0ec089f0  (14 insns, 3 call sites) ----
+; ---- fn_Using_helper_6 /* sub_0ec089f0 @ 0x0EC089F0 */  (14 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for "Using_Subnet_Mask", vtab:0x8D8
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec028a8
 ;   calls:   sub_0ec16c64, sub_0ec027e4
@@ -15855,7 +15855,7 @@
   0ec08a20:  0fb05b19  jal     0xec16c64  ; → sub_0ec16c64
   0ec08a24:  02402021  move    $a0, $s2
 
-; ---- sub_0ec08a28  (7 insns, 1 call sites) ----
+; ---- fn_Using_helper_7 /* sub_0ec08a28 @ 0x0EC08A28 */  (7 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ; >>> [R9] FN: unnamed helper
   0ec08a28:  24020001  addiu   $v0, $zero, 1
@@ -16126,7 +16126,7 @@
   0ec08ca8:  06200010  bltz    $s1, 0xec08cec
   0ec08cac:  00a08021  move    $s0, $a1
 
-; ---- sub_0ec08cb0  (28 insns, 46 call sites) ----
+; ---- fn_duart_22 /* sub_0ec08cb0 @ 0x0EC08CB0 */  (28 insns, 46 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART, HW:DUART/LANCE, HW:LANCE
 ;   callers: fn_duart_access_4 /* sub_0ec05c68 */, fn_duart_3 /* sub_0ec05cb4 */, fn_duart_4 /* sub_0ec05d84 */, fn_duart_5 /* sub_0ec06b2c */, fn_duart_6 /* sub_0ec06de0 */, fn_duart_7 /* sub_0ec07080 */ (+9)
 ;   calls:   sub_0ec0ac10
@@ -16174,7 +16174,7 @@
   ; >>> [R7] in-fn: helper for HW:DUART, HW:DUART/LANCE, HW:LANCE
   0ec08d1c:  24030001  addiu   $v1, $zero, 1
 
-; ---- sub_0ec08d20  (30 insns, 91 call sites) ----
+; ---- fn_duart_23 /* sub_0ec08d20 @ 0x0EC08D20 */  (30 insns, 91 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE, HW:DUART, HW:DUART/LANCE
 ;   callers: fn_duart /* sub_0ec00c4c */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_duart_4 /* sub_0ec05d84 */, fn_duart_5 /* sub_0ec06b2c */, sub_0ec06cb0 (+22)
   0ec08d20:  8e020000  lw      $v0, ($s0)
@@ -16223,7 +16223,7 @@
   0ec08d94:  3c140ec2  lui     $s4, 0xec2
   ; >>> [R6] in-fn: helper for HW:LANCE, HW:DUART, HW:DUART/LANCE
 
-; ---- sub_0ec08d98  (44 insns, 19 call sites) ----
+; ---- fn_duart_24 /* sub_0ec08d98 @ 0x0EC08D98 */  (44 insns, 19 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART, via strs:0123456789ABCDEF, "Mount_failed"
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed, sub_0ec07408, sub_0ec07488, sub_0ec07548, fn_duart_10 /* sub_0ec07608 */, sub_0ec07bf0 (+1)
 ;   calls:   sub_0ec0ac10
@@ -16956,7 +16956,7 @@
   ; >>> [R10] in-fn: sub_0ec09408
   0ec09484:  24a2fff0  addiu   $v0, $a1, -0x10
 
-; ---- sub_0ec09488  (32 insns, 1 call sites) ----
+; ---- fn_duart_helper_47 /* sub_0ec09488 @ 0x0EC09488 */  (32 insns, 1 call sites) ----
 ;   callers: sub_0ec07cb4
 ; >>> [R9] FN: unnamed helper
   0ec09488:  2c420002  sltiu   $v0, $v0, 2
@@ -17050,7 +17050,7 @@
   ; >>> [R10] in-fn: sub_0ec09508
   0ec09544:  ac820000  sw      $v0, ($a0)
 
-; ---- sub_0ec09548  (32 insns, 1 call sites) ----
+; ---- fn_duart_helper_48 /* sub_0ec09548 @ 0x0EC09548 */  (32 insns, 1 call sites) ----
 ;   callers: sub_0ec07cb4
 ;   calls:   sub_0ec04ba0
 ; >>> [R23] in-fn: sub_0ec09548, calls: 2
@@ -17138,7 +17138,7 @@
   ; >>> [R10] in-fn: sub_0ec095c8
   0ec09604:  8c530000  lw      $s3, ($v0)
 
-; ---- sub_0ec09608  (16 insns, 1 call sites) ----
+; ---- fn_duart_helper_49 /* sub_0ec09608 @ 0x0EC09608 */  (16 insns, 1 call sites) ----
 ;   callers: sub_0ec07cb4
 ; >>> [R9] FN: unnamed helper
   0ec09608:  02e08821  move    $s1, $s7
@@ -17171,7 +17171,7 @@
   ; >>> [R6] branch delay-slot
   0ec09644:  00000000  nop     
 
-; ---- sub_0ec09648  (87 insns, 4 call sites) ----
+; ---- fn_duart_25 /* sub_0ec09648 @ 0x0EC09648 */  (87 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART
 ;   callers: fn_duart_10 /* sub_0ec07608 */
 ;   calls:   sub_0ec04ba0
@@ -17313,7 +17313,7 @@
   0ec097a0:  03e00008  jr      $ra
   ; >>> [R7] in-fn: helper for HW:DUART
 
-; ---- sub_0ec097a4  (3 insns, 4 call sites) ----
+; ---- fn_duart_26 /* sub_0ec097a4 @ 0x0EC097A4 */  (3 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for HW:DUART
 ;   callers: fn_duart_10 /* sub_0ec07608 */
   0ec097a4:  27bd0218  addiu   $sp, $sp, 0x218
@@ -17399,7 +17399,7 @@
   0ec0985c:  03e00008  jr      $ra
   0ec09860:  27bd0018  addiu   $sp, $sp, 0x18
 
-; ---- sub_0ec09864  (39 insns, 0 call sites) ----
+; ---- fn_lance_34 /* sub_0ec09864 @ 0x0EC09864 */  (39 insns, 0 call sites) ----
 ; >>> [R2] FN: HW:LANCE/video
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec02760, sub_0ec023a0, sub_0ec02734, sub_0ec173f8
   ; >>> [R6] fn prologue: allocate stack frame
@@ -17567,7 +17567,7 @@
   0ec099d8:  0fb009d8  jal     0xec02760  ; → sub_0ec02760
   0ec099dc:  24050004  addiu   $a1, $zero, 4
 
-; ---- sub_0ec099e0  (56 insns, 2 call sites) ----
+; ---- fn_duart_27 /* sub_0ec099e0 @ 0x0EC099E0 */  (56 insns, 2 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: sub_0ec07b58, sub_0ec07ba4
 ;   calls:   sub_0ec023a0, sub_0ec0bb8c, sub_0ec0c6c4
@@ -17668,7 +17668,7 @@
   ; >>> [R7] in-fn: via calls:printf
   0ec09abc:  02202821  move    $a1, $s1
 
-; ---- sub_0ec09ac0  (19 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_46 /* sub_0ec09ac0 @ 0x0EC09AC0 */  (19 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: sub_0ec07c60
 ;   calls:   sub_0ec04ba0, sub_0ec0f650, sub_0ec0c6c4
@@ -17706,7 +17706,7 @@
   0ec09b08:  00000000  nop     
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec09b0c  (19 insns, 1 call sites) ----
+; ---- fn_lance_35 /* sub_0ec09b0c @ 0x0EC09B0C */  (19 insns, 1 call sites) ----
 ; >>> [R4] FN: via via vtab:0x8D0 / HW:LANCE
 ;   callers: sub_0ec07c60
 ;   calls:   sub_0ec04ba0, sub_0ec0f650
@@ -17743,7 +17743,7 @@
   0ec09b54:  10400007  beqz    $v0, 0xec09b74
   ; >>> [R7] in-fn: via via vtab:0x8D0 / HW:LANCE
 
-; ---- sub_0ec09b58  (13 insns, 1 call sites) ----
+; ---- fn_lance_36 /* sub_0ec09b58 @ 0x0EC09B58 */  (13 insns, 1 call sites) ----
 ; >>> [R4] FN: via via vtab:0x8D0 / HW:LANCE
 ;   callers: sub_0ec07cfc
 ;   calls:   sub_0ec04ba0, sub_0ec0f650
@@ -17960,7 +17960,7 @@
   0ec09d3c:  8e030674  lw      $v1, 0x674($s0)  ; → data_0x0ec00674
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec09d40  (52 insns, 2 call sites) ----
+; ---- fn_Using_helper_8 /* sub_0ec09d40 @ 0x0EC09D40 */  (52 insns, 2 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_ramdac_access_7 /* sub_0ec0cb00 */
 ;   calls:   sub_0ec023a0, sub_0ec0c6c4
@@ -18051,7 +18051,7 @@
   ; >>> [R6] branch delay-slot
   0ec09e0c:  00000000  nop     
 
-; ---- sub_0ec09e10  (213 insns, 1 call sites) ----
+; ---- fn_Mount_helper_9 /* sub_0ec09e10 @ 0x0EC09E10 */  (213 insns, 1 call sites) ----
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec0ba10
 ; >>> [R23] in-fn: sub_0ec09e10, g_const x16
@@ -18454,7 +18454,7 @@
   ; >>> [R13] data 0x0EC006A6: init-then-read/unnamed helper
   0ec0a160:  94a406a6  lhu     $a0, 0x6a6($a1)  ; → g_const_6a6 /* data_0x0ec006a6 */
 
-; ---- sub_0ec0a164  (25 insns, 2 call sites) ----
+; ---- fn_lance_37 /* sub_0ec0a164 @ 0x0EC0A164 */  (25 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE
 ;   callers: fn_lance_4 /* sub_0ec08200 */
 ;   calls:   sub_0ec05d30
@@ -18500,7 +18500,7 @@
   0ec0a1c0:  afbf0028  sw      $ra, 0x28($sp)
   0ec0a1c4:  0fb0174c  jal     0xec05d30  ; → sub_0ec05d30
 
-; ---- sub_0ec0a1c8  (25 insns, 5 call sites) ----
+; ---- fn_lance_38 /* sub_0ec0a1c8 @ 0x0EC0A1C8 */  (25 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE, "Using_Subnet_Mask", "Mount_failed"
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_Mount_failed /* sub_0ec01810 */_failed, fn_lance_4 /* sub_0ec08200 */, fn_lance_6 /* sub_0ec0844c */, fn_lance_8 /* sub_0ec0851c */
   0ec0a1c8:  00000000  nop     
@@ -18545,7 +18545,7 @@
   0ec0a224:  8e020bd0  lw      $v0, 0xbd0($s0)
   0ec0a228:  3c037f00  lui     $v1, 0x7f00
 
-; ---- sub_0ec0a22c  (115 insns, 1 call sites) ----
+; ---- fn_video_helper_12 /* sub_0ec0a22c @ 0x0EC0A22C */  (115 insns, 1 call sites) ----
 ; >>> [R5] FN: via via via calls:printf
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ;   calls:   sub_0ec0bc98
@@ -18725,7 +18725,7 @@
   0ec0a3f4:  a20013be  sb      $zero, 0x13be($s0)
   ; >>> [R7] in-fn: via via via calls:printf
 
-; ---- sub_0ec0a3f8  (115 insns, 1 call sites) ----
+; ---- fn_video_helper_13 /* sub_0ec0a3f8 @ 0x0EC0A3F8 */  (115 insns, 1 call sites) ----
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ; >>> [R9] FN: unnamed helper
   0ec0a3f8:  34420008  ori     $v0, $v0, 8
@@ -18941,7 +18941,7 @@
   ; >>> [R10] in-fn: sub_0ec0a3f8
   0ec0a5c0:  34420010  ori     $v0, $v0, 0x10
 
-; ---- sub_0ec0a5c4  (64 insns, 6 call sites) ----
+; ---- fn_lance_39 /* sub_0ec0a5c4 @ 0x0EC0A5C4 */  (64 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE
 ;   callers: fn_lance_8 /* sub_0ec0851c */, fn_lance_9 /* sub_0ec0882c */
   0ec0a5c4:  0bb03187  j       0xec0c61c
@@ -19229,7 +19229,7 @@
   ; >>> [R10] in-fn: sub_0ec0a848
   0ec0a858:  0fb008f1  jal     0xec023c4  ; → sub_0ec023c4
 
-; ---- sub_0ec0a85c  (21 insns, 1 call sites) ----
+; ---- fn_video_helper_14 /* sub_0ec0a85c @ 0x0EC0A85C */  (21 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ;   calls:   sub_0ec0c6c4
@@ -19267,7 +19267,7 @@
   ; >>> [R3] in-fn: via calls:printf
   0ec0a8ac:  00000000  nop     
 
-; ---- sub_0ec0a8b0  (21 insns, 1 call sites) ----
+; ---- fn_video_helper_15 /* sub_0ec0a8b0 @ 0x0EC0A8B0 */  (21 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ;   calls:   sub_0ec0c6c4
@@ -19307,7 +19307,7 @@
   ; >>> [R3] in-fn: via calls:printf
   0ec0a900:  10400007  beqz    $v0, 0xec0a920
 
-; ---- sub_0ec0a904  (21 insns, 1 call sites) ----
+; ---- fn_video_helper_16 /* sub_0ec0a904 @ 0x0EC0A904 */  (21 insns, 1 call sites) ----
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ; >>> [R23] in-fn: sub_0ec0a904, g_const x4
   0ec0a904:  00000000  nop     
@@ -19351,7 +19351,7 @@
   ; >>> [R13] data 0x0EC01448: init-then-read/unnamed helper
   0ec0a954:  ac221448  sw      $v0, 0x1448($at)  ; → g_const_448 /* data_0x0ec01448 */
 
-; ---- sub_0ec0a958  (21 insns, 1 call sites) ----
+; ---- fn_video_helper_17 /* sub_0ec0a958 @ 0x0EC0A958 */  (21 insns, 1 call sites) ----
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ; >>> [R9] FN: unnamed helper
   0ec0a958:  24020092  addiu   $v0, $zero, 0x92
@@ -19387,7 +19387,7 @@
   ; >>> [R10] in-fn: sub_0ec0a958
   0ec0a9a8:  2862007c  slti    $v0, $v1, 0x7c
 
-; ---- sub_0ec0a9ac  (153 insns, 1 call sites) ----
+; ---- fn_duart_28 /* sub_0ec0a9ac @ 0x0EC0A9AC */  (153 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_video_caller /* sub_0ec08a44 */
 ;   calls:   sub_0ec0bb8c, sub_0ec0c6c4, sub_0ec0bc98, sub_0ec0be98, fn_duart_access_8 /* sub_0ec0c194 */
@@ -19647,7 +19647,7 @@
   0ec0ac08:  8fb1001c  lw      $s1, 0x1c($sp)
   0ec0ac0c:  8fb00018  lw      $s0, 0x18($sp)
 
-; ---- sub_0ec0ac10  (16 insns, 3 call sites) ----
+; ---- fn_duart_helper_50 /* sub_0ec0ac10 @ 0x0EC0AC10 */  (16 insns, 3 call sites) ----
 ;   callers: sub_0ec08cb0, sub_0ec08d98
   ; >>> [R6] return
   0ec0ac10:  03e00008  jr      $ra
@@ -19797,7 +19797,7 @@
   ; >>> [R7] in-fn: via via vtab:0x8F4 / calls:printf
   0ec0ad5c:  3c030ec0  lui     $v1, 0xec0
 
-; ---- sub_0ec0ad60  (140 insns, 3 call sites) ----
+; ---- fn_Keyboard_helper_1 /* sub_0ec0ad60 @ 0x0EC0AD60 */  (140 insns, 3 call sites) ----
 ; >>> [R5] FN: via via via calls:printf
 ;   callers: fn_Keyboard_Controller_UW /* sub_0ec08e5c */_Controller_UW_1
 ;   calls:   sub_0ec0bc98
@@ -20033,7 +20033,7 @@
   0ec0af8c:  3c046000  lui     $a0, 0x6000
   ; >>> [R5] in-fn: via via via calls:printf
 
-; ---- sub_0ec0af90  (92 insns, 1 call sites) ----
+; ---- fn_monitor_helper_2 /* sub_0ec0af90 @ 0x0EC0AF90 */  (92 insns, 1 call sites) ----
 ;   callers: fn_monitor_entry /* monitor_entry @ 0x0EC00000 */
 ; >>> [R9] FN: unnamed helper
   0ec0af90:  00621024  and     $v0, $v1, $v0
@@ -20218,7 +20218,7 @@
   ; >>> [R10] in-fn: sub_0ec0af90
   0ec0b0fc:  104400cf  beq     $v0, $a0, 0xec0b43c
 
-; ---- sub_0ec0b100  (341 insns, 1 call sites) ----
+; ---- fn_lance_helper_85 /* sub_0ec0b100 @ 0x0EC0B100 */  (341 insns, 1 call sites) ----
 ; >>> [R5] FN: via via via calls:printf
 ;   callers: fn_lance_caller_2 /* sub_0ec05994 */
 ;   calls:   sub_0ec023c4, sub_0ec04980, sub_0ec0ba10, sub_0ec023dc, sub_0ec048d8, sub_0ec0bc98, sub_0ec0cc90, sub_0ec0cc18
@@ -20765,7 +20765,7 @@
   ; >>> [R5] in-fn: via via via calls:printf
   0ec0b650:  00000000  nop     
 
-; ---- sub_0ec0b654  (87 insns, 0 call sites) ----
+; ---- fn_lance_40 /* sub_0ec0b654 @ 0x0EC0B654 */  (87 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf / HW:LANCE
 ;   calls:   fn_lance_6 /* sub_0ec0844c */, sub_0ec0d5d0, sub_0ec0d654
   ; >>> [R6] fn prologue: allocate stack frame
@@ -20912,7 +20912,7 @@
   0ec0b7ac:  10430026  beq     $v0, $v1, 0xec0b848
   ; >>> [R7] in-fn: via calls:printf / HW:LANCE
 
-; ---- sub_0ec0b7b0  (45 insns, 1 call sites) ----
+; ---- fn_Using_helper_9 /* sub_0ec0b7b0 @ 0x0EC0B7B0 */  (45 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec0d980, sub_0ec0d8bc
 ; >>> [R23] in-fn: sub_0ec0b7b0, calls: 2
@@ -21058,7 +21058,7 @@
   ; >>> [R6] branch delay-slot
   0ec0b8d8:  00000000  nop     
 
-; ---- sub_0ec0b8dc  (14 insns, 0 call sites) ----
+; ---- fn_lance_41 /* sub_0ec0b8dc @ 0x0EC0B8DC */  (14 insns, 0 call sites) ----
 ;   calls:   sub_0ec0838c
   ; >>> [R6] fn prologue: allocate stack frame
   0ec0b8dc:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -21110,7 +21110,7 @@
   0ec0b940:  00000000  nop     
   0ec0b944:  0fb0363f  jal     0xec0d8fc  ; → sub_0ec0d8fc
 
-; ---- sub_0ec0b948  (14 insns, 1 call sites) ----
+; ---- fn_lance_helper_86 /* sub_0ec0b948 @ 0x0EC0B948 */  (14 insns, 1 call sites) ----
 ;   callers: fn_lance_12 /* sub_0ec097b0 */
 ;   calls:   sub_0ec0d880
 ; >>> [R9] FN: unnamed helper
@@ -21200,7 +21200,7 @@
   ; >>> [R23] in-fn: sub_0ec0b980, calls: 2
   0ec0ba0c:  0fb020e3  jal     0xec0838c  ; → sub_0ec0838c
 
-; ---- sub_0ec0ba10  (8 insns, 3 call sites) ----
+; ---- fn_Using_helper_10 /* sub_0ec0ba10 @ 0x0EC0BA10 */  (8 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for "Using_Subnet_Mask", via via via calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec09e10, sub_0ec0b100
   0ec0ba10:  2610fffc  addiu   $s0, $s0, -4
@@ -21373,7 +21373,7 @@
   ; >>> [R23] in-fn: sub_0ec0bb5c, calls: 3
   0ec0bb88:  0fb03620  jal     0xec0d880  ; → sub_0ec0d880
 
-; ---- sub_0ec0bb8c  (67 insns, 3 call sites) ----
+; ---- fn_duart_helper_51 /* sub_0ec0bb8c @ 0x0EC0BB8C */  (67 insns, 3 call sites) ----
 ; >>> [R4] FN: via via calls:printf
 ;   callers: fn_duart_access /* sub_0ec01cc4 */, sub_0ec099e0, sub_0ec0a9ac
 ;   calls:   sub_0ec0d8fc, sub_0ec0db00, sub_0ec0d9d0, sub_0ec0da94, sub_0ec0da30
@@ -21487,7 +21487,7 @@
   0ec0bc94:  a6220000  sh      $v0, ($s1)
   ; >>> [R7] in-fn: via via calls:printf
 
-; ---- sub_0ec0bc98  (12 insns, 8 call sites) ----
+; ---- fn_video_helper_18 /* sub_0ec0bc98 @ 0x0EC0BC98 */  (12 insns, 8 call sites) ----
 ; >>> [R4] FN: via via calls:printf
 ;   callers: sub_0ec0a22c, sub_0ec0a9ac, sub_0ec0ad60, sub_0ec0b100
 ;   calls:   sub_0ec0db00
@@ -21600,7 +21600,7 @@
   0ec0bd94:  00000000  nop     
   0ec0bd98:  3c050ec2  lui     $a1, 0xec2
 
-; ---- sub_0ec0bd9c  (51 insns, 2 call sites) ----
+; ---- fn_Using_helper_11 /* sub_0ec0bd9c @ 0x0EC0BD9C */  (51 insns, 2 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec04ba0, sub_0ec0d8dc, sub_0ec17060, sub_0ec17010, sub_0ec138dc
@@ -21691,7 +21691,7 @@
   0ec0be64:  03e00008  jr      $ra
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec0be68  (12 insns, 1 call sites) ----
+; ---- fn_lance_42 /* sub_0ec0be68 @ 0x0EC0BE68 */  (12 insns, 1 call sites) ----
 ;   callers: sub_0ec09ba4
 ; >>> [R9] FN: unnamed helper
   0ec0be68:  27bd0018  addiu   $sp, $sp, 0x18
@@ -21716,7 +21716,7 @@
   ; >>> [R10] in-fn: sub_0ec0be68
   0ec0be94:  afb60028  sw      $s6, 0x28($sp)
 
-; ---- sub_0ec0be98  (111 insns, 1 call sites) ----
+; ---- fn_video_9 /* sub_0ec0be98 @ 0x0EC0BE98 */  (111 insns, 1 call sites) ----
 ; >>> [R3] FN: via HW:video
 ;   callers: sub_0ec0a9ac
 ;   calls:   sub_0ec04ba0, sub_0ec0d8fc, fn_video_helper_3 /* sub_0ec0db5c */, sub_0ec0d914, sub_0ec0db00, sub_0ec0d880, sub_0ec0da84, sub_0ec0da94
@@ -22638,7 +22638,7 @@
   ; >>> [R13] data 0x0EC00C2E: init-then-read/"Keyboard_Controller_UW_1"
   0ec0c6c0:  a2400c2e  sb      $zero, 0xc2e($s2)  ; → g_const_c2e /* data_0x0ec00c2e */
 
-; ---- sub_0ec0c6c4  (97 insns, 22 call sites) ----
+; ---- fn_video_helper_19 /* sub_0ec0c6c4 @ 0x0EC0C6C4 */  (97 insns, 22 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec099e0, sub_0ec09ac0, sub_0ec09ba4, sub_0ec09d40, fn_video_2 /* sub_0ec0a6c4 */, sub_0ec0a85c (+2)
 ;   calls:   sub_0ec04818, sub_0ec04ba0, fn_printf /* sub_0ec049d0 */, sub_0ec1b064, sub_0ec0d44c, sub_0ec0d980, sub_0ec0d740, sub_0ec0d880 (+1)
@@ -23250,7 +23250,7 @@
   0ec0cc14:  00000000  nop     
   ; >>> [R3] in-fn: via vtab:0x8F4
 
-; ---- sub_0ec0cc18  (30 insns, 4 call sites) ----
+; ---- fn_lance_helper_87 /* sub_0ec0cc18 @ 0x0EC0CC18 */  (30 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for via via via calls:printf
 ;   callers: sub_0ec0b100
 ;   calls:   sub_0ec04ba0, sub_0ec11510, sub_0ec072b4
@@ -23304,7 +23304,7 @@
   0ec0cc8c:  3c040ec2  lui     $a0, 0xec2
   ; >>> [R6] in-fn: helper for via via via calls:printf
 
-; ---- sub_0ec0cc90  (23 insns, 1 call sites) ----
+; ---- fn_lance_helper_88 /* sub_0ec0cc90 @ 0x0EC0CC90 */  (23 insns, 1 call sites) ----
 ;   callers: sub_0ec0b100
 ;   calls:   sub_0ec04ba0, sub_0ec13038, sub_0ec11510, sub_0ec072b4
 ; >>> [R23] in-fn: sub_0ec0cc90, calls: 5
@@ -23344,7 +23344,7 @@
   0ec0cce4:  00000000  nop     
   0ec0cce8:  0fb04544  jal     0xec11510  ; → sub_0ec11510
 
-; ---- sub_0ec0ccec  (93 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_47 /* sub_0ec0ccec @ 0x0EC0CCEC */  (93 insns, 2 call sites) ----
 ; >>> [R3] FN: via vtab:0x8F4 / calls:printf
 ;   callers: fn_ramdac_access_4 /* sub_0ec0ac50 */, fn_printf_caller /* sub_0ec0d18c */
 ;   calls:   sub_0ec04ba0, sub_0ec0d67c, sub_0ec13038, sub_0ec0f41c, sub_0ec072b4, sub_0ec0eb40, sub_0ec0f078
@@ -24150,7 +24150,7 @@
   ; >>> [R7] in-fn: calls:printf
   0ec0d448:  28620006  slti    $v0, $v1, 6
 
-; ---- sub_0ec0d44c  (97 insns, 4 call sites) ----
+; ---- fn_ramdac_26 /* sub_0ec0d44c @ 0x0EC0D44C */  (97 insns, 4 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_ramdac_2 /* sub_0ec05ba4 */, sub_0ec0c6c4, sub_0ec0db00
 ;   calls:   sub_0ec04ba0, sub_0ec04980, fn_printf /* sub_0ec049d0 */, sub_0ec10b38, sub_0ec11510, sub_0ec072b4, sub_0ec0f078, sub_0ec123b0
@@ -24311,7 +24311,7 @@
   0ec0d5c8:  26100002  addiu   $s0, $s0, 2  ; → data_0x0ec00002
   0ec0d5cc:  97a60010  lhu     $a2, 0x10($sp)
 
-; ---- sub_0ec0d5d0  (33 insns, 3 call sites) ----
+; ---- fn_lance_helper_89 /* sub_0ec0d5d0 @ 0x0EC0D5D0 */  (33 insns, 3 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec0b654
 ;   calls:   fn_printf /* sub_0ec049d0 */
@@ -24368,7 +24368,7 @@
   0ec0d64c:  27bd0028  addiu   $sp, $sp, 0x28
   0ec0d650:  3c040ec0  lui     $a0, 0xec0
 
-; ---- sub_0ec0d654  (10 insns, 1 call sites) ----
+; ---- fn_lance_helper_90 /* sub_0ec0d654 @ 0x0EC0D654 */  (10 insns, 1 call sites) ----
 ;   callers: sub_0ec0b654
 ; >>> [R9] FN: unnamed helper
   0ec0d654:  34840088  ori     $a0, $a0, 0x88
@@ -24390,7 +24390,7 @@
   ; >>> [R10] in-fn: sub_0ec0d654
   0ec0d678:  00000000  nop     
 
-; ---- sub_0ec0d67c  (5 insns, 10 call sites) ----
+; ---- fn_duart_29 /* sub_0ec0d67c @ 0x0EC0D67C */  (5 insns, 10 call sites) ----
 ; >>> [R6] FN: helper for via HW:DUART / HW:video / call, HW:video, calls:printf
 ;   callers: fn_video_helper_2 /* sub_0ec054a0 */, fn_lance_caller_2 /* sub_0ec05994 */, sub_0ec05d30, fn_ramdac_access_5 /* sub_0ec0c054 */, fn_duart_access_9 /* sub_0ec0c360 */, fn_ramdac_access_7 /* sub_0ec0cb00 */ (+3)
   0ec0d67c:  14400002  bnez    $v0, 0xec0d688
@@ -24480,7 +24480,7 @@
   ; >>> [R23] in-fn: sub_0ec0d690, calls: 5
   0ec0d73c:  afb40040  sw      $s4, 0x40($sp)
 
-; ---- sub_0ec0d740  (80 insns, 11 call sites) ----
+; ---- fn_lance_43 /* sub_0ec0d740 @ 0x0EC0D740 */  (80 insns, 11 call sites) ----
 ; >>> [R6] FN: helper for "LANCE_receive_CRC", via via calls:printf, "Transmit_while_a
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, sub_0ec03964, fn_LANCE_receive_CRC_2 /* sub_0ec0399c */_receive_CRC, fn_Transmit_while_adapter /* sub_0ec0533c */_while_adapter_i, fn_0123456789ABCDEF /* sub_0ec09194 */, sub_0ec0ba30 (+3)
 ;   calls:   sub_0ec04ba0, sub_0ec0d8dc, sub_0ec0d67c, sub_0ec0f690
@@ -24617,7 +24617,7 @@
   0ec0d87c:  3c1e0ec2  lui     $fp, 0xec2
   ; >>> [R6] in-fn: helper for "LANCE_receive_CRC", via via calls
 
-; ---- sub_0ec0d880  (15 insns, 12 call sites) ----
+; ---- fn_duart_30 /* sub_0ec0d880 @ 0x0EC0D880 */  (15 insns, 12 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via HW:DUART / HW:video / call, HW:video
 ;   callers: sub_0ec053f8, sub_0ec05440, fn_duart_caller /* sub_0ec05744 */, fn_0123456789ABCDEF /* sub_0ec09194 */, sub_0ec0b948, sub_0ec0bb00 (+5)
 ;   calls:   sub_0ec04ba0
@@ -24648,7 +24648,7 @@
   0ec0d8b8:  00000000  nop     
   ; >>> [R7] in-fn: helper for calls:printf, via HW:DUART / HW:video
 
-; ---- sub_0ec0d8bc  (8 insns, 1 call sites) ----
+; ---- fn_Using_helper_12 /* sub_0ec0d8bc @ 0x0EC0D8BC */  (8 insns, 1 call sites) ----
 ;   callers: sub_0ec0b7b0
 ;   calls:   sub_0ec04ba0
 ; >>> [R9] FN: unnamed helper
@@ -24663,7 +24663,7 @@
   0ec0d8d4:  8e850000  lw      $a1, ($s4)
   0ec0d8d8:  3c040ec2  lui     $a0, 0xec2
 
-; ---- sub_0ec0d8dc  (8 insns, 26 call sites) ----
+; ---- fn_ramdac_27 /* sub_0ec0d8dc @ 0x0EC0D8DC */  (8 insns, 26 call sites) ----
 ; >>> [R6] FN: helper for HW:RAMDAC, "printf", via calls:printf
 ;   callers: fn_ramdac /* sub_0ec009fc */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_printf /* sub_0ec049d0 */, fn_timeout_n /* sub_0ec04d30 */_n, fn_itr_int_tx_bad_correla /* sub_0ec04eac */_int_tx_bad_correlato, sub_0ec05080 (+15)
 ;   calls:   sub_0ec04ba0
@@ -24681,7 +24681,7 @@
   ; >>> [R7] in-fn: helper for HW:RAMDAC, "printf", via calls:printf
   0ec0d8f8:  3c050ec2  lui     $a1, 0xec2
 
-; ---- sub_0ec0d8fc  (6 insns, 17 call sites) ----
+; ---- fn_lance_44 /* sub_0ec0d8fc @ 0x0EC0D8FC */  (6 insns, 17 call sites) ----
 ; >>> [R6] FN: helper for "LANCE_receive_CRC", via HW:video, via HW:DUART / HW:video /
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, fn_LANCE_receive_CRC_2 /* sub_0ec0399c */_receive_CRC, sub_0ec05440, sub_0ec0b914, sub_0ec0bb00, sub_0ec0bb5c (+4)
 ;   calls:   sub_0ec04ba0
@@ -24695,7 +24695,7 @@
   0ec0d90c:  96621d1a  lhu     $v0, 0x1d1a($s3)
   0ec0d910:  00000000  nop     
 
-; ---- sub_0ec0d914  (27 insns, 16 call sites) ----
+; ---- fn_duart_31 /* sub_0ec0d914 @ 0x0EC0D914 */  (27 insns, 16 call sites) ----
 ; >>> [R6] FN: helper for via HW:DUART / HW:video / call, "LANCE_receive_CRC", calls:p
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, fn_LANCE_receive_CRC_2 /* sub_0ec0399c */_receive_CRC, sub_0ec05080, sub_0ec053f8, fn_video_helper_2 /* sub_0ec054a0 */, fn_duart_caller /* sub_0ec05744 */ (+6)
   0ec0d914:  34420008  ori     $v0, $v0, 8
@@ -24740,7 +24740,7 @@
   0ec0d97c:  14430005  bne     $v0, $v1, 0xec0d994
   ; >>> [R7] in-fn: helper for via HW:DUART / HW:video / call, "LANC
 
-; ---- sub_0ec0d980  (20 insns, 27 call sites) ----
+; ---- fn_lance_45 /* sub_0ec0d980 @ 0x0EC0D980 */  (20 insns, 27 call sites) ----
 ; >>> [R6] FN: helper for "Transmit_while_adapter_i", "LANCE_receive_CRC", calls:print
 ;   callers: fn_LANCE_receive_CRC /* sub_0ec02cfc */_receive_CRC, sub_0ec03964, fn_processor_instruction_ /* sub_0ec03cc4 */_instruction_te, sub_0ec048d8, sub_0ec04b08, fn_max_cmds_exceeded /* sub_0ec04c5c */_cmds_exceeded (+10)
 ;   calls:   sub_0ec04ba0
@@ -24778,7 +24778,7 @@
   0ec0d9cc:  0fb012e8  jal     0xec04ba0  ; → sub_0ec04ba0
   ; >>> [R6] in-fn: helper for "Transmit_while_adapter_i", "LANCE
 
-; ---- sub_0ec0d9d0  (24 insns, 2 call sites) ----
+; ---- fn_duart_helper_52 /* sub_0ec0d9d0 @ 0x0EC0D9D0 */  (24 insns, 2 call sites) ----
 ;   callers: sub_0ec0ba30, sub_0ec0bb8c
 ; >>> [R9] FN: unnamed helper
   0ec0d9d0:  00000000  nop     
@@ -24820,7 +24820,7 @@
   ; >>> [R10] in-fn: sub_0ec0d9d0
   0ec0da2c:  10a00007  beqz    $a1, 0xec0da4c
 
-; ---- sub_0ec0da30  (21 insns, 2 call sites) ----
+; ---- fn_duart_helper_53 /* sub_0ec0da30 @ 0x0EC0DA30 */  (21 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for via via calls:printf
 ;   callers: sub_0ec0bb8c
 ;   calls:   sub_0ec04ba0
@@ -24859,7 +24859,7 @@
   ; >>> [R6] in-fn: helper for via via calls:printf
   0ec0da80:  03c02021  move    $a0, $fp
 
-; ---- sub_0ec0da84  (4 insns, 5 call sites) ----
+; ---- fn_video_helper_20 /* sub_0ec0da84 @ 0x0EC0DA84 */  (4 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for via HW:video, calls:printf
 ;   callers: sub_0ec0ba30, sub_0ec0bb5c, sub_0ec0be98, fn_lance_access_8 /* sub_0ec0f18c */
   0ec0da84:  26520001  addiu   $s2, $s2, 1
@@ -24869,7 +24869,7 @@
   ; >>> [R7] in-fn: helper for via HW:video, calls:printf
   0ec0da90:  00000000  nop     
 
-; ---- sub_0ec0da94  (27 insns, 3 call sites) ----
+; ---- fn_duart_helper_54 /* sub_0ec0da94 @ 0x0EC0DA94 */  (27 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via via calls:printf, via HW:video
 ;   callers: sub_0ec0bb00, sub_0ec0bb8c, sub_0ec0be98
 ;   calls:   sub_0ec048d8, sub_0ec0f690
@@ -24919,7 +24919,7 @@
   0ec0dafc:  0fb01236  jal     0xec048d8  ; → sub_0ec048d8
   ; >>> [R7] in-fn: helper for via via calls:printf, via HW:video
 
-; ---- sub_0ec0db00  (16 insns, 16 call sites) ----
+; ---- fn_duart_helper_55 /* sub_0ec0db00 @ 0x0EC0DB00 */  (16 insns, 16 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: sub_0ec03964, sub_0ec04848, sub_0ec05080, fn_video /* sub_0ec0556c */, fn_duart_caller /* sub_0ec05744 */, sub_0ec0bb8c (+3)
 ;   calls:   sub_0ec0d44c
@@ -25050,7 +25050,7 @@
   0ec0dc0c:  27bd0020  addiu   $sp, $sp, 0x20
   ; >>> [R2] in-fn: HW:video
 
-; ---- sub_0ec0dc10  (8 insns, 0 call sites) ----
+; ---- fn_lance_46 /* sub_0ec0dc10 @ 0x0EC0DC10 */  (8 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   calls:   sub_0ec0fc50
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25069,7 +25069,7 @@
   ; >>> [R6] branch delay-slot
   0ec0dc2c:  00000000  nop     
 
-; ---- sub_0ec0dc30  (8 insns, 0 call sites) ----
+; ---- fn_lance_47 /* sub_0ec0dc30 @ 0x0EC0DC30 */  (8 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   calls:   sub_0ec0fc50
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25137,7 +25137,7 @@
   0ec0dcc4:  26310001  addiu   $s1, $s1, 1
   ; >>> [R4] in-fn: via via vtab:0x8D0
 
-; ---- sub_0ec0dcc8  (18 insns, 1 call sites) ----
+; ---- fn_duart_helper_56 /* sub_0ec0dcc8 @ 0x0EC0DCC8 */  (18 insns, 1 call sites) ----
 ;   callers: fn_duart_caller /* sub_0ec05744 */
 ;   calls:   sub_0ec16c64
 ; >>> [R9] FN: unnamed helper
@@ -25174,7 +25174,7 @@
   0ec0dd08:  03e00008  jr      $ra
   0ec0dd0c:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_0ec0dd10  (8 insns, 0 call sites) ----
+; ---- fn_printf_23 /* sub_0ec0dd10 @ 0x0EC0DD10 */  (8 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   fn_printf_caller_3 /* sub_0ec0fd50 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25193,7 +25193,7 @@
   ; >>> [R6] branch delay-slot
   0ec0dd2c:  00000000  nop     
 
-; ---- sub_0ec0dd30  (8 insns, 0 call sites) ----
+; ---- fn_printf_24 /* sub_0ec0dd30 @ 0x0EC0DD30 */  (8 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   fn_printf_caller_3 /* sub_0ec0fd50 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25412,7 +25412,7 @@
   0ec0df38:  03e00008  jr      $ra
   0ec0df3c:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_0ec0df40  (8 insns, 0 call sites) ----
+; ---- fn_printf_25 /* sub_0ec0df40 @ 0x0EC0DF40 */  (8 insns, 0 call sites) ----
 ; >>> [R4] FN: via via calls:printf / vtab:0x880
 ;   calls:   fn_printf_caller_2 /* sub_0ec0ff80 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25536,7 +25536,7 @@
   ; >>> [R4] in-fn: via via calls:printf / vtab:0x880 / via 
   0ec0e050:  30421000  andi    $v0, $v0, 0x1000
 
-; ---- sub_0ec0e054  (29 insns, 7 call sites) ----
+; ---- fn_duart_helper_57 /* sub_0ec0e054 @ 0x0EC0E054 */  (29 insns, 7 call sites) ----
 ; >>> [R6] FN: helper for HW:video, calls:printf, via vtab:0x8D0
 ;   callers: fn_video /* sub_0ec0556c */, fn_duart_caller /* sub_0ec05744 */, sub_0ec05964, fn_lance_caller_2 /* sub_0ec05994 */
 ;   calls:   sub_0ec16c64
@@ -25586,7 +25586,7 @@
   0ec0e0c0:  03e00008  jr      $ra
   0ec0e0c4:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_0ec0e0c8  (8 insns, 0 call sites) ----
+; ---- fn_lance_48 /* sub_0ec0e0c8 @ 0x0EC0E0C8 */  (8 insns, 0 call sites) ----
 ; >>> [R5] FN: via via via HW:LANCE
 ;   calls:   sub_0ec10108
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25605,7 +25605,7 @@
   ; >>> [R6] branch delay-slot
   0ec0e0e4:  00000000  nop     
 
-; ---- sub_0ec0e0e8  (8 insns, 0 call sites) ----
+; ---- fn_lance_49 /* sub_0ec0e0e8 @ 0x0EC0E0E8 */  (8 insns, 0 call sites) ----
 ; >>> [R5] FN: via via via HW:LANCE
 ;   calls:   sub_0ec10108
   ; >>> [R6] fn prologue: allocate stack frame
@@ -25658,7 +25658,7 @@
   0ec0e150:  27bd0020  addiu   $sp, $sp, 0x20
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec0e154  (17 insns, 0 call sites) ----
+; ---- fn_duart_32 /* sub_0ec0e154 @ 0x0EC0E154 */  (17 insns, 0 call sites) ----
 ;   calls:   sub_0ec027e4
   ; >>> [R6] fn prologue: allocate stack frame
   0ec0e154:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -25864,7 +25864,7 @@
   0ec0e318:  3c070ec0  lui     $a3, 0xec0
   ; >>> [R7] in-fn: calls:printf
 
-; ---- sub_0ec0e31c  (17 insns, 3 call sites) ----
+; ---- fn_duart_33 /* sub_0ec0e31c @ 0x0EC0E31C */  (17 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via via calls:printf, via HW:DUART / HW:video / call
 ;   callers: sub_0ec05080, fn_duart_access_9 /* sub_0ec0c360 */
   0ec0e31c:  34e700f8  ori     $a3, $a3, 0xf8
@@ -25895,7 +25895,7 @@
   0ec0e358:  83a7001c  lb      $a3, 0x1c($sp)
   0ec0e35c:  83a8001d  lb      $t0, 0x1d($sp)
 
-; ---- sub_0ec0e360  (31 insns, 1 call sites) ----
+; ---- fn_LANCE_helper_4 /* sub_0ec0e360 @ 0x0EC0E360 */  (31 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0  calls:printf
 ;   callers: sub_0ec05964
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec16fb0
@@ -26456,7 +26456,7 @@
   0ec0e884:  27bd0018  addiu   $sp, $sp, 0x18
   ; >>> [R7] in-fn: vtab:0x8E4  calls:printf
 
-; ---- sub_0ec0e888  (34 insns, 0 call sites) ----
+; ---- fn_ramdac_28 /* sub_0ec0e888 @ 0x0EC0E888 */  (34 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec023a0, sub_0ec10888
   ; >>> [R6] fn prologue: allocate stack frame
@@ -26523,7 +26523,7 @@
   ; >>> [R6] save return address
   0ec0e914:  afbf0018  sw      $ra, 0x18($sp)
 
-; ---- sub_0ec0e918  (51 insns, 1 call sites) ----
+; ---- fn_ramdac_29 /* sub_0ec0e918 @ 0x0EC0E918 */  (51 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_duart_caller /* sub_0ec05744 */
 ;   calls:   sub_0ec02358, sub_0ec023c4, sub_0ec023a0, sub_0ec107f0, fn_printf_caller_5 /* sub_0ec10834 */
@@ -26610,7 +26610,7 @@
   0ec0e9e0:  00031c00  sll     $v1, $v1, 0x10
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec0e9e4  (7 insns, 1 call sites) ----
+; ---- fn_printf_helper_33 /* sub_0ec0e9e4 @ 0x0EC0E9E4 */  (7 insns, 1 call sites) ----
 ;   callers: sub_0ec05440
 ; >>> [R9] FN: unnamed helper
   0ec0e9e4:  a0a20000  sb      $v0, ($a1)
@@ -26623,7 +26623,7 @@
   ; >>> [R13] data 0x0EC009A0: mutable-state/vtab:0x8E4
   0ec0e9fc:  8c4209a0  lw      $v0, 0x9a0($v0)  ; → g_state_9a0 /* data_0x0ec009a0 */
 
-; ---- sub_0ec0ea00  (52 insns, 0 call sites) ----
+; ---- fn_duart_34 /* sub_0ec0ea00 @ 0x0EC0EA00 */  (52 insns, 0 call sites) ----
 ;   calls:   sub_0ec04ba0, sub_0ec15e34
   ; >>> [R6] fn prologue: allocate stack frame
   0ec0ea00:  27bdffe8  addiu   $sp, $sp, -0x18
@@ -26745,7 +26745,7 @@
   ; >>> [R10] in-fn: sub_0ec0ead0
   0ec0eafc:  00431024  and     $v0, $v0, $v1
 
-; ---- sub_0ec0eb00  (16 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_48 /* sub_0ec0eb00 @ 0x0EC0EB00 */  (16 insns, 1 call sites) ----
 ;   callers: fn_ramdac_access_6 /* sub_0ec0c848 */
 ;   calls:   sub_0ec04ba0
 ; >>> [R23] in-fn: sub_0ec0eb00, g_state x3
@@ -26778,7 +26778,7 @@
   0ec0eb38:  27bdffe8  addiu   $sp, $sp, -0x18
   0ec0eb3c:  3c040ec0  lui     $a0, 0xec0
 
-; ---- sub_0ec0eb40  (11 insns, 4 call sites) ----
+; ---- fn_ramdac_helper_49 /* sub_0ec0eb40 @ 0x0EC0EB40 */  (11 insns, 4 call sites) ----
 ; >>> [R2] FN: vtab:0x8F4
 ;   callers: fn_ramdac_access_7 /* sub_0ec0cb00 */, sub_0ec0ccec, fn_lance_14 /* sub_0ec0ce60 */
   0ec0eb40:  34840174  ori     $a0, $a0, 0x174
@@ -26802,7 +26802,7 @@
   0ec0eb68:  3c010ec0  lui     $at, 0xec0
   ; >>> [R7] in-fn: vtab:0x8F4
 
-; ---- sub_0ec0eb6c  (61 insns, 1 call sites) ----
+; ---- fn_Using_helper_13 /* sub_0ec0eb6c @ 0x0EC0EB6C */  (61 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec04980
 ; >>> [R23] in-fn: sub_0ec0eb6c, g_state x9
@@ -27375,7 +27375,7 @@
   ; >>> [R6] branch delay-slot
   0ec0f074:  00000000  nop     
 
-; ---- sub_0ec0f078  (69 insns, 4 call sites) ----
+; ---- fn_ramdac_30 /* sub_0ec0f078 @ 0x0EC0F078 */  (69 insns, 4 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec0ccec, fn_lance_14 /* sub_0ec0ce60 */, fn_printf_caller /* sub_0ec0d18c */, sub_0ec0d44c
 ;   calls:   sub_0ec04ba0, fn_printf /* sub_0ec049d0 */, sub_0ec10c58, sub_0ec109f8, sub_0ec10fec, sub_0ec16b4c, sub_0ec12780
@@ -27756,7 +27756,7 @@
   ; >>> [R7] in-fn: calls:printf
   0ec0f418:  241202bc  addiu   $s2, $zero, 0x2bc
 
-; ---- sub_0ec0f41c  (79 insns, 6 call sites) ----
+; ---- fn_lance_50 /* sub_0ec0f41c @ 0x0EC0F41C */  (79 insns, 6 call sites) ----
 ; >>> [R3] FN: via HW:LANCE / vtab:0x8EC,0x8F0
 ;   callers: fn_duart_caller /* sub_0ec05744 */, sub_0ec0ccec, fn_lance_14 /* sub_0ec0ce60 */
 ;   calls:   sub_0ec04ba0, sub_0ec029f4, fn_duart_access_6 /* sub_0ec08098 */, fn_lance_7 /* sub_0ec084b0 */, sub_0ec17010, sub_0ec158b0
@@ -27885,7 +27885,7 @@
   0ec0f554:  00431024  and     $v0, $v0, $v1
   ; >>> [R7] in-fn: via HW:LANCE / vtab:0x8EC,0x8F0
 
-; ---- sub_0ec0f558  (62 insns, 5 call sites) ----
+; ---- fn_duart_helper_58 /* sub_0ec0f558 @ 0x0EC0F558 */  (62 insns, 5 call sites) ----
 ; >>> [R3] FN: via vtab:0x8D0
 ;   callers: fn_lance_caller_2 /* sub_0ec05994 */, fn_duart_4 /* sub_0ec05d84 */, fn_duart_access_9 /* sub_0ec0c360 */, fn_printf_caller_3 /* sub_0ec0fd50 */, sub_0ec103dc
 ;   calls:   sub_0ec0407c, sub_0ec109f8, sub_0ec11774
@@ -27989,7 +27989,7 @@
   ; >>> [R6] branch delay-slot
   0ec0f64c:  00000000  nop     
 
-; ---- sub_0ec0f650  (16 insns, 15 call sites) ----
+; ---- fn_lance_51 /* sub_0ec0f650 @ 0x0EC0F650 */  (16 insns, 15 call sites) ----
 ; >>> [R3] FN: via vtab:0x8D0 / HW:LANCE
 ;   callers: fn_ramdac /* sub_0ec009fc */, fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_duart_access_5 /* sub_0ec06840 */, sub_0ec09ac0, sub_0ec09b0c, sub_0ec09b58 (+1)
 ;   calls:   fn_lance_7 /* sub_0ec084b0 */, sub_0ec11774
@@ -28020,7 +28020,7 @@
   ; >>> [R7] in-fn: via vtab:0x8D0 / HW:LANCE
   0ec0f68c:  14400030  bnez    $v0, 0xec0f750
 
-; ---- sub_0ec0f690  (32 insns, 2 call sites) ----
+; ---- fn_lance_helper_91 /* sub_0ec0f690 @ 0x0EC0F690 */  (32 insns, 2 call sites) ----
 ;   callers: sub_0ec0d740, sub_0ec0da94
 ;   calls:   sub_0ec0407c
 ; >>> [R23] in-fn: sub_0ec0f690, calls: 3
@@ -28546,7 +28546,7 @@
   ; >>> [R7] in-fn: vtab:0x8E0  calls:printf
   0ec0fb3c:  24120046  addiu   $s2, $zero, 0x46
 
-; ---- sub_0ec0fb40  (27 insns, 2 call sites) ----
+; ---- fn_lance_52 /* sub_0ec0fb40 @ 0x0EC0FB40 */  (27 insns, 2 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   callers: fn_lance_15 /* sub_0ec0e198 */
 ;   calls:   fn_lance_7 /* sub_0ec084b0 */, sub_0ec17010, sub_0ec103dc
@@ -28594,7 +28594,7 @@
   0ec0fba8:  00000000  nop     
   ; >>> [R7] in-fn: via HW:LANCE
 
-; ---- sub_0ec0fbac  (41 insns, 2 call sites) ----
+; ---- fn_lance_53 /* sub_0ec0fbac @ 0x0EC0FBAC */  (41 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE
 ;   callers: fn_lance_15 /* sub_0ec0e198 */
 ;   calls:   sub_0ec109f8
@@ -28665,7 +28665,7 @@
   ; >>> [R6] in-fn: helper for HW:LANCE
   0ec0fc4c:  8e2206a8  lw      $v0, 0x6a8($s1)
 
-; ---- sub_0ec0fc50  (64 insns, 3 call sites) ----
+; ---- fn_lance_54 /* sub_0ec0fc50 @ 0x0EC0FC50 */  (64 insns, 3 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   callers: sub_0ec0dc10, sub_0ec0dc30, fn_printf_caller_2 /* sub_0ec0e108 */
 ;   calls:   fn_lance_7 /* sub_0ec084b0 */, sub_0ec103dc, sub_0ec109f8
@@ -29151,7 +29151,7 @@
   0ec10100:  8e240040  lw      $a0, 0x40($s1)
   0ec10104:  00000000  nop     
 
-; ---- sub_0ec10108  (19 insns, 2 call sites) ----
+; ---- fn_lance_55 /* sub_0ec10108 @ 0x0EC10108 */  (19 insns, 2 call sites) ----
 ; >>> [R4] FN: via via HW:LANCE
 ;   callers: sub_0ec0e0c8, sub_0ec0e0e8
 ;   calls:   sub_0ec0d8dc, sub_0ec109c0, sub_0ec11268, fn_lance_access_10 /* sub_0ec10e50 */
@@ -29187,7 +29187,7 @@
   0ec10150:  02002021  move    $a0, $s0
   ; >>> [R7] in-fn: via via HW:LANCE
 
-; ---- sub_0ec10154  (19 insns, 2 call sites) ----
+; ---- fn_lance_56 /* sub_0ec10154 @ 0x0EC10154 */  (19 insns, 2 call sites) ----
 ; >>> [R3] FN: via vtab:0x880
 ;   callers: fn_ramdac_caller_5 /* sub_0ec0df60 */
 ;   calls:   sub_0ec109c0, sub_0ec052f0, sub_0ec11268, fn_lance_access_10 /* sub_0ec10e50 */
@@ -29345,7 +29345,7 @@
   ; >>> [R7] in-fn: via vtab:0x8D0
   0ec102bc:  0fb0427e  jal     0xec109f8  ; → sub_0ec109f8
 
-; ---- sub_0ec102c0  (60 insns, 1 call sites) ----
+; ---- fn_printf_helper_34 /* sub_0ec102c0 @ 0x0EC102C0 */  (60 insns, 1 call sites) ----
 ;   callers: fn_printf_caller_2 /* sub_0ec0e4e8 */
 ;   calls:   sub_0ec04ba0, sub_0ec0d8dc, sub_0ec17010, sub_0ec109f8, sub_0ec10a68
 ; >>> [R23] in-fn: sub_0ec102c0, calls: 8
@@ -29466,7 +29466,7 @@
   ; >>> [R10] in-fn: sub_0ec103b0
   0ec103d8:  afb20038  sw      $s2, 0x38($sp)
 
-; ---- sub_0ec103dc  (67 insns, 3 call sites) ----
+; ---- fn_ramdac_31 /* sub_0ec103dc @ 0x0EC103DC */  (67 insns, 3 call sites) ----
 ; >>> [R4] FN: via via vtab:0x8D0
 ;   callers: fn_lance_access_7 /* sub_0ec0ec60 */, sub_0ec0fb40, sub_0ec0fc50
 ;   calls:   sub_0ec04ba0, sub_0ec04980, sub_0ec0f558, sub_0ec107f0, sub_0ec15984, sub_0ec1c350, sub_0ec1c90c
@@ -29711,7 +29711,7 @@
   0ec10620:  0fb049e0  jal     0xec12780  ; → sub_0ec12780
   ; >>> [R7] in-fn: calls:printf
 
-; ---- sub_0ec10624  (58 insns, 1 call sites) ----
+; ---- fn_lance_57 /* sub_0ec10624 @ 0x0EC10624 */  (58 insns, 1 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   callers: fn_duart_access_10 /* sub_0ec0f710 */
 ;   calls:   sub_0ec04ba0, sub_0ec0d8dc, fn_lance_7 /* sub_0ec084b0 */, sub_0ec159a4
@@ -29806,7 +29806,7 @@
   ; >>> [R6] branch delay-slot
   0ec10708:  00000000  nop     
 
-; ---- sub_0ec1070c  (29 insns, 1 call sites) ----
+; ---- fn_printf_helper_35 /* sub_0ec1070c @ 0x0EC1070C */  (29 insns, 1 call sites) ----
 ;   callers: fn_printf_caller_7 /* sub_0ec17830 */
 ;   calls:   sub_0ec04ba0, sub_0ec109f8
 ; >>> [R23] in-fn: sub_0ec1070c, calls: 2
@@ -29912,7 +29912,7 @@
   ; >>> [R6] return
   0ec107ec:  03e00008  jr      $ra
 
-; ---- sub_0ec107f0  (17 insns, 15 call sites) ----
+; ---- fn_ramdac_helper_50 /* sub_0ec107f0 @ 0x0EC107F0 */  (17 insns, 15 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, vtab:0x8E4, via calls:printf
 ;   callers: sub_0ec0e70c, sub_0ec0e918, sub_0ec103dc, fn_ramdac_helper_9 /* sub_0ec13fd4 */, sub_0ec150b0, sub_0ec15548 (+7)
   0ec107f0:  27bd0018  addiu   $sp, $sp, 0x18
@@ -29979,7 +29979,7 @@
   ; >>> [R2] in-fn: calls:printf
   0ec10884:  3c040ec0  lui     $a0, 0xec0
 
-; ---- sub_0ec10888  (34 insns, 20 call sites) ----
+; ---- fn_printf_helper_36 /* sub_0ec10888 @ 0x0EC10888 */  (34 insns, 20 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: fn_printf_caller_2 /* sub_0ec0e4e8 */, sub_0ec0e70c, sub_0ec0e888, fn_ramdac_access_9 /* sub_0ec11928 */, sub_0ec133c0, fn_printf_caller_9 /* sub_0ec13530 */ (+9)
 ;   calls:   fn_printf /* sub_0ec049d0 */
@@ -30038,7 +30038,7 @@
   0ec10908:  00004021  move    $t0, $zero
   0ec1090c:  3c0b1fff  lui     $t3, 0x1fff
 
-; ---- sub_0ec10910  (44 insns, 26 call sites) ----
+; ---- fn_printf_helper_37 /* sub_0ec10910 @ 0x0EC10910 */  (44 insns, 26 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8D0, calls:printf, via vtab:0x880
 ;   callers: sub_0ec0e2c0, sub_0ec0e3dc, sub_0ec0e624, sub_0ec11330, sub_0ec11530, sub_0ec11638 (+20)
   0ec10910:  356bffff  ori     $t3, $t3, 0xffff
@@ -30110,7 +30110,7 @@
   ; >>> [R7] in-fn: helper for vtab:0x8D0, calls:printf, via vtab:0x
   0ec109bc:  00000000  nop     
 
-; ---- sub_0ec109c0  (14 insns, 4 call sites) ----
+; ---- fn_printf_helper_38 /* sub_0ec109c0 @ 0x0EC109C0 */  (14 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf / vtab:0x880, via via HW:LANC
 ;   callers: fn_printf_caller_3 /* sub_0ec0fd50 */, fn_printf_caller_2 /* sub_0ec0ff80 */, sub_0ec10108, sub_0ec10154
   0ec109c0:  00c21021  addu    $v0, $a2, $v0
@@ -30135,7 +30135,7 @@
   0ec109f0:  86a30000  lh      $v1, ($s5)
   0ec109f4:  24020107  addiu   $v0, $zero, 0x107
 
-; ---- sub_0ec109f8  (28 insns, 44 call sites) ----
+; ---- fn_lance_58 /* sub_0ec109f8 @ 0x0EC109F8 */  (28 insns, 44 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, vtab:0x8E0, via HW:LANCE
 ;   callers: fn_lance_access_7 /* sub_0ec0ec60 */, sub_0ec0f078, fn_lance_access_8 /* sub_0ec0f18c */, sub_0ec0f558, fn_duart_access_10 /* sub_0ec0f710 */, sub_0ec0fbac (+15)
   0ec109f8:  14620022  bne     $v1, $v0, 0xec10a84
@@ -30183,7 +30183,7 @@
   ; >>> [R7] in-fn: helper for calls:printf, vtab:0x8E0, via HW:LANC
   0ec10a64:  92030012  lbu     $v1, 0x12($s0)
 
-; ---- sub_0ec10a68  (24 insns, 6 call sites) ----
+; ---- fn_printf_helper_39 /* sub_0ec10a68 @ 0x0EC10A68 */  (24 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf, calls:printf, vtab:0x8E0
 ;   callers: fn_printf_caller_3 /* sub_0ec0fd50 */, sub_0ec102c0, fn_lance_access_9 /* sub_0ec10c78 */, sub_0ec10d68, sub_0ec11330
 ;   calls:   sub_0ec10ac8
@@ -30226,7 +30226,7 @@
   ; >>> [R7] in-fn: helper for via calls:printf, calls:printf, vtab:
   0ec10ac4:  00000000  nop     
 
-; ---- sub_0ec10ac8  (28 insns, 3 call sites) ----
+; ---- fn_printf_helper_40 /* sub_0ec10ac8 @ 0x0EC10AC8 */  (28 insns, 3 call sites) ----
 ;   callers: sub_0ec10a68, sub_0ec10ac8, sub_0ec10b38
 ;   calls:   sub_0ec10ac8
 ; >>> [R9] FN: unnamed helper
@@ -30282,7 +30282,7 @@
   ; >>> [R10] in-fn: sub_0ec10ac8
   0ec10b34:  ae220ba0  sw      $v0, 0xba0($s1)
 
-; ---- sub_0ec10b38  (38 insns, 8 call sites) ----
+; ---- fn_duart_helper_59 /* sub_0ec10b38 @ 0x0EC10B38 */  (38 insns, 8 call sites) ----
 ; >>> [R6] FN: helper for HW:video, calls:printf, vtab:0x8D8
 ;   callers: fn_duart_access /* sub_0ec01cc4 */, fn_duart_caller /* sub_0ec05744 */, sub_0ec0d44c, sub_0ec10bd0, fn_lance_access_9 /* sub_0ec10c78 */, sub_0ec17c68
 ;   calls:   sub_0ec10ac8, sub_0ec170b0
@@ -30408,7 +30408,7 @@
   ; >>> [R23] in-fn: sub_0ec10bd0, calls: 4, g_state x3
   0ec10c54:  3c040ec2  lui     $a0, 0xec2
 
-; ---- sub_0ec10c58  (8 insns, 3 call sites) ----
+; ---- fn_lance_59 /* sub_0ec10c58 @ 0x0EC10C58 */  (8 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via HW:LANCE, calls:printf
 ;   callers: fn_lance_access_7 /* sub_0ec0ec60 */, sub_0ec0f078
 ;   calls:   sub_0ec109f8
@@ -30538,7 +30538,7 @@
   0ec10d64:  00000000  nop     
   ; >>> [R2] in-fn: vtab:0x8E0
 
-; ---- sub_0ec10d68  (58 insns, 1 call sites) ----
+; ---- fn_printf_26 /* sub_0ec10d68 @ 0x0EC10D68 */  (58 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_duart_access_10 /* sub_0ec0f710 */
 ;   calls:   sub_0ec04ba0, sub_0ec17060, sub_0ec109f8, sub_0ec10a68, fn_printf_caller_9 /* sub_0ec13530 */
@@ -30814,13 +30814,13 @@
   0ec10fe8:  00000000  nop     
   ; >>> [R7] in-fn: via HW:LANCE
 
-; ---- sub_0ec10fec  (2 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_51 /* sub_0ec10fec @ 0x0EC10FEC */  (2 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for calls:printf
 ;   callers: sub_0ec0f078, fn_lance_access_8 /* sub_0ec0f18c */
   0ec10fec:  8e020918  lw      $v0, 0x918($s0)
   0ec10ff0:  00000000  nop     
 
-; ---- sub_0ec10ff4  (46 insns, 2 call sites) ----
+; ---- fn_lance_60 /* sub_0ec10ff4 @ 0x0EC10FF4 */  (46 insns, 2 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_lance_access_8 /* sub_0ec0f18c */
 ;   calls:   fn_printf_caller_4 /* sub_0ec1312c */
@@ -31088,7 +31088,7 @@
   0ec11264:  00000000  nop     
   ; >>> [R7] in-fn: vtab:0x8E0
 
-; ---- sub_0ec11268  (50 insns, 6 call sites) ----
+; ---- fn_lance_61 /* sub_0ec11268 @ 0x0EC11268 */  (50 insns, 6 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   callers: fn_printf_caller_2 /* sub_0ec0ff80 */, sub_0ec10108, sub_0ec10154, fn_ramdac_caller_6 /* sub_0ec101a0 */, fn_lance_access_13 /* sub_0ec127f4 */, fn_printf_caller_4 /* sub_0ec1312c */
 ;   calls:   fn_lance_7 /* sub_0ec084b0 */, sub_0ec13638
@@ -31172,7 +31172,7 @@
   0ec1132c:  3c040ec2  lui     $a0, 0xec2
   ; >>> [R3] in-fn: via HW:LANCE
 
-; ---- sub_0ec11330  (120 insns, 1 call sites) ----
+; ---- fn_printf_helper_41 /* sub_0ec11330 @ 0x0EC11330 */  (120 insns, 1 call sites) ----
 ; >>> [R3] FN: via vtab:0x880
 ;   callers: fn_printf_caller_3 /* sub_0ec0fd50 */
 ;   calls:   sub_0ec052c8, sub_0ec127a0, sub_0ec10910, sub_0ec16fb0, sub_0ec109f8, sub_0ec10a68, sub_0ec052f0
@@ -31366,7 +31366,7 @@
   0ec1150c:  8fb60028  lw      $s6, 0x28($sp)
   ; >>> [R3] in-fn: via vtab:0x880
 
-; ---- sub_0ec11510  (8 insns, 11 call sites) ----
+; ---- fn_lance_62 /* sub_0ec11510 @ 0x0EC11510 */  (8 insns, 11 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, HW:video, HW:LANCE
 ;   callers: fn_duart_caller /* sub_0ec05744 */, sub_0ec05964, fn_lance_caller_2 /* sub_0ec05994 */, fn_Keyboard_Controller_UW /* sub_0ec08e5c */_Controller_UW_1, sub_0ec0cc18, sub_0ec0cc90 (+2)
   0ec11510:  8fb50024  lw      $s5, 0x24($sp)
@@ -31628,7 +31628,7 @@
   0ec1176c:  3c050ec0  lui     $a1, 0xec0
   0ec11770:  34a500fe  ori     $a1, $a1, 0xfe  ; → data_0x0ec000fe
 
-; ---- sub_0ec11774  (21 insns, 3 call sites) ----
+; ---- fn_duart_helper_60 /* sub_0ec11774 @ 0x0EC11774 */  (21 insns, 3 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0
 ;   callers: sub_0ec0f558, sub_0ec0f650, fn_duart_access_10 /* sub_0ec0f710 */
 ;   calls:   sub_0ec16fb0
@@ -32690,7 +32690,7 @@
   0ec12140:  00000000  nop     
   ; >>> [R7] in-fn: HW:RAMDAC  calls:printf
 
-; ---- sub_0ec12144  (60 insns, 0 call sites) ----
+; ---- fn_ramdac_32 /* sub_0ec12144 @ 0x0EC12144 */  (60 insns, 0 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0  calls:printf
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec10910, sub_0ec16fb0, fn_ramdac_access_10 /* sub_0ec140c8 */, sub_0ec16ebc, sub_0ec16ef8
   ; >>> [R6] fn prologue: allocate stack frame
@@ -32944,7 +32944,7 @@
   0ec123a8:  02403021  move    $a2, $s2
   0ec123ac:  0fb01274  jal     0xec049d0  ; → fn_printf /* sub_0ec049d0 */
 
-; ---- sub_0ec123b0  (55 insns, 1 call sites) ----
+; ---- fn_ramdac_33 /* sub_0ec123b0 @ 0x0EC123B0 */  (55 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0  calls:printf
 ;   callers: sub_0ec0d44c
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec16fb0, fn_ramdac_access_10 /* sub_0ec140c8 */, sub_0ec16ebc, sub_0ec16ef8
@@ -33349,7 +33349,7 @@
   ; >>> [R2] in-fn: vtab:0x8D0  calls:printf
   0ec1277c:  8fb00010  lw      $s0, 0x10($sp)
 
-; ---- sub_0ec12780  (8 insns, 13 call sites) ----
+; ---- fn_ramdac_34 /* sub_0ec12780 @ 0x0EC12780 */  (8 insns, 13 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8E0, HW:RAMDAC, calls:printf
 ;   callers: sub_0ec0f078, fn_duart_access_10 /* sub_0ec0f710 */, fn_printf_caller_4 /* sub_0ec104e8 */, fn_lance_access_9 /* sub_0ec10c78 */, fn_lance_access_10 /* sub_0ec10e50 */, fn_lance_access_11 /* sub_0ec117c8 */ (+4)
   ; >>> [R6] return
@@ -33366,7 +33366,7 @@
   ; >>> [R7] in-fn: helper for vtab:0x8E0, HW:RAMDAC, calls:printf
   0ec1279c:  afb00010  sw      $s0, 0x10($sp)
 
-; ---- sub_0ec127a0  (6 insns, 18 call sites) ----
+; ---- fn_lance_63 /* sub_0ec127a0 @ 0x0EC127A0 */  (6 insns, 18 call sites) ----
 ; >>> [R6] FN: helper for via vtab:0x880, HW:LANCE/video, vtab:0x8D0
 ;   callers: fn_lance_13 /* sub_0ec09948 */, sub_0ec107b8, sub_0ec11330, sub_0ec11530, sub_0ec11638, sub_0ec116dc (+3)
   0ec127a0:  3c100ec0  lui     $s0, 0xec0
@@ -34281,7 +34281,7 @@
   ; >>> [R7] in-fn: calls:printf
   0ec13034:  02802821  move    $a1, $s4
 
-; ---- sub_0ec13038  (61 insns, 5 call sites) ----
+; ---- fn_lance_helper_92 /* sub_0ec13038 @ 0x0EC13038 */  (61 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for HW:video, "Keyboard_Controller_UW_1", via vtab:0x8F4 / calls
 ;   callers: fn_video /* sub_0ec0556c */, fn_Keyboard_Controller_UW /* sub_0ec08e5c */_Controller_UW_1, sub_0ec0cc90, sub_0ec0ccec, fn_lance_14 /* sub_0ec0ce60 */
 ;   calls:   sub_0ec109f8
@@ -34643,7 +34643,7 @@
   0ec133b8:  24420001  addiu   $v0, $v0, 1  ; → data_0x0ec00001
   0ec133bc:  3c010ec0  lui     $at, 0xec0
 
-; ---- sub_0ec133c0  (92 insns, 2 call sites) ----
+; ---- fn_lance_helper_93 /* sub_0ec133c0 @ 0x0EC133C0 */  (92 insns, 2 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_lance_access_10 /* sub_0ec10e50 */, fn_ramdac_access_8 /* sub_0ec110ac */
 ;   calls:   sub_0ec10888, sub_0ec05440, sub_0ec154d0, sub_0ec16500
@@ -34905,7 +34905,7 @@
   0ec13630:  10400005  beqz    $v0, 0xec13648
   0ec13634:  24020044  addiu   $v0, $zero, 0x44
 
-; ---- sub_0ec13638  (41 insns, 3 call sites) ----
+; ---- fn_lance_helper_94 /* sub_0ec13638 @ 0x0EC13638 */  (41 insns, 3 call sites) ----
 ; >>> [R3] FN: via vtab:0x8D0
 ;   callers: sub_0ec11268, fn_lance_access_11 /* sub_0ec117c8 */, fn_ramdac_access_9 /* sub_0ec11928 */
 ;   calls:   sub_0ec10910, sub_0ec16264, sub_0ec16904, sub_0ec13d70, sub_0ec168c4
@@ -35073,7 +35073,7 @@
   0ec137c4:  8fb1003c  lw      $s1, 0x3c($sp)
   ; >>> [R7] in-fn: vtab:0x8D0  calls:printf
 
-; ---- sub_0ec137c8  (3 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_52 /* sub_0ec137c8 @ 0x0EC137C8 */  (3 insns, 1 call sites) ----
 ;   callers: fn_ramdac_access_9 /* sub_0ec11928 */
 ; >>> [R9] FN: unnamed helper
   0ec137c8:  8fb00038  lw      $s0, 0x38($sp)
@@ -35194,7 +35194,7 @@
   ; >>> [R23] in-fn: sub_0ec138b0, calls: 2
   0ec138d8:  02002021  move    $a0, $s0
 
-; ---- sub_0ec138dc  (19 insns, 4 call sites) ----
+; ---- fn_ramdac_35 /* sub_0ec138dc @ 0x0EC138DC */  (19 insns, 4 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec0bcc8, sub_0ec0bd9c, fn_ramdac_access_9 /* sub_0ec11928 */
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec05440
@@ -35700,7 +35700,7 @@
   0ec13d68:  0fb01260  jal     0xec04980  ; → sub_0ec04980
   0ec13d6c:  24050006  addiu   $a1, $zero, 6
 
-; ---- sub_0ec13d70  (49 insns, 1 call sites) ----
+; ---- fn_ramdac_36 /* sub_0ec13d70 @ 0x0EC13D70 */  (49 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0  calls:printf
 ;   callers: sub_0ec13638
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec10910, sub_0ec16fb0, sub_0ec16ebc, sub_0ec16ef8
@@ -36720,7 +36720,7 @@
   0ec1468c:  00000000  nop     
   0ec14690:  a6020026  sh      $v0, 0x26($s0)
 
-; ---- sub_0ec14694  (61 insns, 2 call sites) ----
+; ---- fn_lance_helper_95 /* sub_0ec14694 @ 0x0EC14694 */  (61 insns, 2 call sites) ----
 ; >>> [R2] FN: vtab:0x8D0
 ;   callers: fn_lance_access_13 /* sub_0ec127f4 */, fn_printf_caller_4 /* sub_0ec1312c */
   0ec14694:  3c020ec0  lui     $v0, 0xec0
@@ -36824,7 +36824,7 @@
   ; >>> [R2] in-fn: vtab:0x8D0
   0ec14784:  0071a823  subu    $s5, $v1, $s1
 
-; ---- sub_0ec14788  (69 insns, 3 call sites) ----
+; ---- fn_lance_helper_96 /* sub_0ec14788 @ 0x0EC14788 */  (69 insns, 3 call sites) ----
 ; >>> [R3] FN: via vtab:0x8EC,0x8F0
 ;   callers: fn_lance_access_12 /* sub_0ec1259c */, fn_lance_access_13 /* sub_0ec127f4 */
 ;   calls:   sub_0ec16708
@@ -37106,7 +37106,7 @@
   ; >>> [R2] in-fn: calls:printf
   0ec14a2c:  3c030ec0  lui     $v1, 0xec0
 
-; ---- sub_0ec14a30  (71 insns, 1 call sites) ----
+; ---- fn_lance_helper_97 /* sub_0ec14a30 @ 0x0EC14A30 */  (71 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8E4
 ;   callers: fn_lance_access_14 /* sub_0ec12cd4 */
 ;   calls:   sub_0ec052f0, sub_0ec1673c
@@ -38141,7 +38141,7 @@
   0ec15378:  0fb01274  jal     0xec049d0  ; → fn_printf /* sub_0ec049d0 */
   ; >>> [R7] in-fn: calls:printf
 
-; ---- sub_0ec1537c  (11 insns, 1 call sites) ----
+; ---- fn_printf_helper_42 /* sub_0ec1537c @ 0x0EC1537C */  (11 insns, 1 call sites) ----
 ;   callers: fn_printf_caller_7 /* sub_0ec17830 */
 ; >>> [R9] FN: unnamed helper
   0ec1537c:  30c6001f  andi    $a2, $a2, 0x1f
@@ -38200,7 +38200,7 @@
   0ec153f0:  03e00008  jr      $ra
   0ec153f4:  27bd0020  addiu   $sp, $sp, 0x20
 
-; ---- sub_0ec153f8  (11 insns, 0 call sites) ----
+; ---- fn_lance_64 /* sub_0ec153f8 @ 0x0EC153F8 */  (11 insns, 0 call sites) ----
 ; >>> [R5] FN: via via via HW:LANCE
 ;   calls:   sub_0ec028fc
   ; >>> [R6] fn prologue: allocate stack frame
@@ -38299,7 +38299,7 @@
   0ec154c8:  3c04be38  lui     $a0, 0xbe38
   0ec154cc:  34840004  ori     $a0, $a0, 4  ; → 0xbe380004
 
-; ---- sub_0ec154d0  (30 insns, 1 call sites) ----
+; ---- fn_ramdac_37 /* sub_0ec154d0 @ 0x0EC154D0 */  (30 insns, 1 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   callers: sub_0ec133c0
 ;   calls:   sub_0ec02760, sub_0ec023a0, sub_0ec173a8
@@ -38676,7 +38676,7 @@
   ; >>> [R23] in-fn: sub_0ec15548, calls: 7, g_state x5
   0ec157d0:  afb20018  sw      $s2, 0x18($sp)
 
-; ---- sub_0ec157d4  (55 insns, 1 call sites) ----
+; ---- fn_duart_35 /* sub_0ec157d4 @ 0x0EC157D4 */  (55 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   callers: fn_lance_access_8 /* sub_0ec0f18c */
 ;   calls:   sub_0ec18b30, sub_0ec17390, sub_0ec17424, fn_lance_access_16 /* sub_0ec17548 */
@@ -38777,7 +38777,7 @@
   0ec158ac:  8c8408f0  lw      $a0, 0x8f0($a0)  ; → data_0x0ec008f0
   ; >>> [R7] in-fn: vtab:0x8EC,0x8F0
 
-; ---- sub_0ec158b0  (53 insns, 1 call sites) ----
+; ---- fn_lance_helper_98 /* sub_0ec158b0 @ 0x0EC158B0 */  (53 insns, 1 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   callers: sub_0ec0f41c
 ;   calls:   sub_0ec173a8, sub_0ec17424, sub_0ec17504
@@ -38869,7 +38869,7 @@
   0ec1597c:  0bb05e69  j       0xec179a4
   0ec15980:  24020001  addiu   $v0, $zero, 1
 
-; ---- sub_0ec15984  (8 insns, 4 call sites) ----
+; ---- fn_lance_65 /* sub_0ec15984 @ 0x0EC15984 */  (8 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for via via vtab:0x8D0, via HW:LANCE, HW:RAMDAC
 ;   callers: sub_0ec103dc, fn_lance_access_11 /* sub_0ec117c8 */, fn_ramdac_access_9 /* sub_0ec11928 */, fn_printf_caller_12 /* sub_0ec13b08 */
   0ec15984:  24c20001  addiu   $v0, $a2, 1
@@ -38885,7 +38885,7 @@
   ; >>> [R7] in-fn: helper for via via vtab:0x8D0, via HW:LANCE, HW:
   0ec159a0:  00001021  move    $v0, $zero
 
-; ---- sub_0ec159a4  (2 insns, 7 call sites) ----
+; ---- fn_lance_66 /* sub_0ec159a4 @ 0x0EC159A4 */  (2 insns, 7 call sites) ----
 ; >>> [R6] FN: helper for via HW:LANCE, HW:RAMDAC, vtab:0x8E4
 ;   callers: sub_0ec10624, fn_lance_access_11 /* sub_0ec117c8 */, fn_ramdac_access_9 /* sub_0ec11928 */, fn_printf_caller_12 /* sub_0ec13b08 */
   ; >>> [R6] return
@@ -39280,7 +39280,7 @@
   0ec15d4c:  0fb01274  jal     0xec049d0  ; → fn_printf /* sub_0ec049d0 */
   0ec15d50:  24060006  addiu   $a2, $zero, 6
 
-; ---- sub_0ec15d54  (56 insns, 2 call sites) ----
+; ---- fn_lance_67 /* sub_0ec15d54 @ 0x0EC15D54 */  (56 insns, 2 call sites) ----
 ; >>> [R3] FN: via HW:LANCE
 ;   callers: fn_lance_access_7 /* sub_0ec0ec60 */, fn_ramdac_access_12 /* sub_0ec14358 */
 ;   calls:   fn_lance_7 /* sub_0ec084b0 */, sub_0ec173a8
@@ -39372,7 +39372,7 @@
   ; >>> [R7] in-fn: via HW:LANCE
   0ec15e30:  8fb40020  lw      $s4, 0x20($sp)
 
-; ---- sub_0ec15e34  (6 insns, 4 call sites) ----
+; ---- fn_lance_68 /* sub_0ec15e34 @ 0x0EC15E34 */  (6 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for via HW:LANCE, vtab:0x8E4
 ;   callers: sub_0ec0ea00, sub_0ec0ead0, fn_lance_access_7 /* sub_0ec0ec60 */, fn_ramdac_access_12 /* sub_0ec14358 */
   0ec15e34:  8fb3001c  lw      $s3, 0x1c($sp)
@@ -39561,7 +39561,7 @@
   0ec15fcc:  0fb0420d  jal     0xec10834  ; → fn_printf_caller_5 /* sub_0ec10834 */
   0ec15fd0:  ae140030  sw      $s4, 0x30($s0)
 
-; ---- sub_0ec15fd4  (50 insns, 2 call sites) ----
+; ---- fn_duart_36 /* sub_0ec15fd4 @ 0x0EC15FD4 */  (50 insns, 2 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   callers: fn_ramdac_access_9 /* sub_0ec11928 */, fn_ramdac_access_10 /* sub_0ec140c8 */
 ;   calls:   sub_0ec16c64, sub_0ec18b30, sub_0ec17424, fn_lance_access_16 /* sub_0ec17548 */, sub_0ec17498
@@ -39856,7 +39856,7 @@
   0ec16260:  3c04be48  lui     $a0, 0xbe48
   ; >>> [R2] in-fn: HW:LANCE
 
-; ---- sub_0ec16264  (167 insns, 1 call sites) ----
+; ---- fn_lance_helper_99 /* sub_0ec16264 @ 0x0EC16264 */  (167 insns, 1 call sites) ----
 ;   callers: sub_0ec13638
 ;   calls:   sub_0ec04ba0, sub_0ec16c64, sub_0ec173a8, sub_0ec17424, sub_0ec17504, sub_0ec177b4, sub_0ec17498
 ; >>> [R23] in-fn: sub_0ec16264, calls: 21
@@ -40184,7 +40184,7 @@
   ; >>> [R23] in-fn: sub_0ec16264, calls: 21
   0ec164fc:  00021400  sll     $v0, $v0, 0x10
 
-; ---- sub_0ec16500  (80 insns, 1 call sites) ----
+; ---- fn_lance_helper_100 /* sub_0ec16500 @ 0x0EC16500 */  (80 insns, 1 call sites) ----
 ; >>> [R4] FN: via via calls:printf
 ;   callers: sub_0ec133c0
 ;   calls:   sub_0ec16c64, sub_0ec173a8, sub_0ec17958
@@ -40411,7 +40411,7 @@
   0ec16704:  00000000  nop     
   ; >>> [R2] in-fn: vtab:0x8EC,0x8F0
 
-; ---- sub_0ec16708  (13 insns, 6 call sites) ----
+; ---- fn_lance_helper_101 /* sub_0ec16708 @ 0x0EC16708 */  (13 insns, 6 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   callers: sub_0ec14788
 ;   calls:   sub_0ec17424, sub_0ec17498
@@ -40442,7 +40442,7 @@
   0ec16734:  8c8408ec  lw      $a0, 0x8ec($a0)  ; → data_0x0ec008ec
   0ec16738:  30a57f00  andi    $a1, $a1, 0x7f00
 
-; ---- sub_0ec1673c  (86 insns, 1 call sites) ----
+; ---- fn_lance_helper_102 /* sub_0ec1673c @ 0x0EC1673C */  (86 insns, 1 call sites) ----
 ;   callers: sub_0ec14a30
 ;   calls:   sub_0ec17424
 ; >>> [R23] in-fn: sub_0ec1673c, g_state x17
@@ -40613,7 +40613,7 @@
   0ec1688c:  03e00008  jr      $ra
   0ec16890:  27bd0018  addiu   $sp, $sp, 0x18
 
-; ---- sub_0ec16894  (12 insns, 0 call sites) ----
+; ---- fn_printf_27 /* sub_0ec16894 @ 0x0EC16894 */  (12 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   sub_0ec18b30, fn_printf_caller_5 /* sub_0ec10834 */, sub_0ec188f4, sub_0ec189cc
   ; >>> [R6] fn prologue: allocate stack frame
@@ -40639,7 +40639,7 @@
   ; >>> [R6] branch delay-slot
   0ec168c0:  00000000  nop     
 
-; ---- sub_0ec168c4  (12 insns, 2 call sites) ----
+; ---- fn_duart_37 /* sub_0ec168c4 @ 0x0EC168C4 */  (12 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for via vtab:0x8D0, calls:printf
 ;   callers: sub_0ec13638, fn_printf_caller_15 /* sub_0ec1489c */
 ;   calls:   sub_0ec18984, sub_0ec19280, sub_0ec18a0c, fn_duart_access_13 /* sub_0ec18b6c */
@@ -40675,7 +40675,7 @@
   ; >>> [R13] data 0x0EC01488: mutable-state/via calls:printf
   0ec16900:  8e521488  lw      $s2, 0x1488($s2)  ; → g_state_488 /* data_0x0ec01488 */
 
-; ---- sub_0ec16904  (32 insns, 1 call sites) ----
+; ---- fn_lance_helper_103 /* sub_0ec16904 @ 0x0EC16904 */  (32 insns, 1 call sites) ----
 ;   callers: sub_0ec13638
 ;   calls:   sub_0ec107f0
 ; >>> [R23] in-fn: sub_0ec16904, calls: 2
@@ -40740,7 +40740,7 @@
   0ec1697c:  03e00008  jr      $ra
   0ec16980:  27bd0028  addiu   $sp, $sp, 0x28
 
-; ---- sub_0ec16984  (18 insns, 0 call sites) ----
+; ---- fn_printf_28 /* sub_0ec16984 @ 0x0EC16984 */  (18 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   fn_printf_caller_5 /* sub_0ec10834 */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -40947,7 +40947,7 @@
   0ec16b48:  3c040ec0  lui     $a0, 0xec0
   ; >>> [R7] in-fn: vtab:0x8F0
 
-; ---- sub_0ec16b4c  (12 insns, 2 call sites) ----
+; ---- fn_duart_38 /* sub_0ec16b4c @ 0x0EC16B4C */  (12 insns, 2 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   callers: sub_0ec0f078, fn_duart_access_10 /* sub_0ec0f710 */
 ;   calls:   sub_0ec17424
@@ -40974,7 +40974,7 @@
   ; >>> [R13] data 0x0EC0072A: mutable-state/HW:DUART
   0ec16b78:  9442072a  lhu     $v0, 0x72a($v0)  ; → g_duart_72a /* data_0x0ec0072a */
 
-; ---- sub_0ec16b7c  (58 insns, 0 call sites) ----
+; ---- fn_duart_39 /* sub_0ec16b7c @ 0x0EC16B7C */  (58 insns, 0 call sites) ----
 ; >>> [R2] FN: vtab:0x8EC,0x8F0
 ;   calls:   sub_0ec17390, sub_0ec17424
   ; >>> [R6] fn prologue: allocate stack frame
@@ -41081,7 +41081,7 @@
   0ec16c5c:  8c420730  lw      $v0, 0x730($v0)  ; → g_const_730 /* data_0x0ec00730 */
   0ec16c60:  36310088  ori     $s1, $s1, 0x88  ; → data_0x0ec00088
 
-; ---- sub_0ec16c64  (45 insns, 36 call sites) ----
+; ---- fn_lance_69 /* sub_0ec16c64 @ 0x0EC16C64 */  (45 insns, 36 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE, "Using_Subnet_Mask", via strs:0123456789ABCDEF
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, fn_duart_access_2 /* sub_0ec01e00 */, sub_0ec07408, sub_0ec07488, sub_0ec07508, sub_0ec07548 (+20)
 ;   calls:   sub_0ec17424
@@ -41158,7 +41158,7 @@
   ; >>> [R13] data 0x0EC0002C: local
   0ec16d14:  8e32002c  lw      $s2, 0x2c($s1)  ; → data_0x0ec0002c
 
-; ---- sub_0ec16d18  (105 insns, 1 call sites) ----
+; ---- fn_printf_29 /* sub_0ec16d18 @ 0x0EC16D18 */  (105 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_lance_access_7 /* sub_0ec0ec60 */
 ;   calls:   sub_0ec10888, sub_0ec173a8, sub_0ec17424, fn_printf_caller_22 /* sub_0ec18e74 */, sub_0ec18e2c
@@ -41332,7 +41332,7 @@
   0ec16eb4:  a6020000  sh      $v0, ($s0)
   0ec16eb8:  8e240010  lw      $a0, 0x10($s1)
 
-; ---- sub_0ec16ebc  (15 insns, 10 call sites) ----
+; ---- fn_ramdac_helper_53 /* sub_0ec16ebc @ 0x0EC16EBC */  (15 insns, 10 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8D0
 ;   callers: sub_0ec12144, fn_printf_caller_6 /* sub_0ec12234 */, sub_0ec123b0, fn_printf_caller_8 /* sub_0ec1248c */, fn_lance_access_12 /* sub_0ec1259c */, sub_0ec13d70 (+4)
 ;   calls:   sub_0ec173a8
@@ -41362,7 +41362,7 @@
   0ec16ef4:  a6030002  sh      $v1, 2($s0)
   ; >>> [R7] in-fn: helper for vtab:0x8D0
 
-; ---- sub_0ec16ef8  (46 insns, 14 call sites) ----
+; ---- fn_printf_helper_43 /* sub_0ec16ef8 @ 0x0EC16EF8 */  (46 insns, 14 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8D0, calls:printf
 ;   callers: sub_0ec12144, fn_printf_caller_6 /* sub_0ec12234 */, sub_0ec123b0, fn_printf_caller_8 /* sub_0ec1248c */, fn_lance_access_12 /* sub_0ec1259c */, fn_printf_caller_10 /* sub_0ec136dc */ (+8)
 ;   calls:   sub_0ec173a8
@@ -41438,7 +41438,7 @@
   0ec16fa8:  34048000  ori     $a0, $zero, 0x8000
   0ec16fac:  96030002  lhu     $v1, 2($s0)
 
-; ---- sub_0ec16fb0  (24 insns, 21 call sites) ----
+; ---- fn_printf_helper_44 /* sub_0ec16fb0 @ 0x0EC16FB0 */  (24 insns, 21 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8D0, via vtab:0x880, calls:printf
 ;   callers: sub_0ec0e360, sub_0ec0e3dc, sub_0ec0e624, sub_0ec11330, sub_0ec11530, sub_0ec11638 (+15)
 ;   calls:   sub_0ec173a8
@@ -41482,7 +41482,7 @@
   ; >>> [R7] in-fn: helper for vtab:0x8D0, via vtab:0x880, calls:pri
   0ec1700c:  00000000  nop     
 
-; ---- sub_0ec17010  (20 insns, 11 call sites) ----
+; ---- fn_lance_70 /* sub_0ec17010 @ 0x0EC17010 */  (20 insns, 11 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf, via HW:LANCE, vtab:0x8E0
 ;   callers: sub_0ec0bcc8, sub_0ec0bd9c, fn_lance_access_7 /* sub_0ec0ec60 */, fn_lance_access_8 /* sub_0ec0f18c */, sub_0ec0f41c, fn_duart_access_10 /* sub_0ec0f710 */ (+2)
 ;   calls:   sub_0ec173a8
@@ -41521,7 +41521,7 @@
   0ec1705c:  00000000  nop     
   ; >>> [R6] in-fn: helper for via calls:printf, via HW:LANCE, vt
 
-; ---- sub_0ec17060  (20 insns, 6 call sites) ----
+; ---- fn_lance_71 /* sub_0ec17060 @ 0x0EC17060 */  (20 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf, "Using_Subnet_Mask", via HW:LANCE
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec0bcc8, sub_0ec0bd9c, fn_lance_access_7 /* sub_0ec0ec60 */, sub_0ec10d68, fn_ramdac_access_8 /* sub_0ec110ac */
 ;   calls:   sub_0ec173a8
@@ -41559,7 +41559,7 @@
   0ec170ac:  00621824  and     $v1, $v1, $v0
   ; >>> [R6] in-fn: helper for via calls:printf, "Using_Subnet_Ma
 
-; ---- sub_0ec170b0  (34 insns, 1 call sites) ----
+; ---- fn_duart_helper_61 /* sub_0ec170b0 @ 0x0EC170B0 */  (34 insns, 1 call sites) ----
 ;   callers: sub_0ec10b38
 ;   calls:   sub_0ec173a8
 ; >>> [R23] in-fn: sub_0ec170b0, calls: 3
@@ -41623,7 +41623,7 @@
   ; >>> [R23] in-fn: sub_0ec170b0, calls: 3
   0ec17134:  24420001  addiu   $v0, $v0, 1
 
-; ---- sub_0ec17138  (27 insns, 1 call sites) ----
+; ---- fn_printf_helper_45 /* sub_0ec17138 @ 0x0EC17138 */  (27 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_printf_caller_11 /* sub_0ec13928 */
 ;   calls:   sub_0ec10888, sub_0ec173a8
@@ -41671,7 +41671,7 @@
   0ec171a0:  00000000  nop     
   ; >>> [R7] in-fn: via calls:printf
 
-; ---- sub_0ec171a4  (12 insns, 2 call sites) ----
+; ---- fn_printf_helper_46 /* sub_0ec171a4 @ 0x0EC171A4 */  (12 insns, 2 call sites) ----
 ;   callers: sub_0ec151d4, fn_printf_caller_19 /* sub_0ec15260 */
 ; >>> [R9] FN: unnamed helper
   0ec171a4:  24420001  addiu   $v0, $v0, 1
@@ -41696,7 +41696,7 @@
   ; >>> [R6] restore return address
   0ec171d0:  8fbf0024  lw      $ra, 0x24($sp)
 
-; ---- sub_0ec171d4  (35 insns, 1 call sites) ----
+; ---- fn_lance_72 /* sub_0ec171d4 @ 0x0EC171D4 */  (35 insns, 1 call sites) ----
 ; >>> [R3] FN: via HW:LANCE/memctl
 ;   callers: sub_0ec18680
 ;   calls:   fn_lance_19 /* sub_0ec18f5c */
@@ -41762,7 +41762,7 @@
   0ec1725c:  8fbf001c  lw      $ra, 0x1c($sp)
   ; >>> [R7] in-fn: via HW:LANCE/memctl
 
-; ---- sub_0ec17260  (8 insns, 1 call sites) ----
+; ---- fn_Mount_helper_12 /* sub_0ec17260 @ 0x0EC17260 */  (8 insns, 1 call sites) ----
 ;   callers: sub_0ec186e0
 ; >>> [R9] FN: unnamed helper
   0ec17260:  8fb20018  lw      $s2, 0x18($sp)
@@ -41777,7 +41777,7 @@
   ; >>> [R10] in-fn: sub_0ec17260
   0ec1727c:  00000000  nop     
 
-; ---- sub_0ec17280  (46 insns, 0 call sites) ----
+; ---- fn_lance_73 /* sub_0ec17280 @ 0x0EC17280 */  (46 insns, 0 call sites) ----
 ;   calls:   sub_0ec10910, sub_0ec19338
   ; >>> [R6] fn prologue: allocate stack frame
   0ec17280:  27bdffd8  addiu   $sp, $sp, -0x28
@@ -41904,7 +41904,7 @@
   ; >>> [R23] in-fn: sub_0ec17338, g_state x6
   0ec1738c:  a6220026  sh      $v0, 0x26($s1)
 
-; ---- sub_0ec17390  (6 insns, 7 call sites) ----
+; ---- fn_lance_74 /* sub_0ec17390 @ 0x0EC17390 */  (6 insns, 7 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8EC,0x8F0, HW:LANCE, via calls:printf
 ;   callers: sub_0ec153a8, sub_0ec15548, sub_0ec157d4, fn_lance_16 /* sub_0ec1609c */, fn_printf_caller_6 /* sub_0ec169cc */, sub_0ec16b7c
 ;   calls:   sub_0ec173a8
@@ -41918,7 +41918,7 @@
   0ec173a0:  00042402  srl     $a0, $a0, 0x10
   0ec173a4:  0fb05cea  jal     0xec173a8  ; → sub_0ec173a8
 
-; ---- sub_0ec173a8  (20 insns, 66 call sites) ----
+; ---- fn_lance_75 /* sub_0ec173a8 @ 0x0EC173A8 */  (20 insns, 66 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via HW:LANCE/memctl, via via calls:printf
 ;   callers: fn_video_helper_5 /* sub_0ec15424 */, sub_0ec154d0, sub_0ec158b0, fn_duart_access_11 /* sub_0ec159ac */, fn_printf_caller_21 /* sub_0ec15bfc */, sub_0ec15d54 (+15)
 ;   calls:   sub_0ec173a8
@@ -41955,7 +41955,7 @@
   0ec173f4:  8fb10014  lw      $s1, 0x14($sp)
   ; >>> [R6] in-fn: helper for calls:printf, via HW:LANCE/memctl,
 
-; ---- sub_0ec173f8  (11 insns, 8 call sites) ----
+; ---- fn_duart_40 /* sub_0ec173f8 @ 0x0EC173F8 */  (11 insns, 8 call sites) ----
 ; >>> [R6] FN: helper for HW:video, HW:DUART/video, HW:LANCE/video
 ;   callers: sub_0ec06cb0, sub_0ec09864, fn_lance_13 /* sub_0ec09948 */, fn_video_helper_3 /* sub_0ec0db5c */, fn_video_helper_4 /* sub_0ec0dbc0 */, fn_video_helper_5 /* sub_0ec15424 */ (+1)
   0ec173f8:  8fb00010  lw      $s0, 0x10($sp)
@@ -41978,7 +41978,7 @@
   0ec17420:  02408021  move    $s0, $s2
   ; >>> [R7] in-fn: helper for HW:video, HW:DUART/video, HW:LANCE/vi
 
-; ---- sub_0ec17424  (25 insns, 54 call sites) ----
+; ---- fn_lance_76 /* sub_0ec17424 @ 0x0EC17424 */  (25 insns, 54 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8EC,0x8F0, HW:LANCE, via calls:printf
 ;   callers: sub_0ec157d4, sub_0ec158b0, sub_0ec15e78, sub_0ec15fd4, fn_lance_16 /* sub_0ec1609c */, fn_lance_17 /* sub_0ec161ec */ (+10)
 ;   calls:   sub_0ec19338
@@ -42029,7 +42029,7 @@
   0ec17490:  afbf0018  sw      $ra, 0x18($sp)
   0ec17494:  afb10014  sw      $s1, 0x14($sp)
 
-; ---- sub_0ec17498  (27 insns, 8 call sites) ----
+; ---- fn_lance_77 /* sub_0ec17498 @ 0x0EC17498 */  (27 insns, 8 call sites) ----
 ; >>> [R6] FN: helper for HW:LANCE, vtab:0x8EC,0x8F0
 ;   callers: sub_0ec15e78, sub_0ec15fd4, fn_lance_16 /* sub_0ec1609c */, fn_lance_17 /* sub_0ec161ec */, sub_0ec16264, sub_0ec16708
 ;   calls:   sub_0ec173a8
@@ -42079,7 +42079,7 @@
   0ec17500:  8c840000  lw      $a0, ($a0)
   ; >>> [R7] in-fn: helper for HW:LANCE, vtab:0x8EC,0x8F0
 
-; ---- sub_0ec17504  (17 insns, 4 call sites) ----
+; ---- fn_lance_78 /* sub_0ec17504 @ 0x0EC17504 */  (17 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8EC,0x8F0, HW:LANCE
 ;   callers: sub_0ec158b0, fn_lance_16 /* sub_0ec1609c */, sub_0ec16264
 ;   calls:   sub_0ec19404
@@ -42333,7 +42333,7 @@
   ; >>> [R6] branch delay-slot
   0ec17754:  00000000  nop     
 
-; ---- sub_0ec17758  (23 insns, 4 call sites) ----
+; ---- fn_printf_helper_47 /* sub_0ec17758 @ 0x0EC17758 */  (23 insns, 4 call sites) ----
 ;   callers: sub_0ec15548, fn_printf_caller_6 /* sub_0ec169cc */
 ;   calls:   sub_0ec19404, sub_0ec19488
 ; >>> [R23] in-fn: sub_0ec17758, calls: 2, g_state x2
@@ -42378,7 +42378,7 @@
   ; >>> [R23] in-fn: sub_0ec17758, calls: 2, g_state x2
   0ec177b0:  3c020ec0  lui     $v0, 0xec0
 
-; ---- sub_0ec177b4  (31 insns, 4 call sites) ----
+; ---- fn_duart_helper_62 /* sub_0ec177b4 @ 0x0EC177B4 */  (31 insns, 4 call sites) ----
 ; >>> [R6] FN: helper for calls:printf
 ;   callers: fn_duart_access_11 /* sub_0ec159ac */, fn_printf_caller_21 /* sub_0ec15bfc */, sub_0ec16264
 ;   calls:   sub_0ec19404, sub_0ec19830
@@ -42568,7 +42568,7 @@
   ; >>> [R10] in-fn: sub_0ec178d0
   0ec17954:  36520088  ori     $s2, $s2, 0x88  ; → data_0x0ec00088
 
-; ---- sub_0ec17958  (29 insns, 1 call sites) ----
+; ---- fn_printf_30 /* sub_0ec17958 @ 0x0EC17958 */  (29 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: sub_0ec16500
 ;   calls:   sub_0ec04980, sub_0ec1b540, fn_printf_caller_5 /* sub_0ec10834 */, sub_0ec19d68
@@ -42880,7 +42880,7 @@
   ; >>> [R2] in-fn: calls:printf
   0ec17c4c:  00001021  move    $v0, $zero
 
-; ---- sub_0ec17c50  (6 insns, 1 call sites) ----
+; ---- fn_lance_helper_104 /* sub_0ec17c50 @ 0x0EC17C50 */  (6 insns, 1 call sites) ----
 ;   callers: fn_lance_access_9 /* sub_0ec10c78 */
 ; >>> [R9] FN: unnamed helper
   0ec17c50:  8fbf0064  lw      $ra, 0x64($sp)
@@ -42892,7 +42892,7 @@
   0ec17c60:  03e00008  jr      $ra
   0ec17c64:  27bd0068  addiu   $sp, $sp, 0x68
 
-; ---- sub_0ec17c68  (64 insns, 0 call sites) ----
+; ---- fn_duart_41 /* sub_0ec17c68 @ 0x0EC17C68 */  (64 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   sub_0ec04ba0, sub_0ec04980, sub_0ec1b540, sub_0ec1abec, sub_0ec10b38, fn_printf_caller_5 /* sub_0ec10834 */, sub_0ec19d68, sub_0ec198d0
   ; >>> [R6] fn prologue: allocate stack frame
@@ -43134,7 +43134,7 @@
   ; >>> [R23] in-fn: sub_0ec17e4c, calls: 2
   0ec17e74:  24050a23  addiu   $a1, $zero, 0xa23
 
-; ---- sub_0ec17e78  (53 insns, 1 call sites) ----
+; ---- fn_Using_helper_14 /* sub_0ec17e78 @ 0x0EC17E78 */  (53 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec04980, sub_0ec1b360, sub_0ec1b2b8, sub_0ec1b268, sub_0ec1b30c
 ; >>> [R23] in-fn: sub_0ec17e78, calls: 7
@@ -43240,7 +43240,7 @@
   ; >>> [R23] in-fn: sub_0ec17e78, calls: 7
   0ec17f48:  0fb01260  jal     0xec04980  ; → sub_0ec04980
 
-; ---- sub_0ec17f4c  (336 insns, 1 call sites) ----
+; ---- fn_Using_helper_15 /* sub_0ec17f4c @ 0x0EC17F4C */  (336 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf / calls:Transmit_while_adapter_i
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec04ba0, sub_0ec1abec, sub_0ec10888, sub_0ec198d0, sub_0ec1b360, sub_0ec1b30c, sub_0ec1b3b0, sub_0ec1aa70 (+6)
@@ -43967,7 +43967,7 @@
   ; >>> [R6] branch delay-slot
   0ec1863c:  00000000  nop     
 
-; ---- sub_0ec18640  (16 insns, 1 call sites) ----
+; ---- fn_Using_helper_16 /* sub_0ec18640 @ 0x0EC18640 */  (16 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec04ba0
 ; >>> [R9] FN: unnamed helper
@@ -44038,7 +44038,7 @@
   ; >>> [R7] in-fn: via calls:printf
   0ec186dc:  0fb04222  jal     0xec10888  ; → sub_0ec10888
 
-; ---- sub_0ec186e0  (67 insns, 1 call sites) ----
+; ---- fn_Mount_helper_10 /* sub_0ec186e0 @ 0x0EC186E0 */  (67 insns, 1 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec04ba0, sub_0ec04980, sub_0ec10888, sub_0ec1a964, sub_0ec17260
@@ -44224,7 +44224,7 @@
   0ec1888c:  00000000  nop     
   0ec18890:  0fb04222  jal     0xec10888  ; → sub_0ec10888
 
-; ---- sub_0ec18894  (6 insns, 1 call sites) ----
+; ---- fn_lance_helper_105 /* sub_0ec18894 @ 0x0EC18894 */  (6 insns, 1 call sites) ----
 ;   callers: fn_lance_access_9 /* sub_0ec10c78 */
 ; >>> [R9] FN: unnamed helper
   0ec18894:  02002021  move    $a0, $s0
@@ -44267,7 +44267,7 @@
   ; >>> [R6] branch delay-slot
   0ec188f0:  00000000  nop     
 
-; ---- sub_0ec188f4  (28 insns, 1 call sites) ----
+; ---- fn_printf_helper_48 /* sub_0ec188f4 @ 0x0EC188F4 */  (28 insns, 1 call sites) ----
 ;   callers: sub_0ec16894
 ;   calls:   sub_0ec04980, sub_0ec1abec, sub_0ec1b478, sub_0ec1a964
 ; >>> [R23] in-fn: sub_0ec188f4, calls: 4
@@ -44336,7 +44336,7 @@
   ; >>> [R10] in-fn: sub_0ec18964
   0ec18980:  30420040  andi    $v0, $v0, 0x40
 
-; ---- sub_0ec18984  (18 insns, 1 call sites) ----
+; ---- fn_duart_helper_63 /* sub_0ec18984 @ 0x0EC18984 */  (18 insns, 1 call sites) ----
 ;   callers: sub_0ec168c4
 ;   calls:   sub_0ec1b478, sub_0ec1b360
 ; >>> [R23] in-fn: sub_0ec18984, calls: 2
@@ -44374,7 +44374,7 @@
   ; >>> [R23] in-fn: sub_0ec18984, calls: 2
   0ec189c8:  8e020034  lw      $v0, 0x34($s0)
 
-; ---- sub_0ec189cc  (11 insns, 1 call sites) ----
+; ---- fn_printf_helper_49 /* sub_0ec189cc @ 0x0EC189CC */  (11 insns, 1 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec16894
 ;   calls:   fn_printf /* sub_0ec049d0 */
@@ -44408,7 +44408,7 @@
   ; >>> [R10] in-fn: sub_0ec189f8
   0ec18a08:  24050014  addiu   $a1, $zero, 0x14
 
-; ---- sub_0ec18a0c  (25 insns, 1 call sites) ----
+; ---- fn_duart_helper_64 /* sub_0ec18a0c @ 0x0EC18A0C */  (25 insns, 1 call sites) ----
 ;   callers: sub_0ec168c4
 ;   calls:   sub_0ec04980, sub_0ec1b478, sub_0ec1b360
   ; >>> [R6] save return address
@@ -44554,7 +44554,7 @@
   ; >>> [R23] in-fn: sub_0ec18a70, calls: 2, g_state x9
   0ec18b2c:  93a2001c  lbu     $v0, 0x1c($sp)
 
-; ---- sub_0ec18b30  (15 insns, 6 call sites) ----
+; ---- fn_lance_79 /* sub_0ec18b30 @ 0x0EC18B30 */  (15 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for vtab:0x8EC,0x8F0, "Mount_failed", HW:LANCE
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed, sub_0ec157d4, sub_0ec15e78, sub_0ec15fd4, fn_lance_16 /* sub_0ec1609c */, sub_0ec16894
   0ec18b30:  3c040ec0  lui     $a0, 0xec0
@@ -44616,7 +44616,7 @@
   0ec18ba0:  03e00008  jr      $ra
   0ec18ba4:  27bd0030  addiu   $sp, $sp, 0x30
 
-; ---- sub_0ec18ba8  (161 insns, 0 call sites) ----
+; ---- fn_duart_42 /* sub_0ec18ba8 @ 0x0EC18BA8 */  (161 insns, 0 call sites) ----
 ; >>> [R3] FN: via calls:printf
 ;   calls:   sub_0ec04ba0, sub_0ec027e4, sub_0ec10910, sub_0ec10888, sub_0ec1aba8, sub_0ec1b2b8, sub_0ec1b268, sub_0ec1b3b0 (+1)
   ; >>> [R6] fn prologue: allocate stack frame
@@ -44880,7 +44880,7 @@
   ; >>> [R3] in-fn: via calls:printf
   0ec18e28:  24840610  addiu   $a0, $a0, 0x610  ; → data_0x0ec20610
 
-; ---- sub_0ec18e2c  (18 insns, 1 call sites) ----
+; ---- fn_printf_helper_50 /* sub_0ec18e2c @ 0x0EC18E2C */  (18 insns, 1 call sites) ----
 ;   callers: sub_0ec16d18
 ;   calls:   sub_0ec04ba0
 ; >>> [R9] FN: unnamed helper
@@ -45341,7 +45341,7 @@
   ; >>> [R6] save return address
   0ec1927c:  afbf0018  sw      $ra, 0x18($sp)
 
-; ---- sub_0ec19280  (14 insns, 2 call sites) ----
+; ---- fn_duart_helper_65 /* sub_0ec19280 @ 0x0EC19280 */  (14 insns, 2 call sites) ----
 ;   callers: sub_0ec168c4, fn_lance_access_16 /* sub_0ec17548 */
 ;   calls:   sub_0ec1b100, sub_0ec1b138, sub_0ec1b180
 ; >>> [R23] in-fn: sub_0ec19280, calls: 3
@@ -45435,7 +45435,7 @@
   ; >>> [R23] in-fn: sub_0ec1930c, calls: 2
   0ec19334:  24050001  addiu   $a1, $zero, 1
 
-; ---- sub_0ec19338  (10 insns, 2 call sites) ----
+; ---- fn_lance_helper_106 /* sub_0ec19338 @ 0x0EC19338 */  (10 insns, 2 call sites) ----
 ;   callers: sub_0ec17280, sub_0ec17424
 ; >>> [R9] FN: unnamed helper
   0ec19338:  34420002  ori     $v0, $v0, 2
@@ -45536,7 +45536,7 @@
   ; >>> [R23] in-fn: sub_0ec19360, calls: 4
   0ec19400:  a2420000  sb      $v0, ($s2)
 
-; ---- sub_0ec19404  (33 insns, 3 call sites) ----
+; ---- fn_lance_helper_107 /* sub_0ec19404 @ 0x0EC19404 */  (33 insns, 3 call sites) ----
 ;   callers: sub_0ec17504, sub_0ec17758, sub_0ec177b4
 ;   calls:   sub_0ec1b180
 ; >>> [R23] in-fn: sub_0ec19404, calls: 2
@@ -45600,7 +45600,7 @@
   ; >>> [R23] in-fn: sub_0ec19404, calls: 2
   0ec19484:  afb00010  sw      $s0, 0x10($sp)
 
-; ---- sub_0ec19488  (52 insns, 1 call sites) ----
+; ---- fn_printf_helper_51 /* sub_0ec19488 @ 0x0EC19488 */  (52 insns, 1 call sites) ----
 ;   callers: sub_0ec17758
 ;   calls:   sub_0ec1b138, sub_0ec1b180
 ; >>> [R23] in-fn: sub_0ec19488, calls: 4
@@ -45700,7 +45700,7 @@
   ; >>> [R23] in-fn: sub_0ec19488, calls: 4
   0ec19554:  10620002  beq     $v1, $v0, 0xec19560
 
-; ---- sub_0ec19558  (182 insns, 1 call sites) ----
+; ---- fn_lance_helper_108 /* sub_0ec19558 @ 0x0EC19558 */  (182 insns, 1 call sites) ----
 ;   callers: fn_lance_access_16 /* sub_0ec17548 */
 ;   calls:   sub_0ec027e4, sub_0ec1b100, sub_0ec1b138, sub_0ec1b174, sub_0ec1bd48, sub_0ec1bce8
   ; >>> [R6] save return address
@@ -46044,7 +46044,7 @@
   ; >>> [R23] in-fn: sub_0ec19558, calls: 7
   0ec1982c:  00108042  srl     $s0, $s0, 1
 
-; ---- sub_0ec19830  (40 insns, 2 call sites) ----
+; ---- fn_duart_helper_66 /* sub_0ec19830 @ 0x0EC19830 */  (40 insns, 2 call sites) ----
 ;   callers: sub_0ec177b4, sub_0ec187ec
 ; >>> [R9] FN: unnamed helper
   0ec19830:  02808021  move    $s0, $s4
@@ -46123,7 +46123,7 @@
   ; >>> [R10] in-fn: sub_0ec19830
   0ec198cc:  00441004  sllv    $v0, $a0, $v0
 
-; ---- sub_0ec198d0  (30 insns, 6 call sites) ----
+; ---- fn_lance_helper_109 /* sub_0ec198d0 @ 0x0EC198D0 */  (30 insns, 6 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf, via calls:printf / calls:Tra
 ;   callers: fn_lance_caller_4 /* sub_0ec179cc */, sub_0ec17c68, sub_0ec17f4c
   0ec198d0:  1606fff6  bne     $s0, $a2, 0xec198ac
@@ -46172,7 +46172,7 @@
   0ec19944:  8e230008  lw      $v1, 8($s1)
   ; >>> [R6] in-fn: helper for calls:printf, via calls:printf, vi
 
-; ---- sub_0ec19948  (200 insns, 2 call sites) ----
+; ---- fn_printf_helper_52 /* sub_0ec19948 @ 0x0EC19948 */  (200 insns, 2 call sites) ----
 ;   callers: sub_0ec10bd0, fn_printf_caller_22 /* sub_0ec18e74 */
 ;   calls:   sub_0ec1b5a0
 ; >>> [R23] in-fn: sub_0ec19948, calls: 5
@@ -46552,7 +46552,7 @@
   ; >>> [R6] restore return address
   0ec19c64:  8fbf0018  lw      $ra, 0x18($sp)
 
-; ---- sub_0ec19c68  (32 insns, 1 call sites) ----
+; ---- fn_Using_helper_17 /* sub_0ec19c68 @ 0x0EC19C68 */  (32 insns, 1 call sites) ----
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask
 ;   calls:   sub_0ec1b5a0
 ; >>> [R23] in-fn: sub_0ec19c68, calls: 2
@@ -46680,7 +46680,7 @@
   ; >>> [R10] in-fn: sub_0ec19d48
   0ec19d64:  afb20018  sw      $s2, 0x18($sp)
 
-; ---- sub_0ec19d68  (17 insns, 2 call sites) ----
+; ---- fn_printf_helper_53 /* sub_0ec19d68 @ 0x0EC19D68 */  (17 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf
 ;   callers: sub_0ec17958, sub_0ec17c68
 ;   calls:   sub_0ec023c4, sub_0ec023a0, sub_0ec1c194
@@ -46747,7 +46747,7 @@
   0ec19df4:  9205002b  lbu     $a1, 0x2b($s0)
   0ec19df8:  0fb06f52  jal     0xec1bd48  ; → sub_0ec1bd48
 
-; ---- sub_0ec19dfc  (8 insns, 1 call sites) ----
+; ---- fn_Mount_helper_11 /* sub_0ec19dfc @ 0x0EC19DFC */  (8 insns, 1 call sites) ----
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed
 ;   calls:   sub_0ec027e4
 ; >>> [R9] FN: unnamed helper
@@ -47302,7 +47302,7 @@
   ; >>> [R6] branch delay-slot
   0ec1a2b8:  00000000  nop     
 
-; ---- sub_0ec1a2bc  (9 insns, 1 call sites) ----
+; ---- fn_Using_helper_18 /* sub_0ec1a2bc @ 0x0EC1A2BC */  (9 insns, 1 call sites) ----
 ;   callers: sub_0ec17f4c
 ;   calls:   sub_0ec02708
   ; >>> [R6] fn prologue: allocate stack frame
@@ -47321,7 +47321,7 @@
   ; >>> [R6] branch delay-slot
   0ec1a2dc:  00000000  nop     
 
-; ---- sub_0ec1a2e0  (9 insns, 0 call sites) ----
+; ---- fn_ramdac_38 /* sub_0ec1a2e0 @ 0x0EC1A2E0 */  (9 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   calls:   sub_0ec02760
   ; >>> [R6] fn prologue: allocate stack frame
@@ -47341,7 +47341,7 @@
   ; >>> [R6] branch delay-slot
   0ec1a300:  00000000  nop     
 
-; ---- sub_0ec1a304  (9 insns, 0 call sites) ----
+; ---- fn_ramdac_39 /* sub_0ec1a304 @ 0x0EC1A304 */  (9 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   calls:   sub_0ec02734
   ; >>> [R6] fn prologue: allocate stack frame
@@ -47361,7 +47361,7 @@
   ; >>> [R6] branch delay-slot
   0ec1a324:  00000000  nop     
 
-; ---- sub_0ec1a328  (10 insns, 0 call sites) ----
+; ---- fn_ramdac_40 /* sub_0ec1a328 @ 0x0EC1A328 */  (10 insns, 0 call sites) ----
 ; >>> [R4] FN: via via HW:RAMDAC
 ;   calls:   fn_ramdac_caller_5 /* sub_0ec0278c */
   ; >>> [R6] fn prologue: allocate stack frame
@@ -47438,7 +47438,7 @@
   ; >>> [R23] in-fn: sub_0ec1a350, calls: 2
   0ec1a3bc:  00511023  subu    $v0, $v0, $s1
 
-; ---- sub_0ec1a3c0  (51 insns, 1 call sites) ----
+; ---- fn_Using_helper_19 /* sub_0ec1a3c0 @ 0x0EC1A3C0 */  (51 insns, 1 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: sub_0ec17f4c
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec1c970
@@ -47521,7 +47521,7 @@
   0ec1a488:  27b20018  addiu   $s2, $sp, 0x18
   ; >>> [R7] in-fn: calls:printf
 
-; ---- sub_0ec1a48c  (77 insns, 1 call sites) ----
+; ---- fn_lance_helper_110 /* sub_0ec1a48c @ 0x0EC1A48C */  (77 insns, 1 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: fn_lance_19 /* sub_0ec18f5c */
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec052c8, sub_0ec1d4b0, sub_0ec05310
@@ -47643,7 +47643,7 @@
   0ec1a5b8:  bba20013  swr     $v0, 0x13($sp)
   0ec1a5bc:  97a20010  lhu     $v0, 0x10($sp)
 
-; ---- sub_0ec1a5c0  (48 insns, 1 call sites) ----
+; ---- fn_Transmit_1 /* sub_0ec1a5c0 @ 0x0EC1A5C0 */  (48 insns, 1 call sites) ----
 ; >>> [R2] FN: calls:Transmit_while_adapter_i,printf
 ;   callers: sub_0ec17f4c
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec1d4b0, fn_Transmit_while_adapter /* sub_0ec0533c */_while_adapter_i
@@ -47722,7 +47722,7 @@
   ; >>> [R7] in-fn: calls:Transmit_while_adapter_i,printf
   0ec1a67c:  82220000  lb      $v0, ($s1)
 
-; ---- sub_0ec1a680  (139 insns, 1 call sites) ----
+; ---- fn_Using_helper_20 /* sub_0ec1a680 @ 0x0EC1A680 */  (139 insns, 1 call sites) ----
 ;   callers: sub_0ec17f4c
 ;   calls:   sub_0ec04980, sub_0ec1d4b0, sub_0ec1d800, sub_0ec1d4d4, sub_0ec1d68c
 ; >>> [R23] in-fn: sub_0ec1a680, calls: 6
@@ -47994,7 +47994,7 @@
   ; >>> [R23] in-fn: sub_0ec1a680, calls: 6
   0ec1a8a8:  8ba2003c  lwl     $v0, 0x3c($sp)
 
-; ---- sub_0ec1a8ac  (24 insns, 1 call sites) ----
+; ---- fn_Using_helper_21 /* sub_0ec1a8ac @ 0x0EC1A8AC */  (24 insns, 1 call sites) ----
 ;   callers: sub_0ec17f4c
 ; >>> [R9] FN: unnamed helper
   0ec1a8ac:  9ba2003f  lwr     $v0, 0x3f($sp)
@@ -48086,7 +48086,7 @@
   0ec1a95c:  8fbf0014  lw      $ra, 0x14($sp)
   0ec1a960:  8fb00010  lw      $s0, 0x10($sp)
 
-; ---- sub_0ec1a964  (3 insns, 3 call sites) ----
+; ---- fn_Using_helper_22 /* sub_0ec1a964 @ 0x0EC1A964 */  (3 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf / calls:Trans, via calls:printf
 ;   callers: sub_0ec17f4c, sub_0ec186e0, sub_0ec188f4
   ; >>> [R6] return
@@ -48162,7 +48162,7 @@
   ; >>> [R23] in-fn: sub_0ec1a970, calls: 4
   0ec1a9f4:  8e040028  lw      $a0, 0x28($s0)
 
-; ---- sub_0ec1a9f8  (30 insns, 1 call sites) ----
+; ---- fn_duart_helper_67 /* sub_0ec1a9f8 @ 0x0EC1A9F8 */  (30 insns, 1 call sites) ----
 ;   callers: sub_0ec18ba8
 ;   calls:   sub_0ec05280, sub_0ec1d0c0
 ; >>> [R23] in-fn: sub_0ec1a9f8, calls: 2
@@ -48224,7 +48224,7 @@
   ; >>> [R23] in-fn: sub_0ec1a9f8, calls: 2
   0ec1aa6c:  00000000  nop     
 
-; ---- sub_0ec1aa70  (50 insns, 1 call sites) ----
+; ---- fn_Using_helper_23 /* sub_0ec1aa70 @ 0x0EC1AA70 */  (50 insns, 1 call sites) ----
 ;   callers: sub_0ec17f4c
 ; >>> [R9] FN: unnamed helper
   0ec1aa70:  14740006  bne     $v1, $s4, 0xec1aa8c
@@ -48376,7 +48376,7 @@
   ; >>> [R23] in-fn: sub_0ec1ab38, calls: 2
   0ec1aba4:  0050102a  slt     $v0, $v0, $s0
 
-; ---- sub_0ec1aba8  (17 insns, 3 call sites) ----
+; ---- fn_duart_helper_68 /* sub_0ec1aba8 @ 0x0EC1ABA8 */  (17 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf
 ;   callers: fn_duart_access_12 /* sub_0ec17d68 */, sub_0ec18ba8
 ;   calls:   sub_0ec04980, sub_0ec107f0
@@ -48407,7 +48407,7 @@
   0ec1abe4:  8e330014  lw      $s3, 0x14($s1)
   0ec1abe8:  8e22001c  lw      $v0, 0x1c($s1)
 
-; ---- sub_0ec1abec  (33 insns, 9 call sites) ----
+; ---- fn_printf_helper_54 /* sub_0ec1abec @ 0x0EC1ABEC */  (33 insns, 9 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf / calls:Trans, "Mount_failed"
 ;   callers: fn_Mount_failed /* sub_0ec01810 */_failed, fn_lance_caller_4 /* sub_0ec179cc */, sub_0ec17c68, sub_0ec17f4c, sub_0ec188f4, fn_printf_caller_22 /* sub_0ec18e74 */
 ;   calls:   sub_0ec1ceb0
@@ -48910,7 +48910,7 @@
   0ec1b060:  00000000  nop     
   ; >>> [R3] in-fn: via calls:printf
 
-; ---- sub_0ec1b064  (39 insns, 2 call sites) ----
+; ---- fn_Using_helper_24 /* sub_0ec1b064 @ 0x0EC1B064 */  (39 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for "Using_Subnet_Mask", calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec0c6c4
 ;   calls:   sub_0ec1d14c
@@ -48975,7 +48975,7 @@
   0ec1b0fc:  afb30010  sw      $s3, 0x10($sp)
   ; >>> [R7] in-fn: helper for "Using_Subnet_Mask", calls:printf
 
-; ---- sub_0ec1b100  (14 insns, 4 call sites) ----
+; ---- fn_lance_helper_111 /* sub_0ec1b100 @ 0x0EC1B100 */  (14 insns, 4 call sites) ----
 ;   callers: fn_lance_helper_4 /* sub_0ec191f0 */, sub_0ec19280, sub_0ec192b8, sub_0ec19558
 ; >>> [R9] FN: unnamed helper
   0ec1b100:  8e05000c  lw      $a1, 0xc($s0)
@@ -49004,7 +49004,7 @@
   ; >>> [R6] return
   0ec1b134:  03e00008  jr      $ra
 
-; ---- sub_0ec1b138  (5 insns, 8 call sites) ----
+; ---- fn_lance_helper_112 /* sub_0ec1b138 @ 0x0EC1B138 */  (5 insns, 8 call sites) ----
 ;   callers: fn_lance_helper_4 /* sub_0ec191f0 */, sub_0ec19280, sub_0ec192b8, sub_0ec1930c, sub_0ec19360, sub_0ec19488 (+1)
 ; >>> [R9] FN: unnamed helper
   0ec1b138:  27bd0030  addiu   $sp, $sp, 0x30
@@ -49035,14 +49035,14 @@
   ; >>> [R10] in-fn: sub_0ec1b14c
   0ec1b170:  8e05000c  lw      $a1, 0xc($s0)
 
-; ---- sub_0ec1b174  (3 insns, 1 call sites) ----
+; ---- fn_lance_helper_113 /* sub_0ec1b174 @ 0x0EC1B174 */  (3 insns, 1 call sites) ----
 ;   callers: sub_0ec19558
 ; >>> [R9] FN: unnamed helper
   0ec1b174:  8c620000  lw      $v0, ($v1)
   0ec1b178:  00000000  nop     
   0ec1b17c:  0040f809  jalr    $v0
 
-; ---- sub_0ec1b180  (16 insns, 10 call sites) ----
+; ---- fn_duart_helper_69 /* sub_0ec1b180 @ 0x0EC1B180 */  (16 insns, 10 call sites) ----
 ;   callers: sub_0ec19280, sub_0ec192b8, sub_0ec1930c, sub_0ec19360, sub_0ec19404, sub_0ec19488
 ; >>> [R9] FN: unnamed helper
   0ec1b180:  00003821  move    $a3, $zero
@@ -49153,7 +49153,7 @@
   ; >>> [R10] in-fn: sub_0ec1b1c0
   0ec1b264:  27a60018  addiu   $a2, $sp, 0x18
 
-; ---- sub_0ec1b268  (18 insns, 5 call sites) ----
+; ---- fn_duart_helper_70 /* sub_0ec1b268 @ 0x0EC1B268 */  (18 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf
 ;   callers: fn_duart_access_12 /* sub_0ec17d68 */, sub_0ec17e78, sub_0ec18ba8
   0ec1b268:  02203821  move    $a3, $s1
@@ -49189,7 +49189,7 @@
   0ec1b2b0:  27bdffd8  addiu   $sp, $sp, -0x28
   0ec1b2b4:  00c01821  move    $v1, $a2
 
-; ---- sub_0ec1b2b8  (21 insns, 4 call sites) ----
+; ---- fn_duart_helper_71 /* sub_0ec1b2b8 @ 0x0EC1B2B8 */  (21 insns, 4 call sites) ----
 ;   callers: fn_duart_access_12 /* sub_0ec17d68 */, sub_0ec17e4c, sub_0ec17e78, sub_0ec18ba8
 ; >>> [R9] FN: unnamed helper
   0ec1b2b8:  24040002  addiu   $a0, $zero, 2
@@ -49227,7 +49227,7 @@
   ; >>> [R6] branch delay-slot
   0ec1b308:  00000000  nop     
 
-; ---- sub_0ec1b30c  (21 insns, 5 call sites) ----
+; ---- fn_Using_helper_25 /* sub_0ec1b30c @ 0x0EC1B30C */  (21 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf / calls:Trans
 ;   callers: sub_0ec17e78, sub_0ec17f4c
   ; >>> [R6] return
@@ -49266,7 +49266,7 @@
   ; >>> [R6] return
   0ec1b35c:  03e00008  jr      $ra
 
-; ---- sub_0ec1b360  (8 insns, 10 call sites) ----
+; ---- fn_duart_helper_72 /* sub_0ec1b360 @ 0x0EC1B360 */  (8 insns, 10 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf / calls:Trans, calls:printf, via calls:prin
 ;   callers: fn_lance_caller_4 /* sub_0ec179cc */, fn_duart_access_12 /* sub_0ec17d68 */, sub_0ec17e78, sub_0ec17f4c, sub_0ec1848c, sub_0ec18984 (+1)
   0ec1b360:  2402ffff  addiu   $v0, $zero, -1
@@ -49306,7 +49306,7 @@
   ; >>> [R10] in-fn: sub_0ec1b380
   0ec1b3ac:  00000000  nop     
 
-; ---- sub_0ec1b3b0  (50 insns, 8 call sites) ----
+; ---- fn_Using_helper_26 /* sub_0ec1b3b0 @ 0x0EC1B3B0 */  (50 insns, 8 call sites) ----
 ; >>> [R6] FN: helper for via calls:printf / calls:Trans, via calls:printf
 ;   callers: sub_0ec17f4c, sub_0ec18a70, sub_0ec18ba8
 ;   calls:   sub_0ec04980, sub_0ec05280, sub_0ec1d0c0, sub_0ec1d14c, sub_0ec1d014, sub_0ec1d1c0
@@ -49388,7 +49388,7 @@
   0ec1b474:  8e020004  lw      $v0, 4($s0)
   ; >>> [R6] in-fn: helper for via calls:printf / calls:Trans, vi
 
-; ---- sub_0ec1b478  (14 insns, 5 call sites) ----
+; ---- fn_duart_helper_73 /* sub_0ec1b478 @ 0x0EC1B478 */  (14 insns, 5 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, via calls:printf
 ;   callers: fn_lance_caller_4 /* sub_0ec179cc */, sub_0ec1848c, sub_0ec188f4, sub_0ec18984, sub_0ec18a0c
   0ec1b478:  00000000  nop     
@@ -49478,7 +49478,7 @@
   0ec1b53c:  27a50018  addiu   $a1, $sp, 0x18
   ; >>> [R7] in-fn: calls:printf
 
-; ---- sub_0ec1b540  (24 insns, 3 call sites) ----
+; ---- fn_Using_helper_27 /* sub_0ec1b540 @ 0x0EC1B540 */  (24 insns, 3 call sites) ----
 ; >>> [R2] FN: calls:printf
 ;   callers: fn_Using_Subnet_Mask /* sub_0ec00cac */_Subnet_Mask, sub_0ec17958, sub_0ec17c68
 ;   calls:   fn_printf /* sub_0ec049d0 */, sub_0ec1d5ec
@@ -49522,7 +49522,7 @@
   ; >>> [R6] return
   0ec1b59c:  03e00008  jr      $ra
 
-; ---- sub_0ec1b5a0  (1 insns, 8 call sites) ----
+; ---- fn_printf_helper_55 /* sub_0ec1b5a0 @ 0x0EC1B5A0 */  (1 insns, 8 call sites) ----
 ;   callers: sub_0ec19948, sub_0ec19c68, sub_0ec19e64
 ; >>> [R9] FN: unnamed helper
   0ec1b5a0:  27bd0038  addiu   $sp, $sp, 0x38
@@ -49974,11 +49974,11 @@
 ;   callers: sub_0ec19e64
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1bce8  (24 insns, 3 call sites) ----
+; ---- fn_lance_helper_114 /* sub_0ec1bce8 @ 0x0EC1BCE8 */  (24 insns, 3 call sites) ----
 ;   callers: sub_0ec19558, sub_0ec19dac, sub_0ec19e1c
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1bd48  (25 insns, 3 call sites) ----
+; ---- fn_lance_helper_115 /* sub_0ec1bd48 @ 0x0EC1BD48 */  (25 insns, 3 call sites) ----
 ;   callers: sub_0ec19558, sub_0ec19de4, sub_0ec19e40
 ; >>> [R9] FN: unnamed helper
 
@@ -50025,25 +50025,25 @@
   ; >>> [R10] in-fn: sub_0ec1c128
   0ec1c13c:  00000000  nop     
 
-; ---- sub_0ec1c194  (111 insns, 3 call sites) ----
+; ---- fn_printf_helper_56 /* sub_0ec1c194 @ 0x0EC1C194 */  (111 insns, 3 call sites) ----
 ;   callers: sub_0ec19ce8, sub_0ec19d68, sub_0ec19e64
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1c350  (63 insns, 2 call sites) ----
+; ---- fn_ramdac_helper_54 /* sub_0ec1c350 @ 0x0EC1C350 */  (63 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for via via vtab:0x8D0
 ;   callers: sub_0ec103dc
 
-; ---- sub_0ec1c44c  (156 insns, 2 call sites) ----
+; ---- fn_printf_helper_57 /* sub_0ec1c44c @ 0x0EC1C44C */  (156 insns, 2 call sites) ----
 ; >>> [R6] FN: helper for calls:printf
 ;   callers: fn_printf_caller_4 /* sub_0ec104e8 */
 
-; ---- sub_0ec1c6bc  (148 insns, 1 call sites) ----
+; ---- fn_printf_helper_58 /* sub_0ec1c6bc @ 0x0EC1C6BC */  (148 insns, 1 call sites) ----
 ;   callers: fn_printf_caller_4 /* sub_0ec104e8 */
 ;   calls:   ext_0b030e30, ext_0b030e80, ext_0b030b80, ext_0b030cf0, ext_0b030d40, ext_0b030d90, ext_0b030de0, ext_0b031010 (+6)
 ; >>> [R9] FN: unnamed helper
   0ec1c6bc:  00000000  nop     
 
-; ---- sub_0ec1c90c  (25 insns, 1 call sites) ----
+; ---- fn_ramdac_helper_55 /* sub_0ec1c90c @ 0x0EC1C90C */  (25 insns, 1 call sites) ----
 ;   callers: sub_0ec103dc
 ;   calls:   ext_0b0317f0, ext_0b031730, ext_0b0315b0, ext_0b031670, ext_0b0314f0, ext_0b031bf0, ext_0b031c80, ext_0b0320d0 (+7)
 ; >>> [R9] FN: unnamed helper
@@ -50095,7 +50095,7 @@
   ; >>> [R10] in-fn: sub_0ec1c90c
   0ec1c96c:  0ec0ce58  jal     0xb033960  ; → ext_0b033960
 
-; ---- sub_0ec1c970  (114 insns, 2 call sites) ----
+; ---- fn_Using_helper_28 /* sub_0ec1c970 @ 0x0EC1C970 */  (114 insns, 2 call sites) ----
 ;   callers: sub_0ec1a3c0, sub_0ec1b380
 ;   calls:   ext_0b0337f0, ext_0b033960, ext_0b033850, ext_0b033900, ext_0b033770, ext_0b0336c0, ext_0b033c30, ext_0b033cd0 (+16)
 ; >>> [R9] FN: unnamed helper
@@ -50432,7 +50432,7 @@
 ;   callers: sub_0ec1ade4
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1ceb0  (4 insns, 1 call sites) ----
+; ---- fn_printf_helper_59 /* sub_0ec1ceb0 @ 0x0EC1CEB0 */  (4 insns, 1 call sites) ----
 ;   callers: sub_0ec1abec
 ; >>> [R9] FN: unnamed helper
 
@@ -50447,21 +50447,21 @@
   0ec1d004:  52504320  beql    $s2, $s0, 0xec2dc88
   0ec1d008:  5061636b  beql    $v1, $at, 0xec35db8
 
-; ---- sub_0ec1d014  (43 insns, 1 call sites) ----
+; ---- fn_Using_helper_29 /* sub_0ec1d014 @ 0x0EC1D014 */  (43 insns, 1 call sites) ----
 ;   callers: sub_0ec1b3b0
 ; >>> [R9] FN: unnamed helper
   0ec1d014:  52657472  beql    $s3, $a1, 0xec3a1e0
 
-; ---- sub_0ec1d0c0  (35 insns, 4 call sites) ----
+; ---- fn_duart_helper_74 /* sub_0ec1d0c0 @ 0x0EC1D0C0 */  (35 insns, 4 call sites) ----
 ;   callers: sub_0ec1a9f8, sub_0ec1ad8c, sub_0ec1b3b0, sub_0ec1b5c8
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1d14c  (29 insns, 2 call sites) ----
+; ---- fn_Using_helper_30 /* sub_0ec1d14c @ 0x0EC1D14C */  (29 insns, 2 call sites) ----
 ;   callers: sub_0ec1b064, sub_0ec1b3b0
 ; >>> [R9] FN: unnamed helper
   0ec1d14c:  54782054  bnel    $v1, $t8, 0xec252a0
 
-; ---- sub_0ec1d1c0  (112 insns, 1 call sites) ----
+; ---- fn_Using_helper_31 /* sub_0ec1d1c0 @ 0x0EC1D1C0 */  (112 insns, 1 call sites) ----
 ;   callers: sub_0ec1b3b0
 ; >>> [R9] FN: unnamed helper
 
@@ -50475,12 +50475,12 @@
 ;   calls:   ext_0b03c2f0, ext_0b03c4e0, ext_0b03c530, ext_0b03c580
 ; >>> [R9] FN: unnamed helper
 
-; ---- sub_0ec1d4b0  (9 insns, 3 call sites) ----
+; ---- fn_lance_helper_116 /* sub_0ec1d4b0 @ 0x0EC1D4B0 */  (9 insns, 3 call sites) ----
 ; >>> [R6] FN: helper for calls:printf, calls:Transmit_while_adapter_i
 ;   callers: sub_0ec1a48c, sub_0ec1a5c0, sub_0ec1a680
   0ec1d4b0:  205b792f  addi    $k1, $v0, 0x792f
 
-; ---- sub_0ec1d4d4  (9 insns, 2 call sites) ----
+; ---- fn_Using_helper_32 /* sub_0ec1d4d4 @ 0x0EC1D4D4 */  (9 insns, 2 call sites) ----
 ;   callers: sub_0ec1a680
 ; >>> [R9] FN: unnamed helper
 
@@ -50489,7 +50489,7 @@
 ; >>> [R9] FN: unnamed helper
   0ec1d4f8:  20746869  addi    $s4, $v1, 0x6869
 
-; ---- sub_0ec1d5ec  (40 insns, 3 call sites) ----
+; ---- fn_Using_helper_33 /* sub_0ec1d5ec @ 0x0EC1D5EC */  (40 insns, 3 call sites) ----
 ;   callers: sub_0ec1b540, sub_0ec1b5a4, sub_0ec1b5c8
 ; >>> [R9] FN: unnamed helper
   0ec1d5ec:  2d2d2d2d  sltiu   $t5, $t1, 0x2d2d
@@ -50518,14 +50518,14 @@
   ; >>> [R10] in-fn: sub_0ec1d5ec
   0ec1d620:  73000000  madd    $t8, $zero
 
-; ---- sub_0ec1d68c  (93 insns, 3 call sites) ----
+; ---- fn_Using_helper_34 /* sub_0ec1d68c @ 0x0EC1D68C */  (93 insns, 3 call sites) ----
 ;   callers: sub_0ec1a680, sub_0ec1b5c8, sub_0ec1b724
 ;   calls:   ext_0b040760, ext_0b0407b0, ext_0b040850, ext_0b040800, ext_0b0408a0, ext_0b040900, ext_0b040940, ext_0b040980 (+1)
 ; >>> [R9] FN: unnamed helper
   0ec1d68c:  7672616d  jalx    0x9c985b4
   0ec1d690:  205b792f  addi    $k1, $v0, 0x792f
 
-; ---- sub_0ec1d800  (1236 insns, 1 call sites) ----
+; ---- fn_Using_helper_35 /* sub_0ec1d800 @ 0x0EC1D800 */  (1236 insns, 1 call sites) ----
 ;   callers: sub_0ec1a680
 ;   calls:   ext_0b047cb0, ext_0b047e90, ext_0b047fc0, ext_0b048050, ext_0b047d60, ext_0b048140, ext_0b047b50, ext_0b04e640 (+231)
 ; >>> [R9] FN: unnamed helper
