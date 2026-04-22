@@ -86,22 +86,17 @@ def build(raw: bytes, load: int, entry: int) -> bytes:
     TEXT_OFF  = (hdr_total + 15) & ~15      # 316 (0x13C) -> 320 (0x140)
     pad_bytes = TEXT_OFF - hdr_total        # = 4
 
-    # HDRR (symbolic header) sits at end-of-file; pointed to by f_symptr.
-    # Even with F_RELFLG asserted, some loaders seek f_symptr
-    # unconditionally. A zero-valued seek lands in the filehdr (h_magic
-    # there is 0x0160, not 0x7009) and rejects. Appending a minimal valid
-    # stub defends against that path without costing anything else.
-    HDRR_SZ   = 96                          # 2+2 + 23*4
-    hdrr_off  = TEXT_OFF + text_sz
-
-    # File header
+    # File header. Match the real Xncd15r exactly: f_symptr = 0,
+    # f_nsyms = 0 (no HDRR). A speculative stub was removed after
+    # byte-level comparison against the real firmware confirmed it's
+    # absent there. See BT_LOADER.md.
     file_hdr = struct.pack(
         '>HHIIIHH',
         ECOFF_FILE_MAGIC,
         NSCNS,
         int(time.time()) & 0xFFFFFFFF,      # f_timdat — non-zero like real
-        hdrr_off,                           # f_symptr  -> our stub HDRR
-        HDRR_SZ,                            # f_nsyms   = size in BYTES of sym area
+        0,                                  # f_symptr = 0 (no HDRR)
+        0,                                  # f_nsyms  = 0
         OPT_HDR_SZ,
         F_FLAGS,
     )
@@ -134,9 +129,8 @@ def build(raw: bytes, load: int, entry: int) -> bytes:
     # monotonic section addresses or compute bss_start = max(scn_end)).
     # Real Xncd15r stores the file's total length in s_lnnoptr of .sdata
     # and .sbss — an "end-of-file" marker used by the boot loader to
-    # verify the TFTP transfer received all bytes. File length =
-    # TEXT_OFF + text_sz + HDRR_SZ.
-    eof_marker = TEXT_OFF + text_sz + HDRR_SZ
+    # verify the TFTP transfer received all bytes.
+    eof_marker = TEXT_OFF + text_sz
 
     sec_text  = scnhdr('.text',  load,     load,     text_sz, TEXT_OFF, STYP_TEXT)
     sec_rdata = scnhdr('.rdata', text_end, text_end, 0,       0,        STYP_RDATA)
@@ -145,16 +139,11 @@ def build(raw: bytes, load: int, entry: int) -> bytes:
     sec_sbss  = scnhdr('.sbss',  text_end, text_end, 0,       0,        STYP_SBSS,  lnnoptr=eof_marker)
     sec_bss   = scnhdr('.bss',   text_end, text_end, 0,       0,        STYP_BSS)
 
-    # HDRR stub (96 bytes): magic 0x7009, vstamp 0x020B, all counts/ptrs 0.
-    hdrr = struct.pack('>HH', 0x7009, VSTAMP) + b'\x00' * 92
-    assert len(hdrr) == HDRR_SZ
-
     return (file_hdr
             + opt_hdr
             + sec_text + sec_rdata + sec_data + sec_sdata + sec_sbss + sec_bss
             + b'\x00' * pad_bytes      # 4 bytes of NUL to align .text to 0x140
-            + raw
-            + hdrr)
+            + raw)
 
 
 def auto_int(x):
