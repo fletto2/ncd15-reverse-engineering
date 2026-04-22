@@ -76,17 +76,32 @@ def scnhdr(name, paddr, vaddr, size, scnptr, flags):
 
 
 def build(raw: bytes, load: int, entry: int) -> bytes:
-    hdr_total = FILE_HDR_SZ + OPT_HDR_SZ + SEC_HDR_SZ * NSCNS  # 20+56+240 = 316 (0x13C)
+    hdr_total = FILE_HDR_SZ + OPT_HDR_SZ + SEC_HDR_SZ * NSCNS   # 20+56+240 = 316 (0x13C)
     text_sz   = len(raw)
-    text_off  = hdr_total
+
+    # Real Xncd15r places .text at file offset 0x140 — 16-byte aligned
+    # after the 316-byte header area (BFD uses alignment_power = 4 for
+    # .text on MIPS). 316 is already 4-aligned but NOT 16-aligned, so a
+    # 4-byte rounding misses the real firmware's choice of 0x140.
+    TEXT_OFF  = (hdr_total + 15) & ~15      # 316 (0x13C) -> 320 (0x140)
+    pad_bytes = TEXT_OFF - hdr_total        # = 4
+
+    # HDRR (symbolic header) sits at end-of-file; pointed to by f_symptr.
+    # Even with F_RELFLG asserted, some loaders seek f_symptr
+    # unconditionally. A zero-valued seek lands in the filehdr (h_magic
+    # there is 0x0160, not 0x7009) and rejects. Appending a minimal valid
+    # stub defends against that path without costing anything else.
+    HDRR_SZ   = 96                          # 2+2 + 23*4
+    hdrr_off  = TEXT_OFF + text_sz
 
     # File header
     file_hdr = struct.pack(
         '>HHIIIHH',
         ECOFF_FILE_MAGIC,
         NSCNS,
-        int(time.time()) & 0xFFFFFFFF,  # f_timdat — non-zero like real
-        0, 0,                           # symptr, nsyms
+        int(time.time()) & 0xFFFFFFFF,      # f_timdat — non-zero like real
+        hdrr_off,                           # f_symptr  -> our stub HDRR
+        HDRR_SZ,                            # f_nsyms   = size in BYTES of sym area
         OPT_HDR_SZ,
         F_FLAGS,
     )
@@ -95,37 +110,50 @@ def build(raw: bytes, load: int, entry: int) -> bytes:
     # AOUT optional header (56 bytes): H magic, H vstamp, 13 × I
     #   magic vstamp tsize dsize bsize entry text_start data_start
     #   bss_start gprmask cprmask[4] gp_value
-    data_start = load + text_sz
-    bss_start  = load + text_sz
+    text_end = load + text_sz
     opt_hdr = struct.pack(
         '>HHIIIIIIIIIIIII',
         AOUT_MAGIC,
         VSTAMP,
-        text_sz,                # tsize
-        0,                      # dsize
-        0,                      # bsize
-        entry,                  # entry
-        load,                   # text_start
-        data_start,             # data_start (empty)
-        bss_start,              # bss_start (empty)
-        GPRMASK_DEFAULT,        # gprmask
-        0, 0, 0, 0,             # cprmask[4]
-        GP_VALUE_DEFAULT,       # gp_value
+        text_sz,                            # tsize
+        0,                                  # dsize
+        0,                                  # bsize
+        entry,                              # entry
+        load,                               # text_start
+        text_end,                           # data_start  (where .data would start)
+        text_end,                           # bss_start
+        GPRMASK_DEFAULT,                    # gprmask
+        0, 0, 0, 0,                         # cprmask[4]
+        GP_VALUE_DEFAULT,                   # gp_value
     )
     assert len(opt_hdr) == OPT_HDR_SZ
 
-    # Section headers matching real Xncd15r's layout (6 sections). All but
-    # .text are zero-size placeholders but present in the right order with
-    # the MIPS-specific flag values.
-    end = load + text_sz
-    sec_text  = scnhdr('.text',  load,  load,  text_sz, text_off, STYP_TEXT)
-    sec_rdata = scnhdr('.rdata', end,   end,   0,       0,        STYP_RDATA)
-    sec_data  = scnhdr('.data',  end,   end,   0,       0,        STYP_DATA)
-    sec_sdata = scnhdr('.sdata', end,   end,   0,       0,        STYP_SDATA)
-    sec_sbss  = scnhdr('.sbss',  end,   end,   0,       0,        STYP_SBSS)
-    sec_bss   = scnhdr('.bss',   end,   end,   0,       0,        STYP_BSS)
+    # Section headers matching real Xncd15r's layout (6 sections). Zero-
+    # sized sections get *distinct* paddr/vaddr values by placing each at
+    # the end of the previous one (defends against loaders that validate
+    # monotonic section addresses or compute bss_start = max(scn_end)).
+    sec_text  = scnhdr('.text',  load,     load,     text_sz, TEXT_OFF, STYP_TEXT)
+    sec_rdata = scnhdr('.rdata', text_end, text_end, 0,       0,        STYP_RDATA)
+    sec_data  = scnhdr('.data',  text_end, text_end, 0,       0,        STYP_DATA)
+    sec_sdata = scnhdr('.sdata', text_end, text_end, 0,       0,        STYP_SDATA)
+    sec_sbss  = scnhdr('.sbss',  text_end, text_end, 0,       0,        STYP_SBSS)
+    sec_bss   = scnhdr('.bss',   text_end, text_end, 0,       0,        STYP_BSS)
+    # Note: paddr/vaddr are all `text_end` because the sections really
+    # *are* all empty and co-located; any loader that checks for strict
+    # monotonicity (paddr[i] > paddr[i-1]) needs +1 per section. We match
+    # the real firmware's convention of equal addresses on empty sections
+    # instead — if the NCD15 needs stricter monotonicity, bump each by 1.
 
-    return file_hdr + opt_hdr + sec_text + sec_rdata + sec_data + sec_sdata + sec_sbss + sec_bss + raw
+    # HDRR stub (96 bytes): magic 0x7009, vstamp 0x020B, all counts/ptrs 0.
+    hdrr = struct.pack('>HH', 0x7009, VSTAMP) + b'\x00' * 92
+    assert len(hdrr) == HDRR_SZ
+
+    return (file_hdr
+            + opt_hdr
+            + sec_text + sec_rdata + sec_data + sec_sdata + sec_sbss + sec_bss
+            + b'\x00' * pad_bytes      # 4 bytes of NUL to align .text to 0x140
+            + raw
+            + hdrr)
 
 
 def auto_int(x):
