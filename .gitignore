@@ -1,0 +1,7 @@
+*.pyc
+__pycache__/
+*.pre-*
+coc_mc/
+llm_mc/
+.deepseek_api_key
+.glm_api_key

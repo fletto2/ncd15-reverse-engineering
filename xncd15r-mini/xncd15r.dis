@@ -1,0 +1,57 @@
+
+xncd15r.elf:     file format elf32-bigmips
+
+
+Disassembly of section .text:
+
+0ed00000 <_start>:
+ ed00000:	3c1d0ed3 	lui	sp,0xed3
+ ed00004:	37bdff00 	ori	sp,sp,0xff00
+ ed00008:	3c1c0000 	lui	gp,0x0
+ ed0000c:	0fb4001f 	jal	ed0007c <main>
+ ed00010:	00000000 	nop
+
+0ed00014 <halt>:
+ ed00014:	1000ffff 	b	ed00014 <halt>
+ ed00018:	00000000 	nop
+
+0ed0001c <puts_both>:
+ ed0001c:	80860000 	lb	a2,0(a0)
+ ed00020:	00000000 	nop
+ ed00024:	10c00013 	beqz	a2,ed00074 <puts_both+0x58>
+ ed00028:	3c02be88 	lui	v0,0xbe88
+ ed0002c:	90430006 	lbu	v1,6(v0)
+ ed00030:	00000000 	nop
+ ed00034:	30630004 	andi	v1,v1,0x4
+ ed00038:	1060fffc 	beqz	v1,ed0002c <puts_both+0x10>
+ ed0003c:	00000000 	nop
+ ed00040:	30c600ff 	andi	a2,a2,0xff
+ ed00044:	a046000c 	sb	a2,12(v0)
+ ed00048:	80860000 	lb	a2,0(a0)
+ ed0004c:	90430026 	lbu	v1,38(v0)
+ ed00050:	00000000 	nop
+ ed00054:	30630004 	andi	v1,v1,0x4
+ ed00058:	1060fffc 	beqz	v1,ed0004c <puts_both+0x30>
+ ed0005c:	30c300ff 	andi	v1,a2,0xff
+ ed00060:	a043002c 	sb	v1,44(v0)
+ ed00064:	80860001 	lb	a2,1(a0)
+ ed00068:	00000000 	nop
+ ed0006c:	14c0ffef 	bnez	a2,ed0002c <puts_both+0x10>
+ ed00070:	24840001 	addiu	a0,a0,1
+ ed00074:	03e00008 	jr	ra
+ ed00078:	00000000 	nop
+
+0ed0007c <main>:
+ ed0007c:	3c040ed0 	lui	a0,0xed0
+ ed00080:	27bdffe8 	addiu	sp,sp,-24
+ ed00084:	afbf0014 	sw	ra,20(sp)
+ ed00088:	0fb40007 	jal	ed0001c <puts_both>
+ ed0008c:	248400dc 	addiu	a0,a0,220
+ ed00090:	3c040ed0 	lui	a0,0xed0
+ ed00094:	0fb40007 	jal	ed0001c <puts_both>
+ ed00098:	248400b0 	addiu	a0,a0,176
+ ed0009c:	3c040ed0 	lui	a0,0xed0
+ ed000a0:	0fb40007 	jal	ed0001c <puts_both>
+ ed000a4:	248400e0 	addiu	a0,a0,224
+ ed000a8:	1000ffff 	b	ed000a8 <main+0x2c>
+ ed000ac:	00000000 	nop
