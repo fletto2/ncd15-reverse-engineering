@@ -64,13 +64,13 @@ GPRMASK_DEFAULT  = 0xFFFFFFFE
 GP_VALUE_DEFAULT = 0x8EEDE880  # harmless for our payload (we compile -G0)
 
 
-def scnhdr(name, paddr, vaddr, size, scnptr, flags):
+def scnhdr(name, paddr, vaddr, size, scnptr, flags, lnnoptr=0):
     n = name.encode('ascii')[:8].ljust(8, b'\x00')
     return n + struct.pack(
         '>IIIIIIHHI',
         paddr, vaddr, size, scnptr,
-        0, 0,      # relptr, lnnoptr
-        0, 0,      # nreloc, nlnno
+        0, lnnoptr,   # relptr, lnnoptr
+        0, 0,         # nreloc, nlnno
         flags,
     )
 
@@ -132,17 +132,18 @@ def build(raw: bytes, load: int, entry: int) -> bytes:
     # sized sections get *distinct* paddr/vaddr values by placing each at
     # the end of the previous one (defends against loaders that validate
     # monotonic section addresses or compute bss_start = max(scn_end)).
+    # Real Xncd15r stores the file's total length in s_lnnoptr of .sdata
+    # and .sbss — an "end-of-file" marker used by the boot loader to
+    # verify the TFTP transfer received all bytes. File length =
+    # TEXT_OFF + text_sz + HDRR_SZ.
+    eof_marker = TEXT_OFF + text_sz + HDRR_SZ
+
     sec_text  = scnhdr('.text',  load,     load,     text_sz, TEXT_OFF, STYP_TEXT)
     sec_rdata = scnhdr('.rdata', text_end, text_end, 0,       0,        STYP_RDATA)
     sec_data  = scnhdr('.data',  text_end, text_end, 0,       0,        STYP_DATA)
-    sec_sdata = scnhdr('.sdata', text_end, text_end, 0,       0,        STYP_SDATA)
-    sec_sbss  = scnhdr('.sbss',  text_end, text_end, 0,       0,        STYP_SBSS)
+    sec_sdata = scnhdr('.sdata', text_end, text_end, 0,       0,        STYP_SDATA, lnnoptr=eof_marker)
+    sec_sbss  = scnhdr('.sbss',  text_end, text_end, 0,       0,        STYP_SBSS,  lnnoptr=eof_marker)
     sec_bss   = scnhdr('.bss',   text_end, text_end, 0,       0,        STYP_BSS)
-    # Note: paddr/vaddr are all `text_end` because the sections really
-    # *are* all empty and co-located; any loader that checks for strict
-    # monotonicity (paddr[i] > paddr[i-1]) needs +1 per section. We match
-    # the real firmware's convention of equal addresses on empty sections
-    # instead — if the NCD15 needs stricter monotonicity, bump each by 1.
 
     # HDRR stub (96 bytes): magic 0x7009, vstamp 0x020B, all counts/ptrs 0.
     hdrr = struct.pack('>HH', 0x7009, VSTAMP) + b'\x00' * 92
