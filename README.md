@@ -32,8 +32,9 @@ you can serve to confirm the deployment path.
 | DRAM (X-server load) | 0x0ED00000 (4 MB, aliased every 0x03D00000) |
 | MC68681 DUART (console) | 0xBE880000, 4-byte register stride |
 | Am7990 LANCE Ethernet | 0xBE482000 |
-| Bt45x-family RAMDAC | 0xAF000000 / 0xAEC80000 |
-| NVRAM (likely 93C46) | 0xBFA00000 / 0xBFB00000 |
+| Video control registers | 0xAF000000 (display is 1 bpp ECL at 1024×800@70 Hz — no RAMDAC / palette) |
+| Keyboard serial line (via 7407 buffer into the LSI-branded MIPS CPU) | 0xAEC80000 |
+| NVRAM (likely 93C46, bit-banged via the same serial line) | 0xBFA00000 / 0xBFB00000 |
 | Memory controller | 0xFFFE0000 |
 
 Details and derivation in `FINDINGS.md`.

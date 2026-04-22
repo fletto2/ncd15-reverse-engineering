@@ -16,8 +16,10 @@ piece in `disasm/monitor.dis`.
   DRAM and caches are live.
 - ~32 K disassembled lines, 626 functions. After the topic-tagging
   pass, ~76% of function headers carry a domain hint
-  (`fn_duart_*`, `fn_lance_*`, `fn_ramdac_*`, `fn_video_*`,
+  (`fn_duart_*`, `fn_lance_*`, `fn_video_*`,
   `fn_memctl_*`, `fn_nvram_*`, `fn_net_*`, `fn_printf_*`, etc.); the
+  `fn_ramdac_*` prefix left over from early passes is a misnomer —
+  see "Video hardware" below.
   remainder are named after matching X11R5 / MIT sources or left as
   raw `sub_VA` helpers where no signal was available.
 
@@ -55,14 +57,37 @@ monitor I/O helpers without needing its own copies.
 | Caches | three init subs | `0xBFC00188 / 01E4 / 023C` |
 | DUART (SCN2681/MC68681 @ `0xBE880000`, 4-byte stride) | `fn_duart_*` | top of `monitor.dis` DUART cluster |
 | LANCE Ethernet (Am7990 @ `0xBE482000`) | `fn_lance_*` | register pair at `+0x2000/2/4/6` |
-| RAMDAC (Bt47x @ `0xAF000000` / `0xAEC80000`) | `fn_ramdac_*` | pair-write LUT loads |
-| CRTC / video timing (`0xBE380000`) | `fn_video_*` | mode tables near the RAMDAC init |
-| Keyboard MCU / NVRAM bit-bang (`0xAEC80000`) | `fn_nvram_*` | 93C46-style serial protocol |
+| Video control (`0xAF000000`, 1 bpp ECL — no palette / RAMDAC) | `fn_video_*` (also stale `fn_ramdac_*`) | pair-writes at `+0/+4` are video-timing / cursor-position registers, not an LUT |
+| CRTC / video timing (`0xBE380000`) | `fn_video_*` | mode tables |
+| NVRAM serial line (`0xAEC80000`, bit-banged 93C46 through a 7407 buffer directly from the CPU) | `fn_nvram_*` | see "Keyboard / NVRAM" note below |
 
 Each `fn_<topic>_*` function was identified by the hardware base
 address it stores to (extracted from `lui` high-halves in the body);
 the topic prefix is present on the function header and also tagged
 inline (`; >>> [R*]`) on every MMIO site.
+
+### Video hardware
+
+The NCD15 is a 1 bpp monochrome ECL display at **1024×800 @ 70 Hz**
+on a 15" panel. There is **no RAMDAC, no palette, no color LUT**.
+The frame buffer is a single-bit-per-pixel memory region; video
+output is clocked out through discrete ECL driver logic. The
+`0xAF000000` register pair that earlier passes labeled "Bt47x
+RAMDAC" and `fn_ramdac_*` headers in the disassembly are video
+control / timing registers, not a color-lookup device. A future
+rename pass should retag those as `fn_vidctl_*`.
+
+### Keyboard / NVRAM path
+
+The NCD15 mainboard does **not** have a dedicated keyboard MCU.
+The Intel i8749-class microcontroller that NCD uses for keyboard
+scanning lives inside the physical keyboard, not on the mainboard.
+The only keyboard-adjacent part on the PCB is a 7407 open-collector
+hex buffer, with traces running directly to the LSI-branded CPU
+(custom-marked R3052 + glue). Keyboard serial input and the
+93C46-style NVRAM bit-bang protocol are both implemented by the
+CPU driving/reading these lines through the 7407 — there is no
+intermediate mainboard microcontroller.
 
 ## Monitor CLI
 
@@ -114,8 +139,8 @@ the arguments come from.
 - `BT file local host` — one-shot, zero NVRAM side-effects.
   Power-cycle restores the stock state.
 - `SE` → save → `BT` — persistent. The NVRAM-setup tool writes the
-  93C46 via the keyboard MCU's bit-bang port; subsequent power-ons
-  autoboot from those stored values.
+  93C46 via the CPU's bit-banged serial line (through the 7407);
+  subsequent power-ons autoboot from those stored values.
 
 ## Relationship to the NVRAM-setup tool
 
@@ -136,4 +161,4 @@ monitor's 24-slot function-pointer table for console I/O. See
 | LANCE driver | grep `fn_lance_` |
 | TFTP + IP + ARP | grep `fn_net_` |
 | CLI dispatch | grep `fn_printf_` for the emit primitives, then walk back |
-| RAMDAC / video init | grep `fn_ramdac_` / `fn_video_` |
+| Video control / CRTC init | grep `fn_video_` (and legacy `fn_ramdac_`) |

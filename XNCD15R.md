@@ -114,11 +114,11 @@ devices. The monitor's drivers are effectively dead after hand-off.
 | Region | Role | Notes |
 |---|---|---|
 | `0xBE380000` | CRTC / video timing | mode setup at server init |
-| `0xAF000000` / `0xAEC80000` | RAMDAC (Bt47x family) | pair-write LUT loads, cursor colors |
-| Framebuffer VA | pixel store | authoritative address is in the ECOFF layout — not portable from the 68k siblings |
+| `0xAF000000` | video-control registers | 1 bpp ECL display at 1024×800@70 Hz — no RAMDAC, no palette, no LUT; pair-writes here are timing / cursor-position, not colour |
+| Framebuffer VA | 1 bpp pixel store (~100 KB for 1024×800) | authoritative address is in the ECOFF layout — not portable from the 68k siblings |
 | `0xBE482000` | LANCE Am7990 | TCP/UDP/ARP, driven by the server's own stack |
 | `0xBE880000` | DUART SCN2681/MC68681 | used for `NCDconsole` and as a diagnostic channel |
-| `0xAEC80000` | keyboard MCU | reads keyboard/mouse events |
+| `0xAEC80000` | keyboard serial line + NVRAM 93C46 bit-bang | driven directly from the CPU via a 7407 open-collector buffer — the Intel i8749-class MCU lives inside the physical keyboard, not on the mainboard |
 
 The server has its own LANCE driver — it does not call back through
 the monitor's network code. The monitor's TFTP client is only used
@@ -175,7 +175,7 @@ Boot Monitor (ROM @ 0x0EC00000)
             ▼
        Xncd15r (DRAM @ 0x0ED00000, ECOFF linked @ 0x8ED00000 KSEG0)
             │
-            ├── takes over LANCE, CRTC, RAMDAC, keyboard MCU
+            ├── takes over LANCE, CRTC, video control, keyboard serial line
             ├── calls back into the monitor via 209 hard-coded jals
             │   (compile-time references through the DRAM alias)
             └── runs the X server + NCDwm + NCD apps forever

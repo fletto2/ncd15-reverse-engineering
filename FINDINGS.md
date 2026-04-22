@@ -4,6 +4,48 @@ Working notes for the NCD15 X-terminal RE project. This file is the
 consolidated state; individual `.dis` / `.py` / image files in this
 directory are the supporting artifacts.
 
+## Corrections (2026-04-22, from the hardware owner)
+
+Several recurring claims below were derived from disassembly alone
+and are wrong. The `MONITOR.md`, `NVRAM_SETUP.md`, `XNCD15R.md`, and
+`README.md` have been updated; the narrative in this file has not
+been retroactively rewritten, so read the following overrides first:
+
+1. **There is no RAMDAC on the NCD15 mainboard.** The display is
+   **1 bpp monochrome ECL at 1024×800 @ 70 Hz** on a 15" panel
+   (~93 dpi). There is no palette, no LUT, no colour at all. The
+   `0xAF000000` / `0xAF000004` pair-writes that earlier passes
+   called a "Bt47x RAMDAC" or "Bt431 cursor RAM" are video-control
+   registers (timing / cursor-position), not a colour-lookup
+   device. Any "RAMDAC" reference below refers to this region —
+   treat it as "video-control registers".
+2. **The `-splice.u8` suffix only means "even+odd halves of the
+   two 128 KiB ROM chips combined into a single 256 KiB image".**
+   The dump is **complete**. The `0x28DE0 – 0x37FFF` region of
+   `0xFF` is genuinely erased ROM inside a complete image, not a
+   missing piece. The 94 external `jal` targets from the NVRAM
+   setup tool into that region therefore land on real (erased)
+   bytes; they are either unreachable at runtime, holdovers from
+   an earlier ROM revision, or called only when that region is
+   shadowed by something other than ROM at runtime. The setup
+   tool is not "blocked on a missing splice gap".
+3. **No mainboard keyboard MCU.** The Intel i8749-class
+   microcontroller used for NCD keyboards lives **inside the
+   physical keyboard**, not on the mainboard. The only
+   keyboard-adjacent part on the NCD15 PCB is a 7407
+   open-collector hex buffer, with traces running straight to the
+   custom-marked LSI / R3052 CPU. So `0xAEC80000` is not a
+   "keyboard MCU port" — it is the CPU's direct bit-banged serial
+   line (keyboard input on receive, 93C46 NVRAM on transmit)
+   through that 7407.
+4. **The video cartridge appears to be shared with the 19r board.**
+   The PCB markings imply the same cart drives 19r (probably at
+   1280×1024), which is why the CRTC/video register writes look
+   generic rather than a hardcoded 1024×800 timing table.
+
+Everything below this section predates these corrections and
+should be read with them overlaid.
+
 ## Hardware
 
 NCD15 (15", monochrome X-terminal, 1991-era) — **X11R5 client machine**.

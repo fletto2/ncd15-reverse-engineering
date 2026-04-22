@@ -18,9 +18,12 @@ of headers topic-tagged after the classifier pass).
 file 0x38000 – 0x3DFFF  (24 KB)   NVRAM Setup tool — linked at 0xBED40000
 ```
 
-The ROM splice image has a genuine erased gap at `0x28DE0 – 0x37FFF`
-(~61 KB of `0xFF`), so the Setup tool is the final chunk of the dump
-before the end-of-image. Its entry at file offset `0x38000` is a
+The `NCD15-19rBM-V271-splice.u8` filename means "even+odd halves of
+the two 128 KiB ROM chips combined into a single 256 KiB image" —
+the dump is **complete**, not a partial / spliced capture. The
+`0x28DE0 – 0x37FFF` region (~61 KB of `0xFF`) is genuinely erased
+ROM inside a complete image, and the Setup tool is the last chunk
+before end-of-image. Its entry at file offset `0x38000` is a
 two-word trampoline that loads its link base and jumps to the real
 entry point inside the slice.
 
@@ -38,8 +41,12 @@ physical page). Splitting it out means:
   than arbitrary symbols — see "External calls" below.
 
 Of intra-slice `jal` targets, 45% self-resolve with base
-`0xBED40000`; the other 55% escape to addresses in the splice gap
-(see "External calls").
+`0xBED40000`; the other 55% target addresses inside the erased
+`0x28000 – 0x37FFF` region of the ROM. Because the dump is
+complete, those targets land on real (erased, `0xFF`) ROM — so
+they are either unreachable at runtime, called only in a context
+where that region is filled by something other than ROM, or
+holdovers from an earlier ROM revision. See "External calls" below.
 
 ## How the monitor reaches it
 
@@ -53,8 +60,9 @@ The Setup tool makes no assumption that the monitor's environment is
 preserved across the hand-off beyond: DUART is initialized (it reuses
 the monitor's console helpers via a function-pointer table — see
 below), LANCE is optional (it doesn't need the network), and the
-93C46-style NVRAM path on the keyboard-MCU bus at `0xAEC80000` is
-available for its own reads and writes.
+93C46-style NVRAM serial path at `0xAEC80000` (bit-banged from the
+CPU through a 7407 buffer — there is no mainboard MCU) is available
+for its own reads and writes.
 
 ## Configuration fields
 
@@ -76,7 +84,8 @@ of the disassembly:
 
 Each field has a `print current value → prompt → parse → validate →
 store` cycle. Values are serialized into the 93C46 via a bit-banged
-serial protocol on the keyboard-MCU port (`0xAEC80000`); the
+serial protocol at `0xAEC80000`, driven directly from the CPU
+through a 7407 open-collector buffer (no on-board MCU); the
 driver lives in the `fn_nvram_*` cluster.
 
 ## External calls into the monitor (shared helpers)
@@ -99,12 +108,14 @@ monitor already knows which channel the console is on, the baud
 rate, flow-control mode, etc.
 
 Separately, 94 distinct `jal` immediates in the Setup tool target
-addresses in the splice gap (`0x28000 – 0x37FFF` of the ROM dump,
-which is not present in the partial splice we have). Those are
-direct-linked calls into monitor code that happens to live in the
-erased region. The Setup tool cannot be fully re-run without a
-complete ROM dump; the partial splice is enough to understand its
-*structure*, not to execute it.
+addresses inside the erased `0x28000 – 0x37FFF` region of the ROM.
+The dump itself is complete (the `-splice.u8` suffix only means
+"even+odd halves of the two 128 KiB ROM chips merged"), so those
+`jal`s land on real bytes — which are all `0xFF`. They are either
+never executed in practice, reachable only via code paths the
+disassembly hasn't mapped yet, or leftover stubs from an earlier
+ROM revision where that region was populated. Either way, the
+block is not "missing" — it is just blank in this revision.
 
 ## Country / locale dispatch table
 
@@ -136,8 +147,9 @@ values. That work is pending.
 - No TFTP / boot logic — that is all in the monitor; the Setup tool
   only persists the *parameters* the monitor later consumes.
 - No Ethernet init — the Setup tool never touches the LANCE.
-- No video init — RAMDAC/CRTC writes are exclusively in the
-  monitor.
+- No video init — CRTC / video-control register writes are
+  exclusively in the monitor. (The NCD15 display is 1 bpp ECL at
+  1024×800@70 Hz; there is no RAMDAC or palette to program.)
 
 ## Where to read which piece
 
