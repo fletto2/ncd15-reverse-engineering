@@ -203,6 +203,14 @@ and `.bss` to make `nscns = 3`. The shipped `xncd15r-mini/xncd15r.bin`
 is now that wrapped form (196-byte ECOFF header + 280-byte
 payload = 476 bytes total).
 
+Default load/entry is **`0x8ED00000`** — the KSEG0 cached view of
+physical `0x0ED00000`, matching the real Xncd15r's ECOFF header
+(`mips-elf-objdump -h Xncd15r` confirms). The loader masks the
+top 3 bits of `s_paddr` before writing, so KSEG0 vs KUSEG for the
+load address only affects the execution view (both hit the same
+physical RAM); using KSEG0 is just the canonical convention and
+keeps cached fetch explicit in kernel mode.
+
 ## 10. Stuff still worth chasing
 
 - The four-byte board-ID semantics (per-byte → per-config-path).

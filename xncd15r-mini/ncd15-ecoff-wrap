@@ -27,8 +27,14 @@ Input:  a flat, big-endian MIPS-I code blob. First word is the
 Output: an ECOFF-wrapped image suitable for TFTP-booting via
         the NCD15 monitor's `BT` command.
 
-Default load/entry address is 0x0ED00000 (the standard Xncd15r
-load base on the NCD15).
+Default load/entry address is 0x8ED00000 — the KSEG0 cached view
+of physical 0x0ED00000. This matches the real Xncd15r image
+(which is linked at 0x8ED00000 per its own ECOFF header) and
+gives kernel-mode cached execution without depending on the
+CPU's KUSEG-default-cached behaviour. The monitor loader masks
+the top 3 bits of s_paddr anyway, so both `0x8ED00000` (KSEG0)
+and `0x0ED00000` (KUSEG) produce the same physical destination
+— this just matches the canonical convention.
 """
 
 import argparse, struct, sys, os
@@ -113,8 +119,9 @@ def main():
     )
     p.add_argument('input',  help='raw binary input (post `objcopy -O binary`)')
     p.add_argument('output', help='ECOFF-wrapped output')
-    p.add_argument('--load',  type=auto_int, default=0x0ED00000,
-                   help='physical load address (default 0x0ED00000)')
+    p.add_argument('--load',  type=auto_int, default=0x8ED00000,
+                   help='load address (default 0x8ED00000, KSEG0 cached '
+                        'view of physical 0x0ED00000; matches real Xncd15r)')
     p.add_argument('--entry', type=auto_int, default=None,
                    help='entry point (default = load address)')
     p.add_argument('--quiet', action='store_true',

@@ -40,8 +40,14 @@ mips-elf-objcopy -O binary out.elf out.raw
 ncd15-ecoff-wrap out.raw xncd15r.bin
 ```
 
-The tool defaults load/entry to `0x0ED00000`; override with
-`--load` / `--entry` if you are targeting a different address.
+The tool defaults load/entry to `0x8ED00000` — the KSEG0 cached
+view of physical `0x0ED00000` — which matches the real Xncd15r
+ECOFF header (check with `mips-elf-objdump -h Xncd15r`). The
+monitor loader masks the top 3 bits of `s_paddr` before writing,
+so `0x8ED00000` (KSEG0) and `0x0ED00000` (KUSEG) produce the
+same physical destination; using the KSEG0 form is just the
+canonical convention and keeps kernel-mode cached fetch
+explicit. Override with `--load` / `--entry` for anything else.
 
 ## Prerequisites
 
@@ -161,12 +167,15 @@ file[0x00]: 01 60 00 03   00 00 00 00   00 00 00 00   00 00 00 00
             ^---magic     ^---nscns=3   ^---timdat    ^---symptr,nsyms
 file[0x10]: 00 38 00 07   01 07 02 0b  ...
             ^---opthdr    ^---aout magic + vstamp
+file[0x20]: 00 00 00 00   8e d0 00 00   8e d0 00 00  ...
+                          ^---entry     ^---text_start (KSEG0)
 ```
 
 After the ECOFF loader runs, the first 4 words that land at
-`0x0ED00000` (the section data starting at file offset `0xC4`) are:
+physical `0x0ED00000` (KSEG0-visible at `0x8ED00000`, the section
+data starting at file offset `0xC4`) are:
 ```
-0ED00000: 3c1d0ed3 27bdff00 3c1c0000 0fb4001f
+0x8ED00000 (= phys 0x0ED00000):  3c1d0ed3 27bdff00 3c1c0000 0fb4001f
 ```
 
 ## Recovery
