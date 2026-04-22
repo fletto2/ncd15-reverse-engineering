@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""
+ncd15-ecoff-wrap — wrap a flat MIPS-I big-endian code blob in a minimal
+ECOFF file that the NCD15 boot monitor's TFTP loader will accept.
+
+The NCD15 monitor does NOT accept raw binary images; its `BT` command
+passes the downloaded file through an ECOFF loader that enforces:
+
+  - file header magic == 0x0160  (ECOFF MIPS big-endian)
+  - f_opthdr          == 0x38
+  - f_nscns           in [3, 7]
+  - f_flags           in [3, 7]   (F_RELFLG | F_EXEC | F_LNNO mix)
+  - aout magic        == 0x0107
+  - section 0         has STYP_TEXT (0x20) and s_paddr > 0x0ECFFFFF
+  - every loadable section's s_paddr within bounds
+
+Any non-conforming image is rejected before execution. This tool
+wraps a post-`objcopy -O binary` blob (i.e. raw MIPS instructions,
+first word the entry) in exactly the minimal structure the loader
+is happy with.
+
+Usage:
+  ncd15-ecoff-wrap INPUT.bin OUTPUT.bin [--load 0x0ED00000] [--entry 0x0ED00000]
+
+Input:  a flat, big-endian MIPS-I code blob. First word is the
+        entry point. No ELF/ECOFF header on input.
+Output: an ECOFF-wrapped image suitable for TFTP-booting via
+        the NCD15 monitor's `BT` command.
+
+Default load/entry address is 0x0ED00000 (the standard Xncd15r
+load base on the NCD15).
+"""
+
+import argparse, struct, sys, os
+
+ECOFF_FILE_MAGIC = 0x0160      # MIPS big-endian
+AOUT_MAGIC       = 0x0107      # OMAGIC/ZMAGIC for R3000
+VSTAMP           = 523         # matches real Xncd15r
+F_FLAGS          = 0x0007      # F_RELFLG | F_EXEC | F_LNNO
+STYP_TEXT        = 0x0020
+STYP_DATA        = 0x0040
+STYP_BSS         = 0x0080
+
+FILE_HDR_SZ = 20
+OPT_HDR_SZ  = 0x38             # 56
+SEC_HDR_SZ  = 40
+
+NSCNS = 3                      # .text, .data, .bss — minimum the loader accepts
+
+
+def scnhdr(name, paddr, vaddr, size, scnptr, flags):
+    n = name.encode('ascii')[:8].ljust(8, b'\x00')
+    return n + struct.pack(
+        '>IIIIIIHHI',
+        paddr, vaddr, size, scnptr,
+        0, 0,      # relptr, lnnoptr
+        0, 0,      # nreloc, nlnno
+        flags,
+    )
+
+
+def build(raw: bytes, load: int, entry: int) -> bytes:
+    hdr_total = FILE_HDR_SZ + OPT_HDR_SZ + SEC_HDR_SZ * NSCNS
+    text_sz   = len(raw)
+    text_off  = hdr_total
+
+    # File header
+    file_hdr = struct.pack(
+        '>HHIIIHH',
+        ECOFF_FILE_MAGIC,
+        NSCNS,
+        0, 0, 0,         # timdat, symptr, nsyms
+        OPT_HDR_SZ,
+        F_FLAGS,
+    )
+    assert len(file_hdr) == FILE_HDR_SZ
+
+    # AOUT optional header (56 bytes)
+    #   H magic, H vstamp, 13 × I (tsize..gp_value)
+    opt_hdr = struct.pack(
+        '>HHIIIIIIIIIIIII',
+        AOUT_MAGIC,
+        VSTAMP,
+        text_sz,         # tsize
+        0,               # dsize
+        0,               # bsize
+        entry,           # entry
+        load,            # text_start
+        load + text_sz,  # data_start (empty)
+        load + text_sz,  # bss_start (empty)
+        0,               # gprmask
+        0, 0, 0, 0,      # cprmask[4]
+        0,               # gp_value
+    )
+    assert len(opt_hdr) == OPT_HDR_SZ
+
+    # Section headers: .text + zero-length .data/.bss to satisfy nscns ≥ 3
+    sec_text = scnhdr('.text', load,          load,          text_sz, text_off,          STYP_TEXT)
+    sec_data = scnhdr('.data', load+text_sz,  load+text_sz,  0,       text_off+text_sz,  STYP_DATA)
+    sec_bss  = scnhdr('.bss',  load+text_sz,  load+text_sz,  0,       0,                 STYP_BSS)
+
+    return file_hdr + opt_hdr + sec_text + sec_data + sec_bss + raw
+
+
+def auto_int(x):
+    return int(x, 0)
+
+
+def main():
+    p = argparse.ArgumentParser(
+        prog='ncd15-ecoff-wrap',
+        description='Wrap a raw MIPS-I BE code blob in minimal ECOFF for the NCD15 boot monitor.',
+    )
+    p.add_argument('input',  help='raw binary input (post `objcopy -O binary`)')
+    p.add_argument('output', help='ECOFF-wrapped output')
+    p.add_argument('--load',  type=auto_int, default=0x0ED00000,
+                   help='physical load address (default 0x0ED00000)')
+    p.add_argument('--entry', type=auto_int, default=None,
+                   help='entry point (default = load address)')
+    p.add_argument('--quiet', action='store_true',
+                   help='suppress status output')
+    args = p.parse_args()
+
+    if args.entry is None:
+        args.entry = args.load
+
+    raw = open(args.input, 'rb').read()
+    if len(raw) == 0:
+        sys.exit('error: input is empty')
+    if len(raw) < 4:
+        sys.exit('error: input is shorter than 4 bytes — not a MIPS image')
+
+    out = build(raw, args.load, args.entry)
+    open(args.output, 'wb').write(out)
+
+    if not args.quiet:
+        print(f'wrapped {len(raw)} bytes raw -> {len(out)} bytes ECOFF'
+              f' (load=0x{args.load:08x}, entry=0x{args.entry:08x})')
+        print(f'output: {args.output}')
+
+
+if __name__ == '__main__':
+    main()

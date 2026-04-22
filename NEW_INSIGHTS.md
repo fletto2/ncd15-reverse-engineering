@@ -165,7 +165,45 @@ After this pass, three regions are high-confidence "dead":
   code lived there. Either way, not code the monitor will run on
   this hardware.
 
-## 9. Stuff still worth chasing
+## 9. `BT` is an ECOFF loader, not a raw-image loader
+
+The monitor's TFTP-boot path (`BT file local host`) does **not**
+accept a flat MIPS blob. It parses the downloaded file as ECOFF
+and rejects anything that fails these checks, all visible in
+`sub_0ec10834 / sub_0ec10910`:
+
+1. `f_opthdr == 0x38` (aouthdr size, file hdr +0x10).
+2. `f_nscns ∈ [3, 7]` (number of section headers).
+3. `f_flags ∈ [3, 7]` (F_RELFLG | F_EXEC | F_LNNO mix).
+4. `aouthdr.magic == 0x0107` (R3000 OMAGIC/ZMAGIC).
+5. Section 0's `s_flags & 0x20 == STYP_TEXT` (first section must
+   be `.text`).
+6. `s_paddr > 0x0ECFFFFF` for every loadable section (anything in
+   the monitor ROM region is rejected).
+7. `s_scnptr` of the first section must be ≥ `0x4C + nscns*40`
+   (inside the file, past the headers).
+
+The loader then:
+- Stores `aouthdr.entry` into monitor vtable slot `0x0EC00880`.
+- Walks sections; for each whose `s_flags & 0x7E0` is non-zero
+  (i.e. STYP_TEXT|STYP_DATA|STYP_BSS|STYP_LIT4|STYP_LIT8|STYP_SDATA),
+  copies `s_size` bytes from file offset `s_scnptr` to physical
+  address `s_paddr`.
+- `jalr`s through slot `0x880` to enter the loaded image.
+
+The first 2 bytes of any valid boot image must therefore be
+`0x01 0x60` — the ECOFF MIPS-BE file magic — not a raw MIPS
+instruction.
+
+A tool `ncd15-ecoff-wrap` (in this repo under `xncd15r-mini/`
+and installed to `/opt/cross/mips-elf/bin/`) wraps a flat
+post-`objcopy -O binary` blob into the minimum ECOFF the
+monitor accepts: 1 × `.text` section plus zero-length `.data`
+and `.bss` to make `nscns = 3`. The shipped `xncd15r-mini/xncd15r.bin`
+is now that wrapped form (196-byte ECOFF header + 280-byte
+payload = 476 bytes total).
+
+## 10. Stuff still worth chasing
 
 - The four-byte board-ID semantics (per-byte → per-config-path).
   Reading `sub_0ec02bfc` carefully should reveal whether each

@@ -94,14 +94,29 @@ _start:
 
 ```bash
 mips-elf-gcc $CFLAGS -T link.ld -o out.elf src.S src.c ...
-mips-elf-objcopy -O binary out.elf out.bin     # raw image for TFTP
+mips-elf-objcopy -O binary out.elf out.raw     # raw code only, no ELF header
+ncd15-ecoff-wrap out.raw out.bin               # ECOFF wrapper (required)
 mips-elf-objdump -d out.elf | less              # verify
 mips-elf-readelf -h out.elf                     # sanity: ELF32, MIPS R3000, big-endian
 ```
 
-`out.bin` is what the monitor loads over the wire. Sanity check:
-first 4 bytes should be the opcode at `_start` (e.g. `3C08BE88`
-for `lui $t0, 0xBE88`), big-endian, no ELF header.
+`out.bin` is what the monitor loads over the wire.
+
+**Why the wrap step is mandatory**: the NCD15 boot monitor's `BT`
+command parses an ECOFF header on the downloaded file. A flat
+binary fails magic-word validation and the loader refuses to run
+it. See `xncd15r-mini/README.md` § "Why the ECOFF wrapper?" for the
+specific constraints the monitor enforces. The `ncd15-ecoff-wrap`
+tool (installed into `/opt/cross/mips-elf/bin/` by the toolchain
+recipe, and also copied into `xncd15r-mini/`) produces the minimum
+header that passes those checks. Default load/entry is
+`0x0ED00000`; override with `--load` / `--entry` if needed.
+
+Sanity check the wrapped image: the first two bytes must be
+`01 60` (ECOFF file magic). The first four bytes of the payload
+(at file offset `0xC4`) should be the opcode at `_start`
+(e.g. `3C08BE88` for `lui $t0, 0xBE88`), big-endian, no ELF
+header.
 
 ## Minimal test binary
 

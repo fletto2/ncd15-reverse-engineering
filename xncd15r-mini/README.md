@@ -7,8 +7,9 @@ all agree before investing in anything larger.
 
 ## What this image does
 
-The prebuilt `xncd15r.bin` (280 bytes) polls the MC68681 DUART and writes
-a banner to **both** serial channels (A and B), then spin-loops:
+The prebuilt `xncd15r.bin` (476 bytes total: 196-byte ECOFF header +
+280-byte payload) polls the MC68681 DUART and writes a banner to
+**both** serial channels (A and B), then spin-loops:
 
 ```
 === custom Xncd15r running at 0x0ED00000 ===
@@ -17,8 +18,30 @@ hello from MIPS-I bare metal
 
 Entry at load address `0x0ED00000`: sets `$sp = 0x0ED3FF00`, calls the
 main loop, halts on return. No interrupts, no cache init — relies on
-the monitor's environment as-is. First word of `xncd15r.bin` is
-`3C 1D 0E D3` (`lui $sp, 0x0ED3`, big-endian MIPS-I).
+the monitor's environment as-is. The first four bytes of the **payload**
+(after the ECOFF header) are `3C 1D 0E D3` (`lui $sp, 0x0ED3`,
+big-endian MIPS-I).
+
+## Why the ECOFF wrapper?
+
+The NCD15 boot monitor's `BT` command does **not** accept flat binary
+images. Its TFTP-boot path is an ECOFF loader (magic `0x0160`, aout
+magic `0x0107`, `f_opthdr==0x38`, `f_nscns ∈ [3..7]`, first section
+must be STYP_TEXT). A raw `objcopy -O binary` blob is rejected by the
+loader before any code runs. This directory therefore ships an
+**ECOFF-wrapped** `xncd15r.bin`, and a tool (`ncd15-ecoff-wrap`, also
+installed at `/opt/cross/mips-elf/bin/ncd15-ecoff-wrap` by the
+toolchain recipe) that takes a raw MIPS blob and emits the minimum
+ECOFF the monitor is happy with:
+
+```bash
+mips-elf-gcc $CFLAGS -T link.ld -o out.elf start.S main.c
+mips-elf-objcopy -O binary out.elf out.raw
+ncd15-ecoff-wrap out.raw xncd15r.bin
+```
+
+The tool defaults load/entry to `0x0ED00000`; override with
+`--load` / `--entry` if you are targeting a different address.
 
 ## Prerequisites
 
@@ -96,7 +119,9 @@ Full command table in `../FINDINGS.md` § "Boot Monitor CLI command set".
 ```
 
 The monitor: resolves ARP → sends TFTP RRQ for `xncd15r.bin` to the
-host → copies blocks to `0x0ED00000` → jumps to `_start`. Watch the
+host → parses the ECOFF header → copies each loadable section to
+its `s_paddr` (the one `.text` section lands at `0x0ED00000`) →
+jumps to the aout header's `entry` (same address). Watch the
 console for the banner.
 
 ### Persistent boot (stored in NVRAM)
@@ -117,6 +142,11 @@ Symptom → first check:
   fails it's IP/gateway/mask/cable. Check `DA`.
 - **RRQ seen, TIMEOUT** → firewall on host blocking UDP/69 reply, or
   `tftpd.py` isn't bound to the right interface (`--bind 0.0.0.0`).
+- **Transfer succeeds, "File corrupted CRC error" on serial console** →
+  the downloaded file did not pass the ECOFF header check. If you
+  built your own image, re-run `ncd15-ecoff-wrap` on the raw
+  `objcopy -O binary` output; the monitor does not accept flat
+  binaries.
 - **Transfer succeeds, no banner** → image landed but crashed. `DM
   0ED00000 40` and compare against the first-16-words below.
 - **Banner truncated** → wrong channel: monitor may have initialized
@@ -124,9 +154,19 @@ Symptom → first check:
   happen, but if it does, check which channel your console cable is
   on.
 
-First 16 words of `xncd15r.bin` (big-endian) for verification:
+First 16 bytes of `xncd15r.bin` (big-endian) for verification
+(ECOFF file header — NOT what lands at `0x0ED00000`):
 ```
-0ED00000: 3c1d0ed3 27bdff00 0c000108 00000000 ...
+file[0x00]: 01 60 00 03   00 00 00 00   00 00 00 00   00 00 00 00
+            ^---magic     ^---nscns=3   ^---timdat    ^---symptr,nsyms
+file[0x10]: 00 38 00 07   01 07 02 0b  ...
+            ^---opthdr    ^---aout magic + vstamp
+```
+
+After the ECOFF loader runs, the first 4 words that land at
+`0x0ED00000` (the section data starting at file offset `0xC4`) are:
+```
+0ED00000: 3c1d0ed3 27bdff00 3c1c0000 0fb4001f
 ```
 
 ## Recovery
