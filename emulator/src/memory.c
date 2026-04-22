@@ -67,18 +67,22 @@ static mmio_region *find_mmio(bus *b, u32 pa) {
 u32 bus_read(bus *b, u32 va, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
-    /* ROM: physical 0x0EC00000 .. 0x0EC40000. Also accessible via the
-     * KUSEG alias 0x1FC00000 (which KSEG1 0xBFC00000 reduces to). */
-    if (pa >= NCD15_ROM_PHYS && pa < NCD15_ROM_PHYS + NCD15_ROM_SIZE)
-        return ld_be(b->rom + (pa - NCD15_ROM_PHYS), size);
+    /* ROM: the MIPS boot vector is at VA 0xBFC00000 (KSEG1), which
+     * translates to phys 0x1FC00000 — this is the ONLY physical
+     * range where the ROM chip is decoded on the NCD15. The reset
+     * code copies the main monitor (ROM offsets 0x4000-0x27FFF) into
+     * DRAM starting at VA 0x0EC00000 at boot; after the copy, code
+     * runs from DRAM. */
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE)
         return ld_be(b->rom + (pa - NCD15_ROM_KUSEG), size);
 
-    /* DRAM: 4 MiB, aliased everywhere below the ROM base. The real
-     * hardware decodes bits 21:0 to pick the byte within the 4 MB
-     * bank; higher bits are ignored (stride-0x03D00000 pattern).
-     * Simplify to: any address below 0x0EC00000 maps to DRAM[pa & 0x3FFFFF]. */
-    if (pa < NCD15_ROM_PHYS)
+    /* DRAM: 4 MiB, aliased everywhere in the low 256 MiB that the
+     * hardware decodes to DRAM. The 0xE-prefixed aliases are where
+     * the monitor runs its DRAM-linked main code (VA 0x0EC00000 =
+     * phys 0x0EC00000 = DRAM alias). We simplify by: any address
+     * below 0xB0000000 (keep stub/MMIO regions free) and NOT in the
+     * ROM range maps to DRAM[pa & 0x3FFFFF]. */
+    if (pa < 0x10000000u)
         return ld_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), size);
 
     /* VRAM window at physical 0x0F000000. First 4 bytes double as
@@ -106,10 +110,9 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
     /* ROM is read-only; silently drop writes. */
-    if (pa >= NCD15_ROM_PHYS && pa < NCD15_ROM_PHYS + NCD15_ROM_SIZE) return;
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
 
-    if (pa < NCD15_ROM_PHYS) {
+    if (pa < 0x10000000u) {
         st_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), value, size);
         return;
     }

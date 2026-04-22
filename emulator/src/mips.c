@@ -285,6 +285,22 @@ void mips_step(mips_cpu *cpu) {
      * just fired in THIS instruction, else pc+4 (linear). */
     cpu->pc = cpu->next_pc;
     if (cpu->branch_taken) {
+        /* Optional debug: log segment-crossing branches so we can see
+         * when execution moves between the ROM (0xBFCxxxx / 0x1FCxxxx),
+         * KSEG0 (0x8xxx), and DRAM-linked monitor VA (0x0EC xxxx). */
+        static int log_branches = -1;
+        if (log_branches < 0) {
+            const char *s = getenv("MIPS_BRANCH_LOG");
+            log_branches = (s && *s && *s != '0') ? 1 : 0;
+        }
+        if (log_branches) {
+            u32 src_top = pc         & 0xf0000000u;
+            u32 dst_top = cpu->branch_target & 0xf0000000u;
+            if (src_top != dst_top) {
+                fprintf(stderr, "branch: 0x%08x -> 0x%08x  (insn=0x%08x)\n",
+                        pc, cpu->branch_target, insn);
+            }
+        }
         cpu->next_pc = cpu->branch_target;
     } else {
         cpu->next_pc = cpu->pc + 4;
