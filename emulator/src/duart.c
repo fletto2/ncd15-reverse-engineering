@@ -185,6 +185,7 @@ typedef struct crtc {
     u32 regs[64];
     u64 read_hist[256];
     u64 write_hist[256];
+    u8  byte_store[256];    /* byte-granular register backing store */
     u32 write_vals[256];
     /* PC histogram of callers that read offset 0x00 (the hot poll). */
     u32 pc_hist[64];
@@ -213,25 +214,29 @@ u32 crtc_read(void *ctx, u32 off, unsigned size) {
 pc_done: ;
     }
     c->poll_count++;
-    /* Offsets we've identified via diagnostics:
-     *  +0x00: a register the monitor reads millions of times. Written
-     *         exactly once with magic 0xBB831F1D — looks like a
-     *         write-then-read handshake. Return the last written
-     *         value as a readback. */
-    if (off == 0x00)  return c->write_vals[0x00];
-    /* Generic status reads: toggle a handful of common "ready/retrace"
-     * bits so polling loops can advance. */
+    /* Read from the byte-addressable backing store, using big-endian
+     * byte order within a 4-byte register. This lets write/readback
+     * handshakes (monitor writes 0xBB831F1D to +0x00, reads it back
+     * byte-by-byte) actually match. */
+    if (off + size > 256) return 0;
     u32 v = 0;
-    if ((c->poll_count >> 3) & 1) v |= 0x01;    /* DE */
-    if ((c->poll_count >> 5) & 1) v |= 0x08;    /* VRT */
-    if ((c->poll_count >> 5) & 1) v |= 0x100;   /* alt vsync */
-    if (off == 0x13) v = ((c->poll_count >> 4) & 1) ? 0x100 : 0;
+    for (unsigned i = 0; i < size; i++) v = (v << 8) | c->byte_store[off + i];
+    /* Toggle bit 1 of the byte-0 status on a slow clock. The boot sync
+     * loop at 0x0EC03E18 polls byte 0 for bit 1 to rise then fall. */
+    if (off == 0x00 && size == 1) {
+        u32 stored = v & ~(u32)0x02;
+        v = stored | (((c->poll_count >> 4) & 1) ? 0x02 : 0x00);
+    }
+    /* Special: offset 0x13 toggles vsync (bit 8) for vsync polling. */
+    if (off == 0x13 && size == 1) v = ((c->poll_count >> 4) & 1) ? 0x100 : 0;
     return v;
 }
 void crtc_write(void *ctx, u32 off, u32 val, unsigned size) {
     crtc *c = (crtc*)ctx;
-    (void)size;
+    if (off + size > 256) return;
     if (off < 256) { c->write_hist[off]++; c->write_vals[off] = val; }
+    for (unsigned i = 0; i < size; i++)
+        c->byte_store[off + i] = (val >> ((size - 1 - i) * 8)) & 0xff;
     c->regs[(off >> 2) & 0x3f] = val;
 }
 void crtc_dump_hist(void *ctx) {

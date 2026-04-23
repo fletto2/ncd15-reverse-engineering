@@ -36,6 +36,7 @@ void mips_reset(mips_cpu *cpu, bus *b) {
     cpu->bus    = b;
     cpu->cycles = 0;
     cpu->halted = false;
+    icache_flush_all(&cpu->icache);
     maybe_init_trace();
 }
 
@@ -49,8 +50,42 @@ static void do_branch(mips_cpu *cpu, u32 target) {
     cpu->branch_target = target;
 }
 
+/* --- I-cache implementation --- */
+
+void icache_flush_all(icache *c) {
+    for (int i = 0; i < ICACHE_SETS; i++) c->sets[i].tag = 0xFFFFFFFFu;
+}
+
+void icache_invalidate(icache *c, u32 pa) {
+    u32 index = (pa >> 4) & (ICACHE_SETS - 1);
+    u32 tag   = pa >> (4 + 8);       /* everything above the index bits */
+    if (c->sets[index].tag == tag) c->sets[index].tag = 0xFFFFFFFFu;
+}
+
+/* Fetch a 32-bit instruction from VA. Uses I-cache for KSEG0 / KUSEG;
+ * bypasses it for KSEG1 (uncached by hardware decree). */
 static u32 fetch(mips_cpu *cpu, u32 va) {
-    return bus_read(cpu->bus, va, 4);
+    bool uncached = (va >= 0xA0000000u && va < 0xC0000000u);   /* KSEG1 */
+    if (uncached) {
+        return bus_read(cpu->bus, va, 4);
+    }
+    u32 pa = mips_va_to_pa(va);
+    u32 index = (pa >> 4) & (ICACHE_SETS - 1);
+    u32 tag   = pa >> (4 + 8);
+    u32 word  = (pa >> 2) & (ICACHE_WORDS_PER_LINE - 1);
+    icache_line *ln = &cpu->icache.sets[index];
+    if (ln->tag != tag) {
+        /* Miss: refill the line from the bus. */
+        u32 line_base_va = va & ~(u32)(ICACHE_LINE_BYTES - 1);
+        for (int i = 0; i < ICACHE_WORDS_PER_LINE; i++) {
+            ln->words[i] = bus_read(cpu->bus, line_base_va + i*4, 4);
+        }
+        ln->tag = tag;
+        cpu->icache.misses++;
+    } else {
+        cpu->icache.hits++;
+    }
+    return ln->words[word];
 }
 
 /* Instruction decode helpers. */
@@ -152,7 +187,16 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
         u32 v = cpu->r[rt];
         switch (rd) {
         case 8:  cpu->cp0_badvaddr = v; break;
-        case 12: cpu->cp0_status   = v; break;
+        case 12:
+            /* R3052 Status bit 16 = IsC (isolate cache). When the
+             * cache-init code sets IsC, it writes through cached
+             * addresses to clear tags; subsequent stores hit only the
+             * cache (not memory). We just flush the whole I-cache
+             * here to keep our model consistent. */
+            if ((v & 0x10000u) && !(cpu->cp0_status & 0x10000u))
+                icache_flush_all(&cpu->icache);
+            cpu->cp0_status = v;
+            break;
         case 13: cpu->cp0_cause    = v; break;
         case 14: cpu->cp0_epc      = v; break;
         default: break;   /* silently ignore */
@@ -184,6 +228,7 @@ void mips_step(mips_cpu *cpu) {
     }
     prev_pc = pc;
     cpu->bus->last_pc = pc;
+    cpu->bus->cur_cycles = cpu->cycles;
     /* Additionally, update last_pc right before each LW path below so
      * the CRTC read attribution is on the actual LW, not the fetched
      * instruction's address. Set once here for fetch; loads re-set
@@ -250,9 +295,15 @@ void mips_step(mips_cpu *cpu) {
     case 0x24: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); wr_reg(cpu, RT(insn), bus_read(cpu->bus, a, 1)); break; } /* LBU */
     case 0x25: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); wr_reg(cpu, RT(insn), bus_read(cpu->bus, a, 2)); break; } /* LHU */
     /* stores */
-    case 0x28: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)] & 0xff,   1); break; } /* SB */
-    case 0x29: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)] & 0xffff, 2); break; } /* SH */
-    case 0x2B: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)],          4); break; } /* SW */
+    case 0x28: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)] & 0xff,   1);
+        if (!(a >= 0xA0000000u && a < 0xC0000000u)) icache_invalidate(&cpu->icache, mips_va_to_pa(a));
+        break; } /* SB */
+    case 0x29: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)] & 0xffff, 2);
+        if (!(a >= 0xA0000000u && a < 0xC0000000u)) icache_invalidate(&cpu->icache, mips_va_to_pa(a));
+        break; } /* SH */
+    case 0x2B: { u32 a = cpu->r[RS(insn)] + sign_ext16(IMM(insn)); bus_write(cpu->bus, a, cpu->r[RT(insn)],          4);
+        if (!(a >= 0xA0000000u && a < 0xC0000000u)) icache_invalidate(&cpu->icache, mips_va_to_pa(a));
+        break; } /* SW */
     /* Unaligned LWL/LWR/SWL/SWR — GCC emits these for unaligned
      * accesses. Monitor uses them for string copies. */
     case 0x22: { /* LWL */

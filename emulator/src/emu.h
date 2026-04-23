@@ -39,6 +39,33 @@ typedef int64_t  i64;
 #define NCD15_MEMCTL_PHYS   0xFFFE0000u  /* KSEG2 pass-through on R3052 */
 #define NCD15_VIDCTL_PHYS   0x0F000000u  /* KSEG1 0xAF000000 */
 
+/* --- Minimal I-cache for the R3052 ---
+ *
+ * Direct-mapped, 4 KB, 16-byte lines (4 instructions/line, 256 sets).
+ * Populated from DRAM on cached fetches. NOT invalidated by uncached
+ * (KSEG1) stores — that's the whole point of having it: the monitor's
+ * memory test writes 0x5A5A5A5A through uncached aliases to check
+ * DRAM readback, while cached fetches keep running the original code
+ * that was already loaded into the I-cache.
+ *
+ * Invalidated on cached stores (KSEG0/KUSEG) and on explicit cache
+ * ops via CP0. For simplicity we flush the whole cache when the
+ * monitor writes to the Status register's cache-isolation bits. */
+
+#define ICACHE_SETS      256
+#define ICACHE_LINE_BYTES 16
+#define ICACHE_WORDS_PER_LINE (ICACHE_LINE_BYTES / 4)
+
+typedef struct icache_line {
+    u32 tag;              /* upper bits of physical address; 0xFFFFFFFF = invalid */
+    u32 words[ICACHE_WORDS_PER_LINE];
+} icache_line;
+
+typedef struct icache {
+    icache_line sets[ICACHE_SETS];
+    u64 hits, misses;
+} icache;
+
 /* --- MIPS-I CPU state --- */
 
 typedef struct mips_cpu {
@@ -61,7 +88,14 @@ typedef struct mips_cpu {
     struct bus *bus;      /* back-pointer to memory/MMIO bus */
     u64 cycles;
     bool halted;
+    icache icache;
 } mips_cpu;
+
+/* Called by the bus when it services a store that could invalidate
+ * cache lines — e.g. a cached KSEG0/KUSEG write. Pass the physical
+ * address. The bus decides whether to call based on the access path. */
+void icache_invalidate(icache *c, u32 pa);
+void icache_flush_all(icache *c);
 
 void mips_reset(mips_cpu *cpu, struct bus *bus);
 void mips_step(mips_cpu *cpu);   /* execute one instruction */
@@ -85,12 +119,14 @@ typedef struct mmio_region {
 
 typedef struct bus {
     u8 *rom;              /* NCD15_ROM_SIZE bytes, big-endian order */
-    u8 *dram;             /* NCD15_DRAM_SIZE bytes, big-endian order */
-    u8 *vram;             /* NCD15_VRAM_SIZE bytes, big-endian order */
+    u8 *dram;             /* NCD15_DRAM_SIZE bytes, main DRAM at phys 0 */
+    u8 *shadow;           /* 4 MiB, backs phys 0x0EC00000..0x0F000000 */
+    u8 *vram;             /* NCD15_VRAM_SIZE bytes, at phys 0x0F000000 */
     mmio_region regions[MAX_MMIO_REGIONS];
     size_t nregions;
     bool trace;           /* log every access */
     u32 last_pc;          /* updated by the CPU before each access */
+    u64 cur_cycles;       /* updated by CPU each step (for tracing) */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
