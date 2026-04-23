@@ -213,8 +213,46 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
     }
 }
 
+/* --- Interrupt / exception delivery --- */
+
+/* Fire an exception, vector to 0x80000080 (or 0xBFC00180 if BEV=1).
+ * For plain interrupts, ExcCode=0. */
+static void take_exception(mips_cpu *cpu, u32 pc, u32 exccode) {
+    bool in_ds = cpu->in_delay_slot;
+    cpu->cp0_epc = in_ds ? (pc - 4) : pc;
+    /* Shift KU/IE stack left by 2 (3 levels: current→prev, prev→old). */
+    u32 ki = cpu->cp0_status & 0x3f;
+    cpu->cp0_status = (cpu->cp0_status & ~0x3fu) | ((ki << 2) & 0x3cu);
+    cpu->cp0_cause &= ~0x8000007fu;
+    cpu->cp0_cause |= (exccode & 0x1f) << 2;
+    if (in_ds) cpu->cp0_cause |= 0x80000000u;
+    cpu->pc = (cpu->cp0_status & 0x00400000u) ? 0xBFC00180u : 0x80000080u;
+    cpu->next_pc = cpu->pc + 4;
+    cpu->branch_taken = false;
+    cpu->in_delay_slot = false;
+}
+
+/* Periodic tick: raise IP5 (bit 13 of Cause, matches the monitor's
+ * Status.IM5) every TICK_CYCLES cycles. This drives the tick counter
+ * that the monitor's delay loops wait on. */
+#define TICK_CYCLES 50000u
+
+static void check_interrupts(mips_cpu *cpu, u32 pc) {
+    /* Raise periodic tick on IP5. */
+    if ((cpu->cycles % TICK_CYCLES) == 0 && cpu->cycles != 0) {
+        cpu->cp0_cause |= (1u << 13);
+    }
+    /* Check if an interrupt is currently recognized. */
+    if (!(cpu->cp0_status & 1)) return;            /* IEc cleared */
+    u32 pending = (cpu->cp0_cause  >> 8) & 0xff;
+    u32 mask    = (cpu->cp0_status >> 8) & 0xff;
+    if (pending & mask)
+        take_exception(cpu, pc, 0);
+}
+
 void mips_step(mips_cpu *cpu) {
     if (cpu->halted) return;
+    check_interrupts(cpu, cpu->pc);
     u32 pc   = cpu->pc;
     /* Trap: log every time PC lands on the BFC00140 or BFC00180
      * exception vector, plus the prior PC that branched here. */
