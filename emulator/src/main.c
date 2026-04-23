@@ -6,13 +6,24 @@
  * 0x0EC00000, resets the CPU, and runs until halt. DUART
  * channel A output streams to stdout, channel B to stderr. */
 
+#define _GNU_SOURCE
 #include "emu.h"
+#include "lance.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <net/if.h>
+#include <linux/if_tun.h>
+#include <linux/if_packet.h>
+#include <linux/if_ether.h>
+#include <netinet/in.h>
 
 /* Stub per-address access counters. Buckets are 16-byte wide so we
  * group DUART-register-sized neighbourhoods together. */
@@ -61,6 +72,128 @@ static void *xmalloc(size_t n) {
     return p;
 }
 
+/* --- TAP / AF_PACKET networking backend ----------------------------------
+ *
+ * Two modes, modelled on 3com68k's emulator:
+ *   --tap <ifname>       attach to a Linux TAP device. Virtual L2 only;
+ *                        needs CAP_NET_ADMIN or a pre-created tap.
+ *   --raweth <ifname>    attach AF_PACKET SOCK_RAW to a real NIC. Traffic
+ *                        hits the wire. Needs CAP_NET_RAW
+ *                        (sudo setcap cap_net_raw+ep ./ncd15-emu).
+ *
+ * Both share the same fd variable (`net_fd`). LANCE TX writes to it,
+ * the main loop reads from it and feeds lance_glue_recv().             */
+static int net_fd = -1;
+static int raw_if_index = -1;
+
+static int tap_open(const char *ifname) {
+    int fd = open("/dev/net/tun", O_RDWR | O_NONBLOCK);
+    if (fd < 0) { perror("tap: open(/dev/net/tun)"); return -1; }
+    struct ifreq ifr;
+    memset(&ifr, 0, sizeof ifr);
+    ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
+    if (ifname) strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
+    if (ioctl(fd, TUNSETIFF, &ifr) < 0) {
+        fprintf(stderr,
+            "tap: TUNSETIFF on %s: %s\n"
+            "     (need cap_net_admin, or pre-create the tap with\n"
+            "      `sudo ip tuntap add dev %s mode tap user $USER`)\n",
+            ifname ? ifname : "(auto)", strerror(errno),
+            ifname ? ifname : "tap0");
+        close(fd); return -1;
+    }
+    fprintf(stderr, "tap: attached to %s (fd=%d)\n", ifr.ifr_name, fd);
+    return fd;
+}
+
+static int raweth_open(const char *ifname) {
+    int fd = socket(AF_PACKET, SOCK_RAW | SOCK_NONBLOCK, htons(ETH_P_ALL));
+    if (fd < 0) { perror("raweth: socket(AF_PACKET)"); return -1; }
+    struct ifreq ifr;
+    memset(&ifr, 0, sizeof ifr);
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ - 1);
+    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) {
+        fprintf(stderr, "raweth: SIOCGIFINDEX(%s): %s\n", ifname, strerror(errno));
+        close(fd); return -1;
+    }
+    raw_if_index = ifr.ifr_ifindex;
+    struct sockaddr_ll sll;
+    memset(&sll, 0, sizeof sll);
+    sll.sll_family   = AF_PACKET;
+    sll.sll_protocol = htons(ETH_P_ALL);
+    sll.sll_ifindex  = raw_if_index;
+    if (bind(fd, (struct sockaddr *)&sll, sizeof sll) < 0) {
+        fprintf(stderr, "raweth: bind(%s): %s\n", ifname, strerror(errno));
+        close(fd); return -1;
+    }
+    /* Put the NIC in promiscuous mode so the LANCE sees every frame on
+     * the wire, not just unicast-to-host + broadcast. */
+    struct packet_mreq mreq;
+    memset(&mreq, 0, sizeof mreq);
+    mreq.mr_ifindex = raw_if_index;
+    mreq.mr_type    = PACKET_MR_PROMISC;
+    if (setsockopt(fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof mreq) < 0) {
+        fprintf(stderr, "raweth: promisc on %s: %s (continuing)\n",
+                ifname, strerror(errno));
+    }
+    fprintf(stderr, "raweth: attached to %s (ifindex=%d, fd=%d, promisc)\n",
+            ifname, raw_if_index, fd);
+    return fd;
+}
+
+static void ensure_cap_net_raw(char **argv) {
+    int probe = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (probe >= 0) { close(probe); return; }
+    if (errno != EPERM && errno != EACCES) return;
+    char exe[1024];
+    ssize_t n = readlink("/proc/self/exe", exe, sizeof exe - 1);
+    if (n < 0) { perror("readlink /proc/self/exe"); return; }
+    exe[n] = '\0';
+    fprintf(stderr,
+        "raweth: CAP_NET_RAW missing — running:\n"
+        "    sudo /sbin/setcap cap_net_raw+ep %s\n"
+        "then re-execing self.\n", exe);
+    fflush(stderr);
+    pid_t pid = fork();
+    if (pid < 0) { perror("fork"); return; }
+    if (pid == 0) {
+        execl("/usr/bin/sudo", "sudo", "/sbin/setcap",
+              "cap_net_raw+ep", exe, (char *)NULL);
+        perror("execl sudo"); _exit(127);
+    }
+    int status = 0;
+    waitpid(pid, &status, 0);
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        fprintf(stderr, "raweth: setcap failed — continuing without.\n");
+        return;
+    }
+    execvp(argv[0], argv);
+    perror("execvp");
+}
+
+/* LANCE TX callback: frame out to the tap/raweth fd. */
+static void net_send_cb(const u8 *buf, int length, void *ctx) {
+    (void)ctx;
+    if (net_fd < 0) return;
+    if (raw_if_index >= 0) {
+        struct sockaddr_ll sll;
+        memset(&sll, 0, sizeof sll);
+        sll.sll_family   = AF_PACKET;
+        sll.sll_ifindex  = raw_if_index;
+        sll.sll_protocol = htons(ETH_P_ALL);
+        sll.sll_halen    = 6;
+        if (length >= 6) memcpy(sll.sll_addr, buf, 6);
+        ssize_t n = sendto(net_fd, buf, length, 0,
+                           (struct sockaddr *)&sll, sizeof sll);
+        if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+            fprintf(stderr, "raweth: sendto: %s\n", strerror(errno));
+    } else {
+        ssize_t n = write(net_fd, buf, length);
+        if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+            fprintf(stderr, "tap: write: %s\n", strerror(errno));
+    }
+}
+
 static u8 *load_file(const char *path, size_t *out_size) {
     FILE *f = fopen(path, "rb");
     if (!f) { perror(path); exit(1); }
@@ -76,6 +209,8 @@ static u8 *load_file(const char *path, size_t *out_size) {
 
 int main(int argc, char **argv) {
     const char *rom_path = NULL;
+    const char *tap_name = NULL;
+    const char *raweth_name = NULL;
     bool trace_bus = false;
     u64 max_cycles = 0;    /* 0 == unbounded */
 
@@ -83,6 +218,11 @@ int main(int argc, char **argv) {
         if (!strcmp(argv[i], "--trace")) trace_bus = true;
         else if (!strcmp(argv[i], "--max-cycles") && i+1 < argc) {
             max_cycles = (u64)strtoull(argv[++i], NULL, 0);
+        } else if (!strcmp(argv[i], "--tap") && i+1 < argc) {
+            tap_name = argv[++i];
+        } else if (!strcmp(argv[i], "--raweth") && i+1 < argc) {
+            raweth_name = argv[++i];
+            ensure_cap_net_raw(argv);
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "unknown option: %s\n", argv[i]);
             return 1;
@@ -136,6 +276,11 @@ int main(int argc, char **argv) {
         .read   = lance_glue_read, .write = lance_glue_write,
         .ctx    = lance, .name = "lance",
     });
+
+    /* Open the network backend if requested, and wire LANCE TX to it. */
+    if (raweth_name) net_fd = raweth_open(raweth_name);
+    else if (tap_name) net_fd = tap_open(tap_name);
+    if (net_fd >= 0) lance_glue_set_send(lance, net_send_cb, NULL);
 
     struct crtc *cr = crtc_new(&b);
     bus_add_mmio(&b, (mmio_region){
@@ -200,6 +345,15 @@ int main(int argc, char **argv) {
             if (in_head != in_tail && duart_rx_empty(d, 1)) {
                 duart_feed_input(d, 1, in_buf[in_head]);
                 in_head = (in_head + 1) % sizeof(in_buf);
+            }
+            /* RX pump: drain any pending Ethernet frames into the LANCE. */
+            if (net_fd >= 0) {
+                u8 eth[1600];
+                for (;;) {
+                    ssize_t n = read(net_fd, eth, sizeof eth);
+                    if (n <= 0) break;
+                    lance_glue_recv(lance, eth, (int)n);
+                }
             }
         }
     }

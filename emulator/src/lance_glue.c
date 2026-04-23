@@ -15,6 +15,8 @@
 typedef struct lance_glue {
     lance_t chip;
     bus *b;
+    void (*host_send)(const u8 *buf, int len, void *ctx);
+    void *host_send_ctx;
 } lance_glue;
 
 /* DMA callbacks — 16-bit word in/out of host memory. The LANCE is a
@@ -35,6 +37,13 @@ static void lance_intr(int state, void *ctx) {
      * the LANCE CSR0 INTR bit rather than taking interrupts, so this
      * is fine. */
     (void)state; (void)ctx;
+}
+
+/* Callback from the LANCE engine when it wants to transmit a frame.
+ * Forward to the host-side network backend if wired. */
+static void lance_send_frame(const uint8_t *buf, int length, void *ctx) {
+    lance_glue *g = (lance_glue*)ctx;
+    if (g->host_send) g->host_send(buf, length, g->host_send_ctx);
 }
 
 /* --- MMIO shim --- */
@@ -62,9 +71,22 @@ void *lance_glue_new(bus *b) {
     g->b = b;
     lance_init(&g->chip, LANCE_AM7990);
     lance_set_callbacks(&g->chip, lance_dma_in, lance_dma_out,
-                        lance_intr, NULL /*send_cb*/, g);
+                        lance_intr, lance_send_frame, g);
     lance_reset(&g->chip);
     return g;
+}
+
+void lance_glue_set_send(void *glue,
+                         void (*send)(const u8 *buf, int len, void *ctx),
+                         void *ctx) {
+    lance_glue *g = (lance_glue*)glue;
+    g->host_send = send;
+    g->host_send_ctx = ctx;
+}
+
+void lance_glue_recv(void *glue, const u8 *buf, int len) {
+    lance_glue *g = (lance_glue*)glue;
+    lance_recv(&g->chip, buf, len);
 }
 
 u32 lance_glue_read(void *ctx, u32 off, unsigned sz) {
