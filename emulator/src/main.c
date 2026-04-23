@@ -144,12 +144,9 @@ int main(int argc, char **argv) {
         .ctx    = cr, .name = "crtc",
     });
 
-    struct nvram *nv = nvram_new();
-    bus_add_mmio(&b, (mmio_region){
-        .start  = NCD15_KBD_PHYS, .length = 4,
-        .read   = nvram_read, .write = nvram_write,
-        .ctx    = nv, .name = "nvram",
-    });
+    /* NVRAM 93C46 is bit-banged via the DUART's OP4/5/6 pins (OPR) and
+     * read back through an IP pin — see duart.c. No separate MMIO
+     * region. */
 
     /* Catch-all MMIO for devices we haven't emulated yet. Responds
      * with 0 on read, swallows writes. Covers everything from 0x10000000

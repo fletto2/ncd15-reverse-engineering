@@ -83,22 +83,6 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE)
         return ld_be(b->rom + (pa - NCD15_ROM_KUSEG), size);
 
-    /* NVRAM / keyboard bit-bang MMIO at phys 0x0EC80000 — inside the
-     * shadow-bank range but served by the nvram device, not by the
-     * shadow backing store. Only active once the CPU is running in
-     * the shadow region (i.e., post-memtest), otherwise the ROM-
-     * based memtest sees the NVRAM's DO bit instead of its own
-     * 0x5A5A5A5A pattern and panics. */
-    if (pa >= NCD15_KBD_PHYS && pa < NCD15_KBD_PHYS + 4 &&
-        b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
-        mmio_region *kr = find_mmio(b, pa);
-        if (kr) {
-            u32 off = pa - kr->start;
-            u32 v = kr->read(kr->ctx, off, size);
-            kr->read_count++;
-            return v;
-        }
-    }
 
     /* Shadow bank: phys [0x0EC00000, 0x0F000000) backs the main monitor
      * code at 0x0EC00000 and the stack at 0x0EC28000+. Separate from
@@ -111,15 +95,15 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
          * advance. Guard: only active once the caller is shadow-
          * resident (post-boot), so we don't corrupt the early memtest
          * that also reads/writes AEC006A8. */
-        /* NVRAM init-flag hack: data_0x0EC00C34 holds the NVRAM size
-         * in bits (6 for a 93C46 = 64 words of 16). Never written by
-         * shadow code (its init runs through a function pointer at
-         * data_0x0EC008D8 which is uninitialized). Return 6 so the
-         * monitor proceeds past the 'PANIC -- Need to initalize NVRAM
-         * first' check and reads NVRAM from shadow[0x0C38..], which
-         * we've preloaded (see bus_init) with a zero image whose
-         * byte-sum checksum matches the stored checksum at 0x0BB1
-         * (also zero). */
+        /* NVRAM init-flag fallback. The real NVRAM init is bit-banged
+         * via the DUART OPR pins (see duart.c), but the exact pin
+         * layout (which bit of OP[4:6] is CS/SK/DI) and which IP pin
+         * returns DO are not fully pinned down yet. Returning 6 here
+         * as a fallback means the 'size' check at 0x0EC04630 passes
+         * so the monitor skips the PANIC message and reads an all-
+         * zero NVRAM image from shadow[0x0C38..] whose byte-sum
+         * checksum is also zero (matches). Remove this hack once the
+         * bit-bang pins are validated. */
         if (pa == 0x0EC00C34u && size == 4 &&
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return 6;
@@ -183,16 +167,6 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     /* ROM window is read-only. */
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
 
-    if (pa >= NCD15_KBD_PHYS && pa < NCD15_KBD_PHYS + 4 &&
-        b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
-        mmio_region *kr = find_mmio(b, pa);
-        if (kr) {
-            u32 off = pa - kr->start;
-            kr->write_count++;
-            kr->write(kr->ctx, off, value, size);
-            return;
-        }
-    }
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
         st_be(b->shadow + (pa - 0x0EC00000u), value, size);
         return;

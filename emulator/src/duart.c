@@ -52,6 +52,8 @@ typedef struct duart {
     u8 rx_queue[2][16];
     int rx_head[2], rx_tail[2];
     bool log_tx;
+    struct nvram *nv; /* 93C46 EEPROM bit-banged via OP4/5/6 of OPR. */
+    u8 opr;           /* last-written OPR value (output port). */
 } duart;
 
 struct duart *duart_new(void) {
@@ -59,6 +61,7 @@ struct duart *duart_new(void) {
     d->sra = SR_TXRDY | SR_TXEMT;    /* ready to transmit from cold-boot */
     d->srb = SR_TXRDY | SR_TXEMT;
     d->log_tx = true;
+    d->nv = nvram_new();
     return d;
 }
 
@@ -115,6 +118,14 @@ u32 duart_read(void *ctx, u32 offset, unsigned size) {
         return d->srb;
     case RHRB_REG:
         return duart_rx_pop(d, 1);
+    case 0x0d: {
+        /* Input port (IP) pins. Bit for NVRAM DO (to be determined).
+         * Try IP3 (bit 3) as DO — common convention. */
+        u8 ip = d->regs[0x0d];
+        u32 dov = nvram_read(d->nv, 0, 1) & 1;
+        ip = (ip & ~0x08u) | (dov ? 0x08 : 0);
+        return ip;
+    }
     default:
         return d->regs[reg];
     }
@@ -148,6 +159,26 @@ void duart_write(void *ctx, u32 offset, u32 value, unsigned size) {
     case THRB_REG:
         duart_tx(d, 1, v);
         d->srb |= SR_TXRDY | SR_TXEMT;
+        break;
+    case 0x0f: /* Set Output Port: writing 1 to a bit SETS that OP pin high */
+        d->opr |= v;
+        /* Route bits 4/5/6 to 93C46 pins. Packed as (bit6,bit5,bit4)
+         * → (CS,SK,DI). */
+        nvram_write(d->nv, 0,
+                    ((d->opr >> 4) & 1) |       /* DI ← OP4 → bit 0 */
+                    ((d->opr >> 4) & 2) |       /* SK ← OP5 → bit 1 */
+                    ((d->opr >> 4) & 4),        /* CS ← OP6 → bit 2 */
+                    1);
+        d->regs[0x0f] = d->opr;
+        break;
+    case 0x1f: /* Reset Output Port: writing 1 to a bit CLEARS that OP pin */
+        d->opr &= ~v;
+        nvram_write(d->nv, 0,
+                    ((d->opr >> 4) & 1) |
+                    ((d->opr >> 4) & 2) |
+                    ((d->opr >> 4) & 4),
+                    1);
+        d->regs[0x0f] = d->opr;
         break;
     default:
         d->regs[reg] = v;

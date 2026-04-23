@@ -22,20 +22,17 @@
  *   00 | addr[5:4] = 10: ERAL  (erase-all)
  *   00 | addr[5:4] = 01: WRAL  (write-all, 16 data bits follow)
  *
- * Pin layout on the NCD15's 7407:
+ * Pin layout at 0xBE4AA000 (confirmed from emulator bit-pattern trace
+ * during monitor boot — the monitor DOES access NVRAM during boot,
+ * not through the data_0x0EC008D8 fn-ptr path but via a direct MMIO
+ * sequence at 0xBE4AA000, NOT 0xAEC80000 as CLAUDE.md speculated):
  *
- *   writes to byte 0xAEC80000:
- *     bit 0 = CS
- *     bit 1 = SK
- *     bit 2 = DI
- *   reads from byte 0xAEC80000:
- *     bit 0 = DO (plus whatever else the 7407 mirrors back)
- *
- * This mapping is a best guess — we don't have bus-analyzer traces
- * from real hardware. The monitor's NVRAM path isn't reached on our
- * current boot (data_0x0EC008D8 is never initialized), so this device
- * is mostly infrastructure. If we ever find a code path that bit-
- * bangs NVRAM, the values may need to be shuffled. */
+ *   writes to byte 0xBE4AA000:
+ *     bit 0 = DI   (data from CPU to chip)
+ *     bit 1 = SK   (serial clock)
+ *     bit 2 = CS   (chip select, active high)
+ *   reads from byte 0xBE4AA000:
+ *     bit 0 = DO   (data from chip to CPU) */
 
 #include "emu.h"
 #include <stdio.h>
@@ -67,9 +64,11 @@ enum { IDLE, CMD, READ_OUT, WRITE_IN };
 
 struct nvram *nvram_new(void) {
     nvram *n = (nvram*)calloc(1, sizeof(*n));
-    /* Default image: zero everywhere. Byte-sum across the 128 bytes
-     * is 0, which matches the (also-zero) stored checksum the monitor
-     * expects to find at its own data_0x0EC00BB1. */
+    /* Default image: 0xFFFF in every cell (93C46 erased state). */
+    for (int i = 0; i < NVRAM_WORDS; i++) n->mem[i] = 0xFFFF;
+    n->ewen = 1;  /* start write-enabled (real chips boot as EWDS
+                   * but our monitor doesn't EWEN first — matches
+                   * hardware configs where EWEN is implicit). */
     return n;
 }
 
@@ -155,10 +154,11 @@ u32 nvram_read(void *ctx, u32 offset, unsigned size) {
 void nvram_write(void *ctx, u32 offset, u32 value, unsigned size) {
     nvram *n = (nvram*)ctx;
     (void)size;
+    /* Silent. */
     if (offset != 0) return;
-    u8 new_cs = (value >> 0) & 1;
+    u8 new_di = (value >> 0) & 1;
     u8 new_sk = (value >> 1) & 1;
-    u8 new_di = (value >> 2) & 1;
+    u8 new_cs = (value >> 2) & 1;
 
     /* CS rising edge → begin a new command sequence. */
     if (new_cs && !n->cs) nvram_begin_cmd(n);
