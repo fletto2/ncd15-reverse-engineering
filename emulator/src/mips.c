@@ -232,17 +232,17 @@ static void take_exception(mips_cpu *cpu, u32 pc, u32 exccode) {
     cpu->in_delay_slot = false;
 }
 
-/* Periodic tick: raise IP5 (bit 13 of Cause, matches the monitor's
- * Status.IM5) every TICK_CYCLES cycles. This drives the tick counter
- * that the monitor's delay loops wait on. */
-#define TICK_CYCLES 50000u
-
+/* Interrupt check: fires when Cause.IP & Status.IM is non-zero and
+ * IEc is set. The monitor's tick counter (data_0x0EC006A8) has no
+ * writer in the disassembly — its incrementer lives in a handler at
+ * VA 0x80000080 that the monitor installs at boot. We don't synthesize
+ * a timer here because there's nothing installed at 0x80000080 in
+ * DRAM yet by the time the first EXC would fire; an exception would
+ * fall through NOPs for 4 MiB before hitting real code and thrash
+ * 100M+ cycles each go. If/when we need real interrupts (for DUART
+ * RX, LANCE RX, etc.) we'll raise IP from the respective device
+ * model, not on a periodic schedule. */
 static void check_interrupts(mips_cpu *cpu, u32 pc) {
-    /* Raise periodic tick on IP5. */
-    if ((cpu->cycles % TICK_CYCLES) == 0 && cpu->cycles != 0) {
-        cpu->cp0_cause |= (1u << 13);
-    }
-    /* Check if an interrupt is currently recognized. */
     if (!(cpu->cp0_status & 1)) return;            /* IEc cleared */
     u32 pending = (cpu->cp0_cause  >> 8) & 0xff;
     u32 mask    = (cpu->cp0_status >> 8) & 0xff;

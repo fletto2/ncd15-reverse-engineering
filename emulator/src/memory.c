@@ -86,8 +86,30 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
     /* Shadow bank: phys [0x0EC00000, 0x0F000000) backs the main monitor
      * code at 0x0EC00000 and the stack at 0x0EC28000+. Separate from
      * the main DRAM bank. */
-    if (pa >= 0x0EC00000u && pa < 0x0F000000u)
+    if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
+        /* Tick counter hack: data_0x0EC006A8 is read by 38 functions
+         * but written by no code in the disassembly — its incrementer
+         * is presumably in an interrupt handler we don't have. Auto-
+         * increment on every read so the monitor's delay loops
+         * advance. Guard: only active once the caller is shadow-
+         * resident (post-boot), so we don't corrupt the early memtest
+         * that also reads/writes AEC006A8. */
+        /* Tick counter hack: VA 0x0EC00730 is where the boot delay
+         * loop at 0x0EC0362C reads its tick from ($s1+0x6a8 with
+         * $s1=0x0EC00088 → 0x0EC00730). No code in the disassembly
+         * writes this — its incrementer lives in an interrupt
+         * handler we don't model. Auto-increment on read from shadow-
+         * resident code so delay loops advance. */
+        if (pa == 0x0EC00730u && size == 4 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            u8 *p = b->shadow + 0x730;
+            u32 v = ((u32)p[0]<<24)|((u32)p[1]<<16)|((u32)p[2]<<8)|p[3];
+            v++;
+            p[0]=v>>24; p[1]=v>>16; p[2]=v>>8; p[3]=v;
+            return v;
+        }
         return ld_be(b->shadow + (pa - 0x0EC00000u), size);
+    }
 
     /* Main DRAM: 4 MiB at phys 0, aliased every 4 MiB up to 0x0EC00000. */
     if (pa < 0x0EC00000u)
