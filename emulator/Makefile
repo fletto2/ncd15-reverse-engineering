@@ -1,6 +1,6 @@
 CC      := gcc
 CFLAGS  := -std=c11 -Wall -Wextra -O2 -g
-SRCS    := src/mips.c src/memory.c src/duart.c src/lance.c src/lance_glue.c src/main.c
+SRCS    := src/mips.c src/memory.c src/duart.c src/lance.c src/lance_glue.c src/nvram.c src/main.c
 OBJS    := $(SRCS:.c=.o)
 TARGET  := ncd15-emu
 

@@ -70,6 +70,13 @@ static u32 fetch(mips_cpu *cpu, u32 va) {
         return bus_read(cpu->bus, va, 4);
     }
     u32 pa = mips_va_to_pa(va);
+    /* Safety stub at phys 0: `jr $ra; nop`. The monitor's NVRAM-init
+     * path loads a function pointer from data_0x0EC008D8 (uninitialized
+     * → NULL) and jalrs to it. With this stub, the call safely returns.
+     * Bypasses the I-cache so monitor cache-flush routines can't
+     * clobber it. */
+    if (pa == 0x00000000u) return 0x03E00008u;  /* jr $ra */
+    if (pa == 0x00000004u) return 0x00000000u;  /* nop */
     u32 index = (pa >> 4) & (ICACHE_SETS - 1);
     u32 tag   = pa >> (4 + 8);
     u32 word  = (pa >> 2) & (ICACHE_WORDS_PER_LINE - 1);

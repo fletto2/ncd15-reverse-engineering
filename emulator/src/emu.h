@@ -175,4 +175,12 @@ u32  crtc_read(void *ctx, u32 offset, unsigned size);
 void crtc_write(void *ctx, u32 offset, u32 value, unsigned size);
 void crtc_dump_hist(void *ctx);
 
+/* --- 93C46 NVRAM bit-bang, with the keyboard serial line multiplexed
+ * through the same 7407 buffer at 0xAEC80000. Minimal device; exact
+ * pin layout is a best guess since we don't have real bus traces. --- */
+struct nvram;
+struct nvram *nvram_new(void);
+u32  nvram_read(void *ctx, u32 offset, unsigned size);
+void nvram_write(void *ctx, u32 offset, u32 value, unsigned size);
+
 #endif

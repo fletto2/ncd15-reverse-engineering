@@ -144,6 +144,13 @@ int main(int argc, char **argv) {
         .ctx    = cr, .name = "crtc",
     });
 
+    struct nvram *nv = nvram_new();
+    bus_add_mmio(&b, (mmio_region){
+        .start  = NCD15_KBD_PHYS, .length = 4,
+        .read   = nvram_read, .write = nvram_write,
+        .ctx    = nv, .name = "nvram",
+    });
+
     /* Catch-all MMIO for devices we haven't emulated yet. Responds
      * with 0 on read, swallows writes. Covers everything from 0x10000000
      * up through 0x0FFFFFFF (KSEG1 = 0xB0000000..0xBFFFFFFF) — the
