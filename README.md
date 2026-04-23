@@ -4,8 +4,15 @@ Reverse-engineering work on the **NCD15 X-terminal** (Network Computing
 Devices, ~1991): a MIPS R3052-based diskless X11 workstation that boots
 its firmware from ROM and fetches the X server (`Xncd15r`) over TFTP.
 This repo contains annotated disassemblies of the boot monitor, NVRAM
-setup tool, and X server, plus a minimal replacement X-server image
-you can serve to confirm the deployment path.
+setup tool, and X server, a working **C emulator** under `emulator/`
+that boots the real firmware to its interactive CLI prompt, plus a
+minimal replacement X-server image you can serve to confirm the
+deployment path.
+
+> **Corrections from the emulator**: see
+> [`EMULATOR_ERRATA.md`](EMULATOR_ERRATA.md) for 12 fixes to
+> pre-emulator claims (NVRAM actually bit-banged via DUART, shadow
+> copied from `ROM+0x2000`, BEV cleared at boot, etc.).
 
 ## Repository layout
 

@@ -1,5 +1,12 @@
 # NCD15 NVRAM Setup tool — operational description
 
+> **See [`EMULATOR_ERRATA.md`](EMULATOR_ERRATA.md) §2 and §5.** The
+> 93C46 is bit-banged via DUART OPR/IPCR (OP4=DI, OP5=CS, OP6=SK,
+> DO=IP2), not via a standalone MMIO at `0xAEC80000`. DO is clocked
+> **LSB-first** within each 16-bit word. File format (for the
+> emulator's `--nvram` flag): 128 bytes, 64 little-endian words.
+> Known layout so far: bytes 2..7 = MAC address.
+
 The NVRAM Setup tool is a small, self-contained MIPS program shipped
 in the same ROM as the Boot Monitor but linked to a completely
 different base address. It runs as the back-end of the monitor's

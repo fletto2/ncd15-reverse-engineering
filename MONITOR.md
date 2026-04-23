@@ -1,5 +1,12 @@
 # NCD15 Boot Monitor — operational description
 
+> **See [`EMULATOR_ERRATA.md`](EMULATOR_ERRATA.md) first.** Emulator
+> work (2026-04-23) confirmed / corrected several claims below:
+> shadow is copied from `ROM+0x2000` (not `0x4000`); BEV is cleared
+> after init (Status becomes `0x0000a001`); console is DUART
+> channel B (not A); NVRAM 93C46 is bit-banged via DUART OPR/IPCR
+> pins, not at `0xAEC80000`.
+
 The Boot Monitor is the firmware that runs when an NCD15 powers on. It
 lives in the mask ROM at physical `0x0EC00000` (KSEG1 alias
 `0xBFC00000`), initializes the hardware, drops to an interactive

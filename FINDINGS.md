@@ -4,6 +4,14 @@ Working notes for the NCD15 X-terminal RE project. This file is the
 consolidated state; individual `.dis` / `.py` / image files in this
 directory are the supporting artifacts.
 
+> **See [`EMULATOR_ERRATA.md`](EMULATOR_ERRATA.md) first.** Building
+> the emulator (`emulator/`, 2026-04-23) turned up a dozen
+> corrections to the claims here — notably: shadow-RAM source
+> (§1), NVRAM-bit-bang wiring (§2), BEV-cleared status (§3),
+> three separate memory banks (§11), and an off-by-0x2000 VA shift
+> in the main-monitor section of `monitor.dis`. Corrections in
+> `EMULATOR_ERRATA.md` supersede anything in this file.
+
 ## Corrections (2026-04-22, from the hardware owner)
 
 Several recurring claims below were derived from disassembly alone

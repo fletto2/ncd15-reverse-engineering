@@ -4,6 +4,14 @@ Short writeup of concrete new findings from this pass, on top of
 what is already in `FINDINGS.md`, `MONITOR.md`, `FRAMEBUFFER.md`,
 and the recent `Corrections` update.
 
+> **[`EMULATOR_ERRATA.md`](EMULATOR_ERRATA.md) supersedes.** Two
+> specific items in this doc are now known wrong: the claim that
+> BEV stays set (actually cleared to Status=0x0000a001 after
+> shadow entry, §3 of errata) and the direct `0xBFC00000 →
+> 0x0EC00000` jump (actually via KUSEG cached trampoline at
+> `0x1FC0006C`, then the copy, then the shadow jump, §12 of
+> errata).
+
 ## 1. Boot sequence — the KSEG1→KUSEG cache-alias trampoline
 
 Standard MIPS "run from uncached ROM while the memory controller
