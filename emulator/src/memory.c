@@ -95,19 +95,6 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
          * advance. Guard: only active once the caller is shadow-
          * resident (post-boot), so we don't corrupt the early memtest
          * that also reads/writes AEC006A8. */
-        /* NVRAM init-flag fallback. The real NVRAM init is bit-banged
-         * via the DUART OPR pins (see duart.c), but the exact pin
-         * layout (which bit of OP[4:6] is CS/SK/DI) and which IP pin
-         * returns DO are not fully pinned down yet. Returning 6 here
-         * as a fallback means the 'size' check at 0x0EC04630 passes
-         * so the monitor skips the PANIC message and reads an all-
-         * zero NVRAM image from shadow[0x0C38..] whose byte-sum
-         * checksum is also zero (matches). Remove this hack once the
-         * bit-bang pins are validated. */
-        if (pa == 0x0EC00C34u && size == 4 &&
-            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
-            return 6;
-        }
         /* Input-mode hack: data_0x0EC01440 is a halfword flag the
          * monitor reads (5 sites) to choose between blocking DUART
          * polling read (flag != 0) and ring-queue read (flag == 0).

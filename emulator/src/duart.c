@@ -118,17 +118,27 @@ u32 duart_read(void *ctx, u32 offset, unsigned size) {
         return d->srb;
     case RHRB_REG:
         return duart_rx_pop(d, 1);
-    case 0x0d: {
-        /* Input port (IP) pins. Bit for NVRAM DO (to be determined).
-         * Try IP3 (bit 3) as DO — common convention. */
-        u8 ip = d->regs[0x0d];
+    case 0x04: {
+        /* IPCR read: low nibble is current state of IP0..IP3. The
+         * monitor's 93C46 DO-readback (sub_0ec04100) loads this
+         * byte and masks bit 2 → IP2. So merge our NVRAM DO into
+         * bit 2 here. */
+        u8 ipcr = d->regs[0x04];
         u32 dov = nvram_read(d->nv, 0, 1) & 1;
-        ip = (ip & ~0x08u) | (dov ? 0x08 : 0);
-        return ip;
+        ipcr = (ipcr & ~0x04u) | (dov ? 0x04 : 0);
+        return ipcr;
     }
     default:
         return d->regs[reg];
     }
+}
+
+/* Build the 93C46 pin byte (bit0=DI, bit1=SK, bit2=CS) from the DUART
+ * OPR latch (OP4=DI, OP5=CS, OP6=SK per sub_0ec04118 analysis). */
+static u32 nvram_pins_from_opr(u8 opr) {
+    return ((opr >> 4) & 1) |           /* DI ← OP4 */
+           ((opr >> 6) & 1) << 1 |       /* SK ← OP6 */
+           ((opr >> 5) & 1) << 2;        /* CS ← OP5 */
 }
 
 void duart_write(void *ctx, u32 offset, u32 value, unsigned size) {
@@ -160,24 +170,12 @@ void duart_write(void *ctx, u32 offset, u32 value, unsigned size) {
         duart_tx(d, 1, v);
         d->srb |= SR_TXRDY | SR_TXEMT;
         break;
-    case 0x0f: /* Set Output Port: writing 1 to a bit SETS that OP pin high */
-        d->opr |= v;
-        /* Route bits 4/5/6 to 93C46 pins. Packed as (bit6,bit5,bit4)
-         * → (CS,SK,DI). */
-        nvram_write(d->nv, 0,
-                    ((d->opr >> 4) & 1) |       /* DI ← OP4 → bit 0 */
-                    ((d->opr >> 4) & 2) |       /* SK ← OP5 → bit 1 */
-                    ((d->opr >> 4) & 4),        /* CS ← OP6 → bit 2 */
-                    1);
-        d->regs[0x0f] = d->opr;
-        break;
-    case 0x1f: /* Reset Output Port: writing 1 to a bit CLEARS that OP pin */
-        d->opr &= ~v;
-        nvram_write(d->nv, 0,
-                    ((d->opr >> 4) & 1) |
-                    ((d->opr >> 4) & 2) |
-                    ((d->opr >> 4) & 4),
-                    1);
+    case 0x0f:
+        /* OPR. The monitor only writes to this one port (never the
+         * separate clear-port reg 0x1F), so treat it as a direct OPR
+         * write rather than a set-bits operation. */
+        d->opr = v;
+        nvram_write(d->nv, 0, nvram_pins_from_opr(d->opr), 1);
         d->regs[0x0f] = d->opr;
         break;
     default:

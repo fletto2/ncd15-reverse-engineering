@@ -139,14 +139,16 @@ u32 nvram_read(void *ctx, u32 offset, unsigned size) {
     nvram *n = (nvram*)ctx;
     (void)size;
     if (offset != 0) return 0;
-    /* READ timing per NM93C46 datasheet: after the 6th address bit is
-     * clocked in, the chip clocks out a leading dummy 0 followed by
-     * the 16 data bits MSB-first. So tx_count 1 → dummy 0, 2..17 →
-     * data bits 15..0. */
-    u8 out = 0;
-    if (n->state == READ_OUT && n->tx_count >= 2 && n->tx_count <= 17) {
-        int bit = 17 - n->tx_count;
-        out = (n->tx_shift >> bit) & 1;
+    /* DO is tristate when not outputting — on the NCD15's 7407 buffer
+     * that reads back as logic 1 (pull-up). During READ_OUT, the
+     * first SK edge clocks out a dummy 0, then 16 data bits MSB-first. */
+    u8 out = 1;  /* pull-up default */
+    if (n->state == READ_OUT) {
+        if (n->tx_count == 1) out = 0;  /* leading dummy 0 */
+        else if (n->tx_count >= 2 && n->tx_count <= 17) {
+            int bit = 17 - n->tx_count;
+            out = (n->tx_shift >> bit) & 1;
+        }
     }
     return out;
 }
