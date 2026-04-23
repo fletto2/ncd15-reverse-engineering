@@ -1,99 +1,145 @@
 # NCD15 emulator — status
 
-Minimal standalone C emulator, 4 source files, no external dependencies
-beyond libc.
+Standalone C emulator. Boots the V2.7.1 boot monitor to its
+interactive `>` prompt and processes CLI commands.
 
-## What works
+## Session transcript (live)
 
-- **MIPS-I interpreter** (`src/mips.c`) — enough opcodes to run the
-  boot monitor: all SPECIAL-class ALU / shift / multiply / divide,
-  REGIMM branches, all the standard J/JAL/BEQ/BNE/B*Z branches, loads
-  and stores (including unaligned LWL/LWR/SWL/SWR), LUI/ADDIU/etc.,
-  CP0 (MFC0/MTC0/RFE for registers 8/12/13/14/15).
-- **Memory map** (`src/memory.c`) — ROM at phys `0x0EC00000`
-  (also accessible via the KUSEG `0x1FC00000` alias used by the
-  cache trampoline). 4 MB DRAM aliased at all physical addresses
-  below the ROM base (bits 21:0 decode; higher bits ignored), matching
-  the "stride 0x03D00000, 4 MB bank" pattern from `FINDINGS.md`.
-- **MC68681/SCN2681 DUART** (`src/duart.c`) with 4-byte register
-  stride, channel A → stdout, channel B → stderr. Enough of the
-  status + THR registers to get banner output.
-- **Memory controller stub** (`src/duart.c`) at `0xFFFE0000`.
-- **Video-control cart-ID stub** (`src/duart.c`) at `0xAF000000..3`.
-- **Catch-all stub** for every other unmapped MMIO address — returns
-  all-ones on reads (so monitor polling loops for ready/idle flags
-  advance), silently drops writes.
+```
+$ ./ncd15-emu NCD15-19rBM-V271-splice.u8
+NCD15 emulator: ROM loaded (262144 bytes), PC=0xbfc00000
+channel B (monitor console) -> stdout; channel A -> stderr
 
-## Current boot depth (as of last test)
+PANIC -- Need to initalize NVRAM first
+PANIC -- Need to initalize NVRAM first
+Boot Monitor V2.7.1
+Testing memory \|/-\|/-\|/-... 4.0 Mbytes
+Boot Monitor
+> ?
+BL[file] boot locally
+BN[file][local-IP host-IP][gateway-IP][subnet-mask] boot via nfs
+BT[file][local-IP host-IP][gateway-IP][subnet-mask] boot via tftp
+DA display addresses
+DM[adr][len] display memory
+DR display registers
+DS display booting statistics
+EX extended tests
+KM keyboard mapper
+KS keyboard statistics
+NV NVRAM utility
+PI[timeout][local-IP host-IP][gateway-IP][subnet-mask] ping host
+RS reset system
+SE NVRAM setup
+SM show memory configuration
+ST stack trace
+TR[4 or 16] set token ring network speed
+UP[file][local-IP host-IP][gateway-IP][subnet-mask] upload via tftp
+ZK zero keyboard statistics
+ZS zero boot statistics
+> DR
+R0 zero  R1 at    R2 v0    R3 v1    R4 a0    R5 a1    R6 a2    R7 a3
+00000000 0EC00000 00000006 00000000 0000F001 00000004 00000FFF 0EC23348
+...
+```
 
-5 million instructions run without halting. CPU reaches the DRAM
-memory-test loop inside `fn_ramdac` / `sub_0ec00a40` — `r19` holds the
-classic `0x5a5a5a5a` pattern, `r15` = 0x00400000 (4 MB), sp in the
-right ballpark. No crashes, no unmapped accesses.
+## What's real
 
-## What's left to reach the `>` prompt
+- **MIPS-I R3052 interpreter** (`src/mips.c`) — full two-PC delay-slot
+  semantics, all integer opcodes used by the monitor, including
+  unaligned LWL/LWR/SWL/SWR; CP0 (Status/Cause/EPC/BadVAddr/PRId),
+  RFE, exception dispatch with KU/IE stack shift.
+- **Direct-mapped I-cache**, 4 KB, 16-byte lines. Invalidated on
+  cached stores; bypass for KSEG1. Essential to survive the
+  monitor's uncached memtest which otherwise scribbles shadow code.
+- **Memory map** (`src/memory.c`) — separate backing stores for
+  4 MB DRAM (phys 0), 4 MB shadow bank (phys 0x0EC00000, holds the
+  copied monitor image + stack), and 1 MB VRAM (phys 0x0F000000).
+  ROM window at both 0xBFC00000 (KSEG1) and 0x1FC00000 (KUSEG
+  cached alias used by the reset trampoline). No aliasing across
+  banks — splitting was necessary because VRAM memtest aliases
+  into shadow code otherwise.
+- **SCN2681 DUART** (`src/duart.c`) — 4-byte register stride.
+  Byte-granular MMIO read/write so big-endian byte reads return
+  the correct byte of a 4-byte register. Channel B (monitor
+  console) to stdout, channel A to stderr.
+- **CRTC / video-sync stub** — responds to the boot sync loop at
+  0x0EC03E18 by toggling bit 1 of byte 0 at a slow cadence.
+- **Stdin pacing** — non-blocking read into an internal FIFO, feed
+  one byte to the DUART when its RX queue is drained. Without
+  pacing the monitor drops chars silently.
 
-1. **Identify the device at `0xBE200000`** (unlisted in `FINDINGS.md`;
-   the reset code's 0xBFC005BC helper polls it via a multi-layer call
-   chain). Currently served by the all-ones stub; real behaviour
-   unknown. Candidates: early diagnostic serial, watchdog, initial
-   bootstrap signal register.
-2. **Real 93C46 NVRAM** at `0xAEC80000` — monitor reads its MAC and
-   boot-file name from here. Stub returns ones, which may confuse the
-   setup path. ~150 LOC to add.
-3. **LANCE Ethernet** at `0xBE482000` — needed for `PI`, `BT`, `DA`
-   commands to function. ~800 LOC if we adapt GXemul's `dev_le.cc`.
-4. **CRTC** at `0xBE380000` — vsync polling loop at bit 8 of
-   `0xBE380013` currently returns ones (matches "always in vsync"
-   = immediate progress). Likely fine as-is for monitor boot.
-5. **Video framebuffer** rendering — not needed for a serial-console
-   `BT` boot.
+## Critical hacks
+
+These keep the monitor running without a real interrupt handler:
+
+| Location | Behavior |
+|---|---|
+| `data_0x0EC00730` | Auto-increments on shadow-resident reads; the monitor's delay loops wait on this tick counter (no ISR installed at 0x80000080 writes it) |
+| `data_0x0EC01440` | Returns 1 on shadow-resident reads; forces the monitor onto its polling DUART-read path instead of the ISR-fed ring queue |
+| CRTC byte 0 bit 1 | Toggles on a slow clock for the boot sync edge-detect |
+
+## What's stubbed / missing
+
+- **93C46 NVRAM at 0xAEC80000** — not modelled. The monitor's
+  NVRAM-read function pointer (`data_0x0EC008D8`) is never
+  initialized by any code in the disassembly, and the check at
+  0x0EC04630 short-circuits the NVRAM path when
+  `data_0x0EC00C34 == 0`. The two "PANIC -- Need to initalize
+  NVRAM first" lines are authentic blank-NVRAM behavior.
+- **LANCE Ethernet** at 0xBE482000 — skeleton glue only; enough
+  to not crash. Needed for `BT` (TFTP boot) and `PI` (ping).
+- **Interrupts** — dispatch is implemented but no device raises
+  IP lines. The monitor uses polling throughout its main code
+  path, so this is fine for the CLI.
 
 ## Usage
 
 ```bash
 cd emulator
-make              # builds ncd15-emu
-make run          # runs the ROM at ../../NCD15-19rBM-V271-splice.u8, 1M cycles
-make trace        # MIPS_TRACE=1 + --trace bus logging (first 200 lines)
+make                     # builds ncd15-emu
+make run                 # default 1M cycles, no stdin
 
-# Or directly:
-./ncd15-emu --max-cycles 10000000 /path/to/NCD15-19rBM-V271-splice.u8
-./ncd15-emu --trace --max-cycles 2000 /path/to/rom.u8  2> trace.log
+# Interactive CLI:
+./ncd15-emu ../../NCD15-19rBM-V271-splice.u8
+
+# Pipe a script:
+( sleep 2; printf '?\r'; sleep 3 ) | ./ncd15-emu ../../NCD15-19rBM-V271-splice.u8
+
+# Trace bus accesses:
+./ncd15-emu --trace --max-cycles 2000 ../../rom.u8  2> trace.log
 ```
 
-The ROM path defaults to `../../NCD15-19rBM-V271-splice.u8` (the one
-next to the annotated disassembly).
+End commands with `\r` (CR), not `\n`. The monitor is line-terminated
+on CR. When typing in a terminal, your Enter key is probably CR in
+the default mode — fine.
 
 ## Files
 
 ```
 emulator/
-├── Makefile         — 30 lines
-├── README.md        — goal, vendor sources, plan
-├── STATUS.md        — this file
+├── Makefile
+├── README.md
+├── STATUS.md           — this file
 ├── src/
-│   ├── emu.h        — shared types and constants (~130 lines)
-│   ├── memory.c     — bus dispatch, ROM/DRAM/MMIO routing (~130 lines)
-│   ├── mips.c       — MIPS-I R3052 interpreter (~230 lines)
-│   ├── duart.c      — MC68681 DUART + stubs (~180 lines)
-│   └── main.c       — CLI + device wiring (~110 lines)
-└── vendor/
-    └── SOURCES.md   — where to re-clone GXemul + MAME references
+│   ├── emu.h           — shared types + constants
+│   ├── memory.c        — bus dispatch, 3 backing stores, MMIO routing
+│   ├── mips.c          — R3052 interpreter + I-cache + exceptions
+│   ├── duart.c         — SCN2681 DUART + CRTC/memctl/vidctl stubs
+│   ├── lance.c         — Am79C90 core (adapted from 3com68k)
+│   ├── lance_glue.c    — bus bridge for LANCE
+│   └── main.c          — stdin pacing + device wiring
+└── vendor/             — references (SOURCES.md)
 ```
-
-Total new C: ~780 lines. No runtime dependencies beyond `libc`.
 
 ## Design notes
 
-- Chose standalone C over adapting GXemul because the monitor is
-  small (32 KB of code, a handful of peripherals) and the NCD15's
-  DRAM aliasing + video-cart-ID quirks don't fit GXemul's machine
-  model naturally. Writing the interpreter from scratch was faster
-  than wiring a new GXemul machine type.
-- Endianness: big-endian throughout. MIPS is big-endian on this
-  board, and the ROM file is byte-ordered as the CPU sees it.
-- No JIT — pure interpretation. 1–2 M instructions/second on a
-  modern host, more than enough to boot-through in reasonable time.
-- No interrupts implemented yet. Monitor runs with interrupts
-  masked (`cp0_status & 1 == 0`) so we're OK to defer.
+- Endianness: big-endian throughout.
+- No JIT — pure interpretation. ~20 M instructions/second; boots
+  to the CLI in well under a second of wall time.
+- The monitor.dis previously shipped had all VAs in the main
+  section shifted -0x2000 from reality — the dis-maker assumed
+  shadow source was ROM+0x4000, but the monitor's reset code
+  actually copies from ROM+0x2000. Our emulator trace proved this;
+  `dump_monitor.py` in the parent repo was fixed and the
+  corrected disassembly is what's used by anyone correlating
+  against emulator-observed PCs.
