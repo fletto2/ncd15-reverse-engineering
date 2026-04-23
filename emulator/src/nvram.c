@@ -13,11 +13,14 @@
  *
  *   START(1) | OP(2) | ADDR(6)  [| DATA(16) for writes]
  *
- * Opcodes:
- *   10: READ  → chip outputs 16 data bits MSB-first
+ * Opcodes (per NM93C46 datasheet, x16 ORG=1 mode):
+ *   10: READ  → chip outputs leading dummy 0 + 16 data bits MSB-first
  *   01: WRITE → CPU supplies 16 data bits; chip commits when CS drops
- *   11: ERASE → clears the addressed word
- *   00 xx: special — EWEN/EWDS/ERAL/WRAL distinguished by xx
+ *   11: ERASE → sets the addressed word to 0xFFFF
+ *   00 | addr[5:4] = 11: EWEN  (write-enable)
+ *   00 | addr[5:4] = 00: EWDS  (write-disable)
+ *   00 | addr[5:4] = 10: ERAL  (erase-all)
+ *   00 | addr[5:4] = 01: WRAL  (write-all, 16 data bits follow)
  *
  * Pin layout on the NCD15's 7407:
  *
@@ -137,10 +140,13 @@ u32 nvram_read(void *ctx, u32 offset, unsigned size) {
     nvram *n = (nvram*)ctx;
     (void)size;
     if (offset != 0) return 0;
-    /* Return current DO level in bit 0. MSB-first shift. */
+    /* READ timing per NM93C46 datasheet: after the 6th address bit is
+     * clocked in, the chip clocks out a leading dummy 0 followed by
+     * the 16 data bits MSB-first. So tx_count 1 → dummy 0, 2..17 →
+     * data bits 15..0. */
     u8 out = 0;
-    if (n->state == READ_OUT && n->tx_count > 0 && n->tx_count <= 16) {
-        int bit = 16 - n->tx_count;
+    if (n->state == READ_OUT && n->tx_count >= 2 && n->tx_count <= 17) {
+        int bit = 17 - n->tx_count;
         out = (n->tx_shift >> bit) & 1;
     }
     return out;
