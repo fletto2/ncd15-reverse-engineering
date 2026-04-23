@@ -90,6 +90,13 @@ void duart_feed_input(duart *d, int ch, u8 byte) {
     d->rx_tail[ch] = next;
 }
 
+/* Is the RX queue empty for this channel? Main's stdin feeder uses
+ * this to pace input so the monitor can consume each char before we
+ * inject the next. */
+int duart_rx_empty(struct duart *d, int ch) {
+    return d->rx_head[ch] == d->rx_tail[ch];
+}
+
 u32 duart_read(void *ctx, u32 offset, unsigned size) {
     duart *d = (duart*)ctx;
     (void)size;

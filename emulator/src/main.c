@@ -168,18 +168,35 @@ int main(int argc, char **argv) {
     int fl = fcntl(0, F_GETFL, 0);
     fcntl(0, F_SETFL, fl | O_NONBLOCK);
 
-    /* Run loop with periodic stdin polling. Polling rate is a trade-off:
-     * too fast burns a lot of syscall/branch overhead; too slow drops
-     * characters when the DUART's 16-byte RX FIFO would already be
-     * full. 10k cycles ≈ 1 ms of monitor time. */
+    /* Run loop with periodic stdin pacing. Hold back queued bytes
+     * until the DUART RX queue is empty — the monitor echoes + state-
+     * machines on each char with non-trivial per-char latency, and
+     * feeding a full burst causes it to silently drop later chars.
+     * Buffer in our own FIFO, shuttle one byte into the DUART when
+     * the monitor has consumed the previous one. */
+    static u8 in_buf[4096];
+    static size_t in_head = 0, in_tail = 0;
     u64 next_poll = 10000;
     while (!cpu.halted && (max_cycles == 0 || cpu.cycles < max_cycles)) {
         mips_step(&cpu);
         if (cpu.cycles >= next_poll) {
             next_poll = cpu.cycles + 10000;
-            u8 buf[64];
-            int n = (int)read(0, buf, sizeof(buf));
-            for (int i = 0; i < n; i++) duart_feed_input(d, 1, buf[i]);
+            /* Slurp from stdin into our own buffer. */
+            if ((in_tail + 1) % sizeof(in_buf) != in_head) {
+                u8 tmp[256];
+                int n = (int)read(0, tmp, sizeof(tmp));
+                for (int i = 0; i < n; i++) {
+                    size_t nx = (in_tail + 1) % sizeof(in_buf);
+                    if (nx == in_head) break;
+                    in_buf[in_tail] = tmp[i];
+                    in_tail = nx;
+                }
+            }
+            /* Hand one byte to the DUART if it's drained. */
+            if (in_head != in_tail && duart_rx_empty(d, 1)) {
+                duart_feed_input(d, 1, in_buf[in_head]);
+                in_head = (in_head + 1) % sizeof(in_buf);
+            }
         }
     }
 

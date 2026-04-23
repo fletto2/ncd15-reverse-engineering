@@ -146,6 +146,7 @@ void duart_free(struct duart *d);
 u32  duart_read(void *ctx, u32 offset, unsigned size);
 void duart_write(void *ctx, u32 offset, u32 value, unsigned size);
 void duart_feed_input(struct duart *d, int channel, u8 byte);
+int  duart_rx_empty(struct duart *d, int channel);
 
 /* --- Video control registers (0xAF000000..3 cart-ID etc.) --- */
 
