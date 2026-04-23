@@ -94,6 +94,16 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
          * advance. Guard: only active once the caller is shadow-
          * resident (post-boot), so we don't corrupt the early memtest
          * that also reads/writes AEC006A8. */
+        /* Input-mode hack: data_0x0EC01440 is a halfword flag the
+         * monitor reads (5 sites) to choose between blocking DUART
+         * polling read (flag != 0) and ring-queue read (flag == 0).
+         * No writers in the dis — also an ISR-maintained global.
+         * Return 1 from shadow-resident reads so the monitor uses
+         * the polling path, letting stdin work. */
+        if (pa == 0x0EC01440u && size == 2 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 1;
+        }
         /* Tick counter hack: VA 0x0EC00730 is where the boot delay
          * loop at 0x0EC0362C reads its tick from ($s1+0x6a8 with
          * $s1=0x0EC00088 → 0x0EC00730). No code in the disassembly

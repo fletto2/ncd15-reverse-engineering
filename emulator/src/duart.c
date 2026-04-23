@@ -66,7 +66,10 @@ void duart_free(duart *d) { free(d); }
 
 static void duart_tx(duart *d, int ch, u8 byte) {
     if (!d->log_tx) return;
-    FILE *out = (ch == 0) ? stdout : stderr;
+    /* The NCD15 monitor writes its console to channel B. Put that on
+     * stdout; channel A (unused by the monitor) goes to stderr so
+     * anything on it isn't mistaken for program output. */
+    FILE *out = (ch == 1) ? stdout : stderr;
     fputc(byte, out);
     fflush(out);
 }

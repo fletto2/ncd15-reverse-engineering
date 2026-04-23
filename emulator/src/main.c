@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/select.h>
 
 /* Stub per-address access counters. Buckets are 16-byte wide so we
  * group DUART-register-sized neighbourhoods together. */
@@ -158,10 +161,24 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "NCD15 emulator: ROM loaded (%zu bytes), PC=0x%08x\n",
             rom_size, cpu.pc);
-    fprintf(stderr, "channel A -> stdout, channel B -> stderr\n");
+    fprintf(stderr, "channel B (monitor console) -> stdout; channel A -> stderr\n");
     if (max_cycles) fprintf(stderr, "max_cycles = %llu\n", (unsigned long long)max_cycles);
 
-    mips_run(&cpu, max_cycles);
+    /* Non-blocking stdin so we can interleave input polling. */
+    int fl = fcntl(0, F_GETFL, 0);
+    fcntl(0, F_SETFL, fl | O_NONBLOCK);
+
+    /* Run loop with periodic stdin polling. */
+    u64 next_poll = 100000;
+    while (!cpu.halted && (max_cycles == 0 || cpu.cycles < max_cycles)) {
+        mips_step(&cpu);
+        if (cpu.cycles >= next_poll) {
+            next_poll = cpu.cycles + 100000;
+            u8 buf[32];
+            int n = (int)read(0, buf, sizeof(buf));
+            for (int i = 0; i < n; i++) duart_feed_input(d, 1, buf[i]);
+        }
+    }
 
     if (cpu.halted) {
         fprintf(stderr, "\n--- CPU halted ---\n");
