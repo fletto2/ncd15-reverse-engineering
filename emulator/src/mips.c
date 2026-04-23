@@ -173,6 +173,10 @@ void mips_step(mips_cpu *cpu) {
     if (cpu->halted) return;
     u32 pc   = cpu->pc;
     cpu->bus->last_pc = pc;
+    /* Additionally, update last_pc right before each LW path below so
+     * the CRTC read attribution is on the actual LW, not the fetched
+     * instruction's address. Set once here for fetch; loads re-set
+     * before they call bus_read. */
     u32 insn = fetch(cpu, pc);
     if (mips_trace) {
         fprintf(stderr, "%08x: %08x\n", pc, insn);

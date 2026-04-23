@@ -67,21 +67,26 @@ static mmio_region *find_mmio(bus *b, u32 pa) {
 u32 bus_read(bus *b, u32 va, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
-    /* ROM: the MIPS boot vector is at VA 0xBFC00000 (KSEG1), which
-     * translates to phys 0x1FC00000 — this is the ONLY physical
-     * range where the ROM chip is decoded on the NCD15. The reset
-     * code copies the main monitor (ROM offsets 0x4000-0x27FFF) into
-     * DRAM starting at VA 0x0EC00000 at boot; after the copy, code
-     * runs from DRAM. */
-    if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE)
+    /* ROM: the NCD15 hardware decodes the ROM chip at TWO physical
+     * address ranges with DIFFERENT OFFSETS into the ROM image —
+     * the reset-vector window and the main-monitor window.
+     *
+     *   phys 0x1FC00000..0x1FC00FFF  →  ROM[0x0000..0x0FFF]   (reset code)
+     *   phys 0x0EC00000..0x0EC23FFF  →  ROM[0x4000..0x27FFF]  (main monitor, linked at 0x0EC00000)
+     *
+     * This is NOT a simple "ROM aliased at two addresses" setup — the
+     * main-monitor window skips the first 0x4000 ROM bytes. Without
+     * this offset, fetching at VA 0x0EC00000 would read the reset
+     * code (wrong), not the main monitor. */
+    if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + 0x1000u)
         return ld_be(b->rom + (pa - NCD15_ROM_KUSEG), size);
+    if (pa >= 0x0EC00000u && pa < 0x0EC24000u)
+        return ld_be(b->rom + (pa - 0x0EC00000u + 0x4000u), size);
 
-    /* DRAM: 4 MiB, aliased everywhere in the low 256 MiB that the
-     * hardware decodes to DRAM. The 0xE-prefixed aliases are where
-     * the monitor runs its DRAM-linked main code (VA 0x0EC00000 =
-     * phys 0x0EC00000 = DRAM alias). We simplify by: any address
-     * below 0xB0000000 (keep stub/MMIO regions free) and NOT in the
-     * ROM range maps to DRAM[pa & 0x3FFFFF]. */
+    /* DRAM: 4 MiB, aliased. The stack (sp=0x0EC28000) and LANCE DMA
+     * and most of the monitor's data live in DRAM. Anything below
+     * the main-monitor window that isn't ROM is DRAM. Also the
+     * 0x0ED00000..0x0ED3FFFF alias used by the X server. */
     if (pa < 0x10000000u)
         return ld_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), size);
 
@@ -110,8 +115,9 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
 void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
-    /* ROM is read-only; silently drop writes. */
-    if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
+    /* ROM is read-only; silently drop writes to ROM windows. */
+    if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + 0x1000u) return;
+    if (pa >= 0x0EC00000u && pa < 0x0EC24000u) return;
 
     if (pa < 0x10000000u) {
         st_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), value, size);
