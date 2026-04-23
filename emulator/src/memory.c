@@ -45,6 +45,21 @@ void bus_init(bus *b, u8 *rom_bytes) {
         fprintf(stderr, "bus_init: out of memory\n");
         exit(1);
     }
+    /* Shadow-RAM init. The NCD15 hardware copies ROM[0x4000..0x27FFF]
+     * (the main monitor image, linked at VA 0x0EC00000) into DRAM at
+     * phys 0x0EC00000 = dram[0..0x23FFF]. With our 4 MB DRAM aliased
+     * every 0x400000, phys 0x0EC00000 & 0x3FFFFF = 0, so we load into
+     * dram[0..0x23FFF]. The monitor's memory test writes 0x5A5A5A5A
+     * here to verify the shadow-RAM is writable; without this copy
+     * the "found 00000000 expected 5A5A5A5A at AEC00000" error fires
+     * and the monitor jumps to its panic-blink handler at 0xBFC007CC. */
+    size_t shadow_size = 0x24000;
+    memcpy(b->dram, rom_bytes + 0x4000, shadow_size);
+    fprintf(stderr, "shadow-RAM: copied ROM[0x4000..0x%zx] to DRAM[0..%zx]\n",
+            0x4000 + shadow_size, shadow_size);
+    fprintf(stderr, "  dram[0..0x10]:  ");
+    for (int i = 0; i < 16; i++) fprintf(stderr, " %02x", b->dram[i]);
+    fprintf(stderr, "\n");
 }
 
 void bus_add_mmio(bus *b, mmio_region r) {
@@ -67,26 +82,20 @@ static mmio_region *find_mmio(bus *b, u32 pa) {
 u32 bus_read(bus *b, u32 va, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
-    /* ROM: the NCD15 hardware decodes the ROM chip at TWO physical
-     * address ranges with DIFFERENT OFFSETS into the ROM image —
-     * the reset-vector window and the main-monitor window.
-     *
-     *   phys 0x1FC00000..0x1FC00FFF  →  ROM[0x0000..0x0FFF]   (reset code)
-     *   phys 0x0EC00000..0x0EC23FFF  →  ROM[0x4000..0x27FFF]  (main monitor, linked at 0x0EC00000)
-     *
-     * This is NOT a simple "ROM aliased at two addresses" setup — the
-     * main-monitor window skips the first 0x4000 ROM bytes. Without
-     * this offset, fetching at VA 0x0EC00000 would read the reset
-     * code (wrong), not the main monitor. */
+    /* ROM: decoded at phys 0x1FC00000 (standard MIPS boot alias).
+     * The main-monitor code is also accessible via KUSEG VA
+     * 0x0EC00000, but that's backed by SHADOW DRAM: at boot, the
+     * hardware (or reset code) copies ROM[0x4000..0x27FFF] into
+     * DRAM at phys 0x0EC00000, which lets the monitor execute main
+     * code from DRAM (writable, cacheable) while reset vectors stay
+     * read-only in the ROM window. We preload this shadow in
+     * bus_init. */
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + 0x1000u)
         return ld_be(b->rom + (pa - NCD15_ROM_KUSEG), size);
-    if (pa >= 0x0EC00000u && pa < 0x0EC24000u)
-        return ld_be(b->rom + (pa - 0x0EC00000u + 0x4000u), size);
 
-    /* DRAM: 4 MiB, aliased. The stack (sp=0x0EC28000) and LANCE DMA
-     * and most of the monitor's data live in DRAM. Anything below
-     * the main-monitor window that isn't ROM is DRAM. Also the
-     * 0x0ED00000..0x0ED3FFFF alias used by the X server. */
+    /* DRAM: 4 MiB, aliased. Covers the main-monitor shadow at
+     * 0x0EC00000, the stack at 0x0EC28000+, and the X-server load
+     * base at 0x0ED00000+. */
     if (pa < 0x10000000u)
         return ld_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), size);
 
@@ -115,10 +124,10 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
 void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     u32 pa = mips_va_to_pa(va);
 
-    /* ROM is read-only; silently drop writes to ROM windows. */
+    /* ROM window is read-only. */
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + 0x1000u) return;
-    if (pa >= 0x0EC00000u && pa < 0x0EC24000u) return;
 
+    /* Everything else in the low 256 MiB is DRAM (shadow included). */
     if (pa < 0x10000000u) {
         st_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), value, size);
         return;

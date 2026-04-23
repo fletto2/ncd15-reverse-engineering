@@ -172,6 +172,17 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
 void mips_step(mips_cpu *cpu) {
     if (cpu->halted) return;
     u32 pc   = cpu->pc;
+    /* Trap: log every time PC lands on the BFC00140 or BFC00180
+     * exception vector, plus the prior PC that branched here. */
+    static u32 prev_pc = 0;
+    static int trap_count = 0;
+    if ((pc == 0x1fc007cc || pc == 0x1fc00140 || pc == 0x1fc00180)
+        && trap_count < 8) {
+        fprintf(stderr, "TRAP: pc=0x%08x entered from prev=0x%08x  ra=0x%08x  cycles=%llu\n",
+                pc, prev_pc, cpu->r[31], (unsigned long long)cpu->cycles);
+        trap_count++;
+    }
+    prev_pc = pc;
     cpu->bus->last_pc = pc;
     /* Additionally, update last_pc right before each LW path below so
      * the CRTC read attribution is on the actual LW, not the fetched
@@ -320,9 +331,14 @@ void mips_run(mips_cpu *cpu, u64 max_cycles) {
      * DRAM-copy main-monitor phase, not diluted by the 50M-cycle reset
      * phase. Covers a 128 KB window around the main monitor VA range. */
     enum { RESET_AT = 40000000ULL, SAMPLE_STRIDE = 256 };
-    #define WIN_BASE 0x0EC00000u
-    #define WIN_SIZE 0x00040000u       /* 256 KB */
-    #define WIN_CELLS (WIN_SIZE / 4)
+    /* Sample PCs in two windows: main-monitor DRAM (0x0EC00000+) AND
+     * the cached ROM alias at 0x1FC00000+. Buckets are 4-byte cells. */
+    #define MAIN_BASE 0x0EC00000u
+    #define MAIN_SIZE 0x00040000u
+    #define ROM_BASE  0x1FC00000u
+    #define ROM_WSIZE 0x00001000u
+    #define WIN_CELLS ((MAIN_SIZE + ROM_WSIZE) / 4)
+    #define WIN_BASE 0   /* unused with new layout */
     static u32 hist[WIN_CELLS];
     bool reset_done = false;
 
@@ -334,26 +350,31 @@ void mips_run(mips_cpu *cpu, u64 max_cycles) {
         }
         if ((cpu->cycles & (SAMPLE_STRIDE - 1)) == 0) {
             u32 p = cpu->pc;
-            if (p >= WIN_BASE && p < WIN_BASE + WIN_SIZE) {
-                hist[(p - WIN_BASE) / 4]++;
-            }
+            if (p >= MAIN_BASE && p < MAIN_BASE + MAIN_SIZE)
+                hist[(p - MAIN_BASE) / 4]++;
+            else if (p >= ROM_BASE && p < ROM_BASE + ROM_WSIZE)
+                hist[(MAIN_SIZE + (p - ROM_BASE)) / 4]++;
         }
     }
 
-    /* Top-15 in the main-monitor window */
-    fprintf(stderr, "\n--- hot PCs in 0x0EC00000..0x0EC40000 (sample/%d after cycle %llu) ---\n",
+    fprintf(stderr, "\n--- hot PCs (sample/%d after cycle %llu) ---\n",
             SAMPLE_STRIDE, (unsigned long long)RESET_AT);
-    for (int iter = 0; iter < 15; iter++) {
+    for (int iter = 0; iter < 20; iter++) {
         u32 maxc = 0, mi = 0;
         for (u32 i = 0; i < WIN_CELLS; i++) {
             if (hist[i] > maxc) { maxc = hist[i]; mi = i; }
         }
         if (maxc == 0) break;
-        fprintf(stderr, "  pc=0x%08x  samples=%u\n", WIN_BASE + mi*4, maxc);
+        u32 addr = (mi * 4 < MAIN_SIZE) ? (MAIN_BASE + mi*4)
+                                         : (ROM_BASE + (mi*4 - MAIN_SIZE));
+        fprintf(stderr, "  pc=0x%08x  samples=%u\n", addr, maxc);
         hist[mi] = 0;
     }
+    #undef MAIN_BASE
+    #undef MAIN_SIZE
+    #undef ROM_BASE
+    #undef ROM_WSIZE
     #undef WIN_BASE
-    #undef WIN_SIZE
     #undef WIN_CELLS
 }
 
