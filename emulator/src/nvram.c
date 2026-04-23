@@ -72,6 +72,41 @@ struct nvram *nvram_new(void) {
     return n;
 }
 
+/* File format: 128 bytes, word-ordered, each word little-endian. This
+ * matches how the NCD15 monitor unpacks its NVRAM image into memory —
+ * a big-endian file would land each field byte-swapped. */
+int nvram_load_file(nvram *n, const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+    u8 buf[NVRAM_WORDS * 2];
+    size_t got = fread(buf, 1, sizeof buf, f);
+    fclose(f);
+    if (got != sizeof buf) return -1;
+    for (int i = 0; i < NVRAM_WORDS; i++)
+        n->mem[i] = ((u16)buf[i*2 + 1] << 8) | buf[i*2];
+    return 0;
+}
+
+int nvram_save_file(nvram *n, const char *path) {
+    FILE *f = fopen(path, "wb");
+    if (!f) return -1;
+    u8 buf[NVRAM_WORDS * 2];
+    for (int i = 0; i < NVRAM_WORDS; i++) {
+        buf[i*2]     = n->mem[i] & 0xff;
+        buf[i*2 + 1] = n->mem[i] >> 8;
+    }
+    size_t wrote = fwrite(buf, 1, sizeof buf, f);
+    fclose(f);
+    return (wrote == sizeof buf) ? 0 : -1;
+}
+
+void nvram_set_word(nvram *n, unsigned addr, u16 val) {
+    if (addr < NVRAM_WORDS) n->mem[addr] = val;
+}
+u16 nvram_get_word(nvram *n, unsigned addr) {
+    return (addr < NVRAM_WORDS) ? n->mem[addr] : 0xFFFF;
+}
+
 static void nvram_begin_cmd(nvram *n) {
     n->state = CMD;
     n->rx_shift = 0;
@@ -146,7 +181,12 @@ u32 nvram_read(void *ctx, u32 offset, unsigned size) {
     if (n->state == READ_OUT) {
         if (n->tx_count == 1) out = 0;  /* leading dummy 0 */
         else if (n->tx_count >= 2 && n->tx_count <= 17) {
-            int bit = 17 - n->tx_count;
+            /* NCD15 shifts DO LSB-first. Confirmed empirically: with
+             * this ordering, a probe image of bytes 0..127 produces
+             * DA output MAC = 02:03:04:05:06:07 (direct mapping to
+             * NVRAM bytes 2..7). NV D display shows bit-reversed
+             * bytes in this mode, but the file format stays clean. */
+            int bit = n->tx_count - 2;
             out = (n->tx_shift >> bit) & 1;
         }
     }

@@ -128,6 +128,11 @@ typedef struct bus {
     bool trace;           /* log every access */
     u32 last_pc;          /* updated by the CPU before each access */
     u64 cur_cycles;       /* updated by CPU each step (for tracing) */
+    /* User-supplied network config, injected into the monitor's
+     * runtime IP-config slots via memory-read intercepts. Zero
+     * means "no override". */
+    u32 inject_ip;        /* data_0x0EC000C8 */
+    u32 inject_mask;      /* data_0x0EC000EC */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
@@ -148,6 +153,7 @@ u32  duart_read(void *ctx, u32 offset, unsigned size);
 void duart_write(void *ctx, u32 offset, u32 value, unsigned size);
 void duart_feed_input(struct duart *d, int channel, u8 byte);
 int  duart_rx_empty(struct duart *d, int channel);
+struct nvram *duart_nvram(struct duart *d);
 
 /* --- Video control registers (0xAF000000..3 cart-ID etc.) --- */
 
@@ -189,5 +195,14 @@ struct nvram;
 struct nvram *nvram_new(void);
 u32  nvram_read(void *ctx, u32 offset, unsigned size);
 void nvram_write(void *ctx, u32 offset, u32 value, unsigned size);
+/* Serialize the 64 × 16-bit EEPROM memory to/from a 128-byte flat file
+ * (big-endian words). Returns 0 on success. The file format matches
+ * what `nvram_save` writes — no header, no endianness markers, just
+ * 128 raw bytes. */
+int  nvram_load_file(struct nvram *n, const char *path);
+int  nvram_save_file(struct nvram *n, const char *path);
+/* Direct word access for tooling / initial-image setup. */
+void nvram_set_word(struct nvram *n, unsigned addr, u16 val);
+u16  nvram_get_word(struct nvram *n, unsigned addr);
 
 #endif

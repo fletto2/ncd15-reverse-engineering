@@ -66,6 +66,7 @@ struct duart *duart_new(void) {
 }
 
 void duart_free(duart *d) { free(d); }
+struct nvram *duart_nvram(duart *d) { return d->nv; }
 
 static void duart_tx(duart *d, int ch, u8 byte) {
     if (!d->log_tx) return;

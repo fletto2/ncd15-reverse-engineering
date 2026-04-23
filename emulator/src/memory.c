@@ -119,6 +119,18 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
             p[0]=v>>24; p[1]=v>>16; p[2]=v>>8; p[3]=v;
             return v;
         }
+        /* Inject user-configured IP at data_0x0EC000C8 and mask at
+         * data_0x0EC000EC. These are runtime slots the monitor reads
+         * for DA/BT/PI; the NVRAM-to-runtime copy path for them isn't
+         * mapped yet, so override on read if --ip / --mask were given. */
+        if (pa == 0x0EC000C8u && size == 4 && b->inject_ip &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return b->inject_ip;
+        }
+        if (pa == 0x0EC000ECu && size == 4 && b->inject_mask &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return b->inject_mask;
+        }
         return ld_be(b->shadow + (pa - 0x0EC00000u), size);
     }
 

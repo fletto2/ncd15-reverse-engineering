@@ -194,6 +194,15 @@ static void net_send_cb(const u8 *buf, int length, void *ctx) {
     }
 }
 
+static u32 parse_ipv4(const char *s) {
+    unsigned a, b, c, d;
+    if (sscanf(s, "%u.%u.%u.%u", &a, &b, &c, &d) != 4) {
+        fprintf(stderr, "bad IPv4: %s\n", s);
+        exit(1);
+    }
+    return (a << 24) | (b << 16) | (c << 8) | d;
+}
+
 static u8 *load_file(const char *path, size_t *out_size) {
     FILE *f = fopen(path, "rb");
     if (!f) { perror(path); exit(1); }
@@ -211,6 +220,9 @@ int main(int argc, char **argv) {
     const char *rom_path = NULL;
     const char *tap_name = NULL;
     const char *raweth_name = NULL;
+    const char *nvram_path = NULL;
+    const char *ip_str = NULL;
+    const char *mask_str = NULL;
     bool trace_bus = false;
     u64 max_cycles = 0;    /* 0 == unbounded */
 
@@ -223,6 +235,12 @@ int main(int argc, char **argv) {
         } else if (!strcmp(argv[i], "--raweth") && i+1 < argc) {
             raweth_name = argv[++i];
             ensure_cap_net_raw(argv);
+        } else if (!strcmp(argv[i], "--nvram") && i+1 < argc) {
+            nvram_path = argv[++i];
+        } else if (!strcmp(argv[i], "--ip") && i+1 < argc) {
+            ip_str = argv[++i];
+        } else if (!strcmp(argv[i], "--mask") && i+1 < argc) {
+            mask_str = argv[++i];
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "unknown option: %s\n", argv[i]);
             return 1;
@@ -245,6 +263,8 @@ int main(int argc, char **argv) {
     /* Build bus */
     bus b; bus_init(&b, rom_bytes);
     b.trace = trace_bus;
+    if (ip_str)   b.inject_ip   = parse_ipv4(ip_str);
+    if (mask_str) b.inject_mask = parse_ipv4(mask_str);
 
     /* Attach MMIO devices. Order matters if regions overlap; we want
      * the video-control/cart-ID register to shadow the first 4 bytes
@@ -255,6 +275,15 @@ int main(int argc, char **argv) {
         .read   = duart_read,  .write = duart_write,
         .ctx    = d, .name = "duart",
     });
+
+    /* Load NVRAM image from file if given. Missing file is fine —
+     * NVRAM stays at its 0xFFFF-erased default. */
+    if (nvram_path) {
+        if (nvram_load_file(duart_nvram(d), nvram_path) == 0)
+            fprintf(stderr, "nvram: loaded from %s\n", nvram_path);
+        else
+            fprintf(stderr, "nvram: %s not found, starting blank\n", nvram_path);
+    }
 
     struct vidctl *v = vidctl_new();
     bus_add_mmio(&b, (mmio_region){
@@ -356,6 +385,13 @@ int main(int argc, char **argv) {
                 }
             }
         }
+    }
+
+    if (nvram_path) {
+        if (nvram_save_file(duart_nvram(d), nvram_path) == 0)
+            fprintf(stderr, "nvram: saved to %s\n", nvram_path);
+        else
+            fprintf(stderr, "nvram: save to %s failed\n", nvram_path);
     }
 
     if (cpu.halted) {
