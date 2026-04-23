@@ -168,13 +168,16 @@ int main(int argc, char **argv) {
     int fl = fcntl(0, F_GETFL, 0);
     fcntl(0, F_SETFL, fl | O_NONBLOCK);
 
-    /* Run loop with periodic stdin polling. */
-    u64 next_poll = 100000;
+    /* Run loop with periodic stdin polling. Polling rate is a trade-off:
+     * too fast burns a lot of syscall/branch overhead; too slow drops
+     * characters when the DUART's 16-byte RX FIFO would already be
+     * full. 10k cycles ≈ 1 ms of monitor time. */
+    u64 next_poll = 10000;
     while (!cpu.halted && (max_cycles == 0 || cpu.cycles < max_cycles)) {
         mips_step(&cpu);
         if (cpu.cycles >= next_poll) {
-            next_poll = cpu.cycles + 100000;
-            u8 buf[32];
+            next_poll = cpu.cycles + 10000;
+            u8 buf[64];
             int n = (int)read(0, buf, sizeof(buf));
             for (int i = 0; i < n; i++) duart_feed_input(d, 1, buf[i]);
         }
