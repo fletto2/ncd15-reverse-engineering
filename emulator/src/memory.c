@@ -131,6 +131,16 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return b->inject_mask;
         }
+        /* Network-mode flag at data_0x0EC00DC0. Bit 26 (0x04000000)
+         * means "Ethernet, not token-ring"; if clear, BT prints
+         * "Warning: use 'tr 4' or 'tr 16'" and bails with "Check
+         * network connection". The flag has no writer in monitor.dis
+         * — it's set by HWINIT code at ROM+0x28000+ (presumably from
+         * a board-revision strap). Force Ethernet mode. */
+        if (pa == 0x0EC00DC0u && size == 4 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 0x04000000u;
+        }
         return ld_be(b->shadow + (pa - 0x0EC00000u), size);
     }
 
