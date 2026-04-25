@@ -134,6 +134,7 @@ void lance_regs_w(lance_t *l, int offset, uint16_t data)
 
     switch (l->rap) {
     case 0: /* CSR0 - control/status */
+        fprintf(stderr, "[LANCE CSR0 W] data=0x%04x csr0_before=0x%04x\n", data, l->csr[0]);
     {
         /* STOP takes priority. Setting STOP triggers a reset of the chip. */
         if (data & LANCE_CSR0_STOP) {
@@ -635,8 +636,9 @@ static void lance_transmit_poll(lance_t *l)
 check_loopback:
     /* Pending loopback data → feed it back into the receive path */
     if (l->lb_length && (l->mode & LANCE_MODE_LOOP)) {
-        LOG("loopback: receive %d bytes\n", l->lb_length);
+        fprintf(stderr, "[LANCE LB→RX] %d bytes\n", l->lb_length);
         int result = lance_receive(l, l->lb_buf, l->lb_length);
+        fprintf(stderr, "[LANCE LB→RX] result=%d csr0=0x%04x\n", result, l->csr[0]);
         l->lb_length = 0;
         lance_recv_complete(l, result);
     }
@@ -716,7 +718,7 @@ static void lance_transmit(lance_t *l)
         buf[length++] = (crc >> 24) & 0xFF;
     }
 
-    LOG("transmit: %d bytes\n", length);
+    fprintf(stderr, "[LANCE TX] %d bytes mode=0x%04x\n", length, l->mode);
 
     /* Loopback handling */
     if (l->mode & LANCE_MODE_LOOP) {
