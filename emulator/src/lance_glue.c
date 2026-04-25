@@ -67,18 +67,34 @@ static void lance_send_frame(const uint8_t *buf, int length, void *ctx) {
  * being clear (RAP) vs set (RDP). Other offsets in the slot (e.g.
  * 0xE) are unmapped — return 0 / drop. */
 
-static int lance_offset_to_reg(u32 offset) {
-    /* offset & 6: 0,2 → unused; 4 → RAP (1); 6 → RDP (0) */
-    switch (offset & 6) {
+/* The LANCE on this board has read and write ports at DIFFERENT
+ * offsets within the 0xBE482000 slot — same byte-lane convention as
+ * the LANCE shmem and DUART (write at 4/6, read at +2 from the
+ * write address):
+ *     offset 4 = WRITE RAP  (CSR-select)
+ *     offset 6 = WRITE RDP  (CSR-data)  AND byte read of RDP
+ *     offset 8 = halfword read of RDP   (sub_0ec17498 OR's offset+2)
+ */
+static int lance_write_offset_to_reg(u32 offset) {
+    switch (offset & 0xE) {
     case 4: return 1;   /* RAP */
     case 6: return 0;   /* RDP */
+    default: return -1;
+    }
+}
+static int lance_read_offset_to_reg(u32 offset) {
+    switch (offset & 0xE) {
+    case 4: return 1;   /* RAP read mirror */
+    case 6: return 0;   /* RDP read (byte) */
+    case 8: return 0;   /* RDP read (halfword) */
+    case 0xa: return 1; /* RAP read mirror */
     default: return -1;
     }
 }
 
 static u32 lance_mmio_read(void *ctx, u32 offset, unsigned size) {
     lance_glue *g = (lance_glue*)ctx;
-    int reg = lance_offset_to_reg(offset);
+    int reg = lance_read_offset_to_reg(offset);
     (void)size;
     if (reg < 0) return 0;
     return lance_regs_r(&g->chip, reg);
@@ -86,7 +102,7 @@ static u32 lance_mmio_read(void *ctx, u32 offset, unsigned size) {
 
 static void lance_mmio_write(void *ctx, u32 offset, u32 value, unsigned size) {
     lance_glue *g = (lance_glue*)ctx;
-    int reg = lance_offset_to_reg(offset);
+    int reg = lance_write_offset_to_reg(offset);
     (void)size;
     if (reg < 0) return;
     lance_regs_w(&g->chip, reg, (uint16_t)value);
