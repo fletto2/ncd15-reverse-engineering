@@ -180,6 +180,9 @@ void  lance_glue_set_send(void *glue,
                           void *ctx);
 /* Deliver a received frame from host-side networking into the chip. */
 void  lance_glue_recv(void *glue, const u8 *buf, int len);
+/* Advance the LANCE chip by N CPU cycles. Drives the deferred IDON
+ * after INIT and the periodic TX-poll. */
+void  lance_glue_tick(void *glue, int cycles);
 
 /* --- Memory controller stub (0xFFFE0000) --- */
 

@@ -368,6 +368,8 @@ int main(int argc, char **argv) {
     while (!cpu.halted && (max_cycles == 0 || cpu.cycles < max_cycles)) {
         mips_step(&cpu);
         if (cpu.cycles >= next_poll) {
+            int delta = (int)(cpu.cycles - (next_poll - 10000));
+            lance_glue_tick(lance, delta);
             next_poll = cpu.cycles + 10000;
             /* Slurp from stdin into our own buffer. */
             if ((in_tail + 1) % sizeof(in_buf) != in_head) {

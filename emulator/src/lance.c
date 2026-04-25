@@ -252,15 +252,14 @@ void lance_tick(lance_t *l, int cycles)
     if (l->idon) {
         static int init_delay = LANCE_INIT_DELAY_CYCLES;
         init_delay -= cycles;
+        /* (Deferred-IDON path; not used now that lance_initialize
+         * sets IDON synchronously. Kept for reference.) */
         if (init_delay <= 0) {
-            /* Init done: clear INIT (self-clearing on real hw), set IDON
-             * and INTR, and consume the one-shot idon flag so we don't
-             * re-fire when the ISR clears IDON via W1C. */
             l->csr[0] &= ~LANCE_CSR0_INIT;
             l->csr[0] |= LANCE_CSR0_IDON | LANCE_CSR0_INTR;
             l->idon = 0;
             lance_update_interrupts(l);
-            init_delay = LANCE_INIT_DELAY_CYCLES; /* reset for next init */
+            init_delay = LANCE_INIT_DELAY_CYCLES;
         }
     }
 
@@ -352,20 +351,15 @@ static void lance_initialize(lance_t *l)
     for (int i = 0; i < 12; i++) fprintf(stderr, "%04X ", init_block[i]);
     fprintf(stderr, "\n");
 
-    /* Don't set IDON immediately — on real hardware the DMA takes many
-     * bus cycles. Defer to lance_tick() so the CPU has time to execute
-     * instructions between the CSR0 write and the IDON appearance.
-     * The firmware at $1AE4 runs a 65536-iteration delay loop after
-     * writing CSR0, expecting IDON to appear during or after that delay.
-     * If we set IDON here synchronously, the /INT fires before the
-     * firmware has a chance to execute the next instruction. */
-    l->csr[0] |= LANCE_CSR0_INIT;
-    l->csr[0] &= ~(LANCE_CSR0_STOP | LANCE_CSR0_STRT |
-                   LANCE_CSR0_TXON | LANCE_CSR0_RXON);
-
-    l->idon = 1;
-    /* IDON will be applied by lance_tick after a short delay
-     * (see LANCE_INIT_DELAY_CYCLES below). */
+    /* Set IDON synchronously. The deferred-tick approach loses IDONs
+     * when the host firmware writes CSR0=INIT multiple times faster
+     * than lance_tick fires (NCD15 boot POST runs the INIT-and-poll
+     * cycle 20+ times within the boot sequence). */
+    l->csr[0] &= ~(LANCE_CSR0_INIT | LANCE_CSR0_STOP |
+                   LANCE_CSR0_STRT | LANCE_CSR0_TXON | LANCE_CSR0_RXON);
+    l->csr[0] |= LANCE_CSR0_IDON | LANCE_CSR0_INTR;
+    l->idon = 0;
+    lance_update_interrupts(l);
 }
 
 /* ---- Buffer length helper (variant-specific) ---- */

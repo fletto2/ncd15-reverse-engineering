@@ -19,26 +19,27 @@ typedef struct lance_glue {
     void *host_send_ctx;
 } lance_glue;
 
-/* DMA callbacks — 16-bit word in/out of LANCE shared memory. On the
- * NCD15 the LANCE is wired to a dedicated 128 KB shared-memory chip,
- * NOT to main DRAM. The CPU sees the shmem through a windowed MMIO
- * at 0xBE48_0000 (with 4-byte stride / byte-lane translation); the
- * LANCE chip itself sees a flat byte-addressed 128 KB. So our DMA
- * callbacks take a 24-bit address, mask to 17 bits (the LANCE-side
- * range), and access bus->lance_shmem directly — no KSEG translation
- * involved.
+/* LANCE DMA callbacks — 16-bit big-endian halfword in/out of host
+ * memory. The LANCE is a 24-bit-address bus master. On NCD15 the
+ * LANCE-side address space is the SHADOW DRAM bank (phys
+ * 0x0EC00000..0x0F000000), NOT main DRAM. The monitor allocates
+ * its init block + descriptor rings + packet buffers in shadow
+ * (e.g. shadow VA 0x0EC3F0048) and tells LANCE about them via
+ * CSR1/CSR2 with the bottom 24 bits (0x3F0048). Our DMA callback
+ * adds the 0x0EC00000 base to recover the CPU phys address, then
+ * goes through the bus dispatch.
  *
- * Big-endian halfword on the wire. */
+ * The 0xBE48_0000 MMIO window registered separately is for TR
+ * controller register access, not LANCE init-block storage. */
 static uint16_t lance_dma_in(uint32_t addr, void *ctx) {
     lance_glue *g = (lance_glue*)ctx;
-    addr &= NCD15_LANCE_SHMEM_SIZE - 1;
-    return ((uint16_t)g->b->lance_shmem[addr] << 8) | g->b->lance_shmem[addr + 1];
+    addr &= 0xFFFFFEu;
+    return (uint16_t)bus_read(g->b, 0x0EC00000u + addr, 2);
 }
 static void lance_dma_out(uint32_t addr, uint16_t data, void *ctx) {
     lance_glue *g = (lance_glue*)ctx;
-    addr &= NCD15_LANCE_SHMEM_SIZE - 1;
-    g->b->lance_shmem[addr]     = (data >> 8) & 0xff;
-    g->b->lance_shmem[addr + 1] = data & 0xff;
+    addr &= 0xFFFFFEu;
+    bus_write(g->b, 0x0EC00000u + addr, data, 2);
 }
 static void lance_intr(int state, void *ctx) {
     /* We don't emulate interrupts yet — the monitor works by polling
@@ -130,6 +131,11 @@ void lance_glue_set_send(void *glue,
 void lance_glue_recv(void *glue, const u8 *buf, int len) {
     lance_glue *g = (lance_glue*)glue;
     lance_recv(&g->chip, buf, len);
+}
+
+void lance_glue_tick(void *glue, int cycles) {
+    lance_glue *g = (lance_glue*)glue;
+    lance_tick(&g->chip, cycles);
 }
 
 u32 lance_glue_read(void *ctx, u32 off, unsigned sz) {
