@@ -54,23 +54,42 @@ static void lance_send_frame(const uint8_t *buf, int length, void *ctx) {
     if (g->host_send) g->host_send(buf, length, g->host_send_ctx);
 }
 
-/* --- MMIO shim --- */
+/* --- MMIO shim ---
+ *
+ * NCD15 wires the LANCE register pair within a 16-byte slot at
+ * 0xBE482000-0xBE48200F. The monitor's access pattern (sub_0ec08d20 +
+ * sub_0ec08cb0) reads/writes:
+ *   offset 4 = RAP (Register Address Port — selects which CSR is
+ *              visible on RDP; lance.c index 1)
+ *   offset 6 = RDP (Register Data Port; lance.c index 0)
+ * INVERTED from what 3com68k uses (where RDP comes first). The
+ * mapping below picks the right index based on bit 1 of the offset
+ * being clear (RAP) vs set (RDP). Other offsets in the slot (e.g.
+ * 0xE) are unmapped — return 0 / drop. */
+
+static int lance_offset_to_reg(u32 offset) {
+    /* offset & 6: 0,2 → unused; 4 → RAP (1); 6 → RDP (0) */
+    switch (offset & 6) {
+    case 4: return 1;   /* RAP */
+    case 6: return 0;   /* RDP */
+    default: return -1;
+    }
+}
 
 static u32 lance_mmio_read(void *ctx, u32 offset, unsigned size) {
     lance_glue *g = (lance_glue*)ctx;
-    /* NCD15's LANCE: the 2 regs are at bytes 0 and 2 (16-bit-aligned).
-     * 32-bit reads return the register zero-extended. */
-    int reg = (offset & 2) ? 1 : 0;
-    uint16_t v = lance_regs_r(&g->chip, reg);
+    int reg = lance_offset_to_reg(offset);
     (void)size;
-    return v;
+    if (reg < 0) return 0;
+    return lance_regs_r(&g->chip, reg);
 }
 
 static void lance_mmio_write(void *ctx, u32 offset, u32 value, unsigned size) {
     lance_glue *g = (lance_glue*)ctx;
-    int reg = (offset & 2) ? 1 : 0;
-    lance_regs_w(&g->chip, reg, (uint16_t)value);
+    int reg = lance_offset_to_reg(offset);
     (void)size;
+    if (reg < 0) return;
+    lance_regs_w(&g->chip, reg, (uint16_t)value);
 }
 
 void *lance_glue_new(bus *b) {
