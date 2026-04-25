@@ -274,6 +274,24 @@ void mips_step(mips_cpu *cpu) {
     prev_pc = pc;
     cpu->bus->last_pc = pc;
     cpu->bus->cur_cycles = cpu->cycles;
+    /* Force the network-controller probe (sub_0ec0b7b0 at exit
+     * 0x0EC0B854) to claim LANCE Ethernet was detected.
+     *
+     * The real probe walks two address-pair tables in LANCE shmem
+     * and returns 1 (both passed), 3 (table 1 only), 5 (no HW),
+     * or 2 (token-ring detected via fallback). On our emulator
+     * the shmem isn't pre-populated with the expected probe values,
+     * so the probe always returns 2 → boot dispatches into Token
+     * Ring init → SetupTrpAddr / timeout / 'Check network
+     * connection'. Forcing $v0=1 here lets the LANCE init path
+     * (sub_0ec17e78 / sub_0ec17f4c) run instead.
+     *
+     * Once we figure out the expected probe values for tables at
+     * data_0x0EC26158 and data_0x0EC260D0 and pre-load shmem with
+     * them, this hack can go away. */
+    if (pc == 0x0EC0B854u) {
+        cpu->r[2] = 1;   /* $v0 = LANCE-detected */
+    }
     /* Additionally, update last_pc right before each LW path below so
      * the CRTC read attribution is on the actual LW, not the fetched
      * instruction's address. Set once here for fetch; loads re-set

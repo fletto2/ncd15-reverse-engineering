@@ -179,6 +179,32 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return b->inject_mask;
         }
+        /* POST-error counter at data_0x0EC0148C. The boot POST in
+         * sub_0ec02cac_passed increments this on every failed
+         * subtest (memory, keyboard, etc.) via sub_0ec089f0. The
+         * network-controller test is gated on this counter being
+         * zero — if any earlier subtest "failed", we skip the network
+         * section. Our emulator accumulates 5 phantom errors due to
+         * various stub MMIO returns, hitting the gate. Force read to
+         * zero so the network init runs. */
+        if (pa == 0x0EC0148Cu && size == 1 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 0;
+        }
+        /* LANCE register pointers — data_0x0EC008EC / 0x0EC008F0
+         * hold the CPU addresses for RDP / RAP. Read by sub_0ec17e78
+         * via lw at $s2+0x864/$s2+0x868 with $s2=0x0EC00088, so true
+         * VAs are 0x0EC008EC / 0x0EC008F0. Never written by code in
+         * the disassembly — should be set by an init path that
+         * doesn't run on our emulator. Fake them. */
+        if (pa == 0x0EC008ECu && size == 4 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 0xBE482006u;   /* RDP */
+        }
+        if (pa == 0x0EC008F0u && size == 4 &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 0xBE482004u;   /* RAP */
+        }
         /* Network-mode flag at data_0x0EC00DC0. Bit 26 (0x04000000)
          * means "Ethernet, not token-ring"; if clear, BT prints
          * "Warning: use 'tr 4' or 'tr 16'" and bails with "Check
