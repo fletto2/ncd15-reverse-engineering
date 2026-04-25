@@ -36,13 +36,61 @@ static void st_be(u8 *p, u32 v, unsigned size) {
     }
 }
 
+/* Translate a CPU offset within the 0xBE48_0000 window into a LANCE
+ * shared-memory byte offset.
+ *
+ * Each 4-byte CPU word maps to ONE 16-bit LANCE halfword. The CPU
+ * accesses the same LANCE bytes through TWO byte-pair lanes:
+ *   - offset 0,1 (high halfword in BE)  : write side
+ *   - offset 2,3 (low halfword in BE)   : read side
+ * Both halves alias to the same lance_shmem byte. Confirmed via
+ * sub_0ec1b2b8 / sub_0ec1b30c which OR offset bit 1 (=2) onto the
+ * SetupTrpAddr result before reading. */
+static int lance_shmem_off(u32 cpu_off) {
+    return ((cpu_off >> 2) << 1) | (cpu_off & 1);
+}
+
+u32 lance_shmem_mmio_read(void *ctx, u32 off, unsigned size);
+void lance_shmem_mmio_write(void *ctx, u32 off, u32 v, unsigned size);
+
+u32 lance_shmem_mmio_read(void *ctx, u32 off, unsigned size) {
+    bus *b = (bus*)ctx;
+    if (size == 1) {
+        int s = lance_shmem_off(off);
+        if (s < 0 || s >= (int)NCD15_LANCE_SHMEM_SIZE) return 0xff;
+        return b->lance_shmem[s];
+    }
+    /* Halfword/word: read the LANCE 16-bit value at the aligned addr. */
+    int s0 = lance_shmem_off(off & ~3u);
+    if (s0 < 0 || s0 + 1 >= (int)NCD15_LANCE_SHMEM_SIZE) return ~0u;
+    u32 hw = ((u32)b->lance_shmem[s0] << 8) | b->lance_shmem[s0 + 1];
+    if (size == 2) return hw;
+    return hw;  /* word access: same value, high half mirrored */
+}
+
+void lance_shmem_mmio_write(void *ctx, u32 off, u32 v, unsigned size) {
+    bus *b = (bus*)ctx;
+    if (size == 1) {
+        int s = lance_shmem_off(off);
+        if (s >= 0 && s < (int)NCD15_LANCE_SHMEM_SIZE)
+            b->lance_shmem[s] = v & 0xff;
+        return;
+    }
+    /* Halfword/word write: the LANCE side latches a 16-bit value. */
+    int s0 = lance_shmem_off(off & ~3u);
+    if (s0 < 0 || s0 + 1 >= (int)NCD15_LANCE_SHMEM_SIZE) return;
+    b->lance_shmem[s0]     = (v >> 8) & 0xff;
+    b->lance_shmem[s0 + 1] = v & 0xff;
+}
+
 void bus_init(bus *b, u8 *rom_bytes) {
     memset(b, 0, sizeof(*b));
     b->rom = rom_bytes;
     b->dram = (u8*)calloc(NCD15_DRAM_SIZE, 1);
     b->shadow = (u8*)calloc(NCD15_DRAM_SIZE, 1);  /* 4 MiB shadow bank */
     b->vram = (u8*)calloc(NCD15_VRAM_SIZE, 1);
-    if (!b->dram || !b->shadow || !b->vram) {
+    b->lance_shmem = (u8*)calloc(NCD15_LANCE_SHMEM_SIZE, 1);  /* 128 KB */
+    if (!b->dram || !b->shadow || !b->vram || !b->lance_shmem) {
         fprintf(stderr, "bus_init: out of memory\n");
         exit(1);
     }

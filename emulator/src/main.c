@@ -305,6 +305,16 @@ int main(int argc, char **argv) {
         .read   = lance_glue_read, .write = lance_glue_write,
         .ctx    = lance, .name = "lance",
     });
+    /* LANCE shared-memory window — 256 KB CPU view of the 128 KB shmem
+     * with byte-lane translation. Registered AFTER the registers so
+     * find_mmio finds the registers first within their narrow range. */
+    extern u32  lance_shmem_mmio_read(void*, u32, unsigned);
+    extern void lance_shmem_mmio_write(void*, u32, u32, unsigned);
+    bus_add_mmio(&b, (mmio_region){
+        .start  = NCD15_LANCE_SHMEM_PHYS, .length = 0x40000,
+        .read   = lance_shmem_mmio_read, .write = lance_shmem_mmio_write,
+        .ctx    = &b, .name = "lance-shmem",
+    });
 
     /* Open the network backend if requested, and wire LANCE TX to it. */
     if (raweth_name) net_fd = raweth_open(raweth_name);

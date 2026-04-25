@@ -19,18 +19,26 @@ typedef struct lance_glue {
     void *host_send_ctx;
 } lance_glue;
 
-/* DMA callbacks — 16-bit word in/out of host memory. The LANCE is a
- * bus master that addresses DRAM directly by physical address.
- * bus_read/bus_write expect virtual addresses but pass them through
- * a KSEG-aware mapper; raw physical addresses below 0xA0000000 are
- * treated as KUSEG (identity-mapped on the NCD15). */
+/* DMA callbacks — 16-bit word in/out of LANCE shared memory. On the
+ * NCD15 the LANCE is wired to a dedicated 128 KB shared-memory chip,
+ * NOT to main DRAM. The CPU sees the shmem through a windowed MMIO
+ * at 0xBE48_0000 (with 4-byte stride / byte-lane translation); the
+ * LANCE chip itself sees a flat byte-addressed 128 KB. So our DMA
+ * callbacks take a 24-bit address, mask to 17 bits (the LANCE-side
+ * range), and access bus->lance_shmem directly — no KSEG translation
+ * involved.
+ *
+ * Big-endian halfword on the wire. */
 static uint16_t lance_dma_in(uint32_t addr, void *ctx) {
     lance_glue *g = (lance_glue*)ctx;
-    return (uint16_t)bus_read(g->b, addr, 2);
+    addr &= NCD15_LANCE_SHMEM_SIZE - 1;
+    return ((uint16_t)g->b->lance_shmem[addr] << 8) | g->b->lance_shmem[addr + 1];
 }
 static void lance_dma_out(uint32_t addr, uint16_t data, void *ctx) {
     lance_glue *g = (lance_glue*)ctx;
-    bus_write(g->b, addr, data, 2);
+    addr &= NCD15_LANCE_SHMEM_SIZE - 1;
+    g->b->lance_shmem[addr]     = (data >> 8) & 0xff;
+    g->b->lance_shmem[addr + 1] = data & 0xff;
 }
 static void lance_intr(int state, void *ctx) {
     /* We don't emulate interrupts yet — the monitor works by polling

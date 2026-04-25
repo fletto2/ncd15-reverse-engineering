@@ -33,7 +33,14 @@ typedef int64_t  i64;
 #define NCD15_VRAM_SIZE     0x00100000u
 
 #define NCD15_DUART_PHYS    0x1E880000u  /* KSEG1 0xBE880000 */
-#define NCD15_LANCE_PHYS    0x1E482000u  /* KSEG1 0xBE482000 */
+#define NCD15_LANCE_PHYS    0x1E482000u  /* KSEG1 0xBE482000 — registers */
+#define NCD15_LANCE_SHMEM_PHYS  0x1E480000u  /* KSEG1 0xBE480000 — 128 KB shared mem
+                                              * window for LANCE descriptors and
+                                              * packet buffers. CPU sees a 256 KB
+                                              * region (4-byte stride / halfword
+                                              * granularity); LANCE sees byte-
+                                              * addressed 128 KB. */
+#define NCD15_LANCE_SHMEM_SIZE  0x00020000u  /* 128 KB on the LANCE side */
 #define NCD15_CRTC_PHYS     0x1E380000u  /* KSEG1 0xBE380000 */
 #define NCD15_KBD_PHYS      0x0EC80000u  /* KSEG1 0xAEC80000 = phys 0x0EC80000 */
 #define NCD15_NVRAM_PHYS    0x1E4AA000u  /* KSEG1 0xBE4AA000 — 93C46 bit-bang */
@@ -123,6 +130,7 @@ typedef struct bus {
     u8 *dram;             /* NCD15_DRAM_SIZE bytes, main DRAM at phys 0 */
     u8 *shadow;           /* 4 MiB, backs phys 0x0EC00000..0x0F000000 */
     u8 *vram;             /* NCD15_VRAM_SIZE bytes, at phys 0x0F000000 */
+    u8 *lance_shmem;      /* 128 KB, LANCE-side shared memory (byte addressed) */
     mmio_region regions[MAX_MMIO_REGIONS];
     size_t nregions;
     bool trace;           /* log every access */
