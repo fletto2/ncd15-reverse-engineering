@@ -337,6 +337,23 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
 
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
+        /* X-server sync-flag hack: at PC=0x8EE890D0 the X-server clears
+         * gp+4776 (phys 0x0EDDFB28) right after an init that just set
+         * it to 1, then calls 0x8EE88D90 expecting an ISR-driven
+         * completion to set it back. We have no ISR, so suppress the
+         * clear: the flag stays at 1, the subsequent poll exits
+         * immediately and the X-server proceeds to its next stage.
+         * Diagnostic only — gated by NCD15_XSRV_POKE=1. */
+        /* X-server sync-flag suppression: at PC=0x8EE890D0 the X-server
+         * clears its sync flag at gp+4776 (= phys 0x0EEDFB28) right
+         * after the init function set it to 1. Without an interrupt
+         * source that flips it back, the subsequent poll spins forever.
+         * Suppressing this clear lets the poll exit immediately and
+         * proceed past device-init. Diagnostic only. */
+        if (b->last_pc == 0x8EE890D0u && pa == 0x0EEDFB28u && size == 4 &&
+            value == 0 && getenv("NCD15_XSRV_POKE")) {
+            return;
+        }
         cfg_trace_write(pa, value, size, b->last_pc);
         st_be(b->shadow + (pa - 0x0EC00000u), value, size);
         return;

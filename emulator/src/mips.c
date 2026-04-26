@@ -312,6 +312,25 @@ void mips_step(mips_cpu *cpu) {
             fprintf(stderr, "[boot] region pc=0x%08x prev=0x%08x sp=0x%08x ra=0x%08x cyc=%llu\n",
                     pc, prev_pc, cpu->r[29], cpu->r[31], (unsigned long long)cpu->cycles);
         }
+        static int seen_poll = 0;
+        if (!seen_poll && pc == 0x8EE890F0) {
+            fprintf(stderr, "[boot] poll@F0 pc=0x%08x prev=0x%08x sp=0x%08x ra=0x%08x gp=0x%08x v0=0x%08x cyc=%llu\n",
+                    pc, prev_pc, cpu->r[29], cpu->r[31], cpu->r[28], cpu->r[2],
+                    (unsigned long long)cpu->cycles);
+            seen_poll = 1;
+        }
+        static int seen_d0 = 0;
+        if (!seen_d0 && pc == 0x8EE890D0) {
+            fprintf(stderr, "[boot] hit D0 prev=0x%08x ra=0x%08x cyc=%llu\n",
+                    prev_pc, cpu->r[31], (unsigned long long)cpu->cycles);
+            seen_d0 = 1;
+        }
+        static int seen_b8 = 0;
+        if (!seen_b8 && pc == 0x8EE890B8) {
+            fprintf(stderr, "[boot] hit B8 prev=0x%08x ra=0x%08x cyc=%llu\n",
+                    prev_pc, cpu->r[31], (unsigned long long)cpu->cycles);
+            seen_b8 = 1;
+        }
     }
     prev_pc = pc;
     cpu->bus->last_pc = pc;
