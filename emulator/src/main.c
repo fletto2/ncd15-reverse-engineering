@@ -225,7 +225,9 @@ int main(int argc, char **argv) {
     const char *mask_str = NULL;
     const char *server_str = NULL;
     const char *gateway_str = NULL;
+    const char *flash_path = NULL;
     const char *dump_shadow_path = NULL;
+    int no_window = 0;
     bool trace_bus = false;
     u64 max_cycles = 0;    /* 0 == unbounded */
 
@@ -248,6 +250,10 @@ int main(int argc, char **argv) {
             server_str = argv[++i];
         } else if (!strcmp(argv[i], "--gateway") && i+1 < argc) {
             gateway_str = argv[++i];
+        } else if (!strcmp(argv[i], "--flash") && i+1 < argc) {
+            flash_path = argv[++i];
+        } else if (!strcmp(argv[i], "--no-window")) {
+            no_window = 1;
         } else if (!strcmp(argv[i], "--dump-shadow") && i+1 < argc) {
             dump_shadow_path = argv[++i];
         } else if (argv[i][0] == '-') {
@@ -276,6 +282,67 @@ int main(int argc, char **argv) {
     if (mask_str)    b.inject_mask    = parse_ipv4(mask_str);
     if (server_str)  b.inject_server  = parse_ipv4(server_str);
     if (gateway_str) b.inject_gateway = parse_ipv4(gateway_str);
+
+    /* Linear-flash card. The boot monitor expects an "Xncd" or "Mncd"
+     * magic at offset 0x10 of phys 0x1F800000 (KSEG1 0xBF800000), and
+     * dispatches to the local-device boot path when shadow[0x168] == 1.
+     *
+     * Two acceptable formats for the flash content:
+     * 1. RAW (already stripped of ECOFF wrapper): bytes start with the
+     *    magic-block (b/nop/rsv/version/Xncd19r/CRC/...) at offset 0,
+     *    suitable for the boot monitor's direct jalr to flash.
+     * 2. ECOFF: a real Xncd15r-style file. We strip the wrapper here
+     *    (file[0x140:]) AND pre-populate shadow DRAM at each section's
+     *    linked paddr from the file's section data, so the X-server's
+     *    own bootstrap finds its sections already in place. */
+    if (flash_path) {
+        size_t fsz = 0;
+        u8 *fbytes = load_file(flash_path, &fsz);
+        if (!fbytes) {
+            fprintf(stderr, "flash: failed to load %s\n", flash_path);
+            return 1;
+        }
+        size_t alloc_sz = 0x800000u;
+        b.flash = (u8*)xmalloc(alloc_sz);
+        memset(b.flash, 0xFF, alloc_sz);
+
+        /* Detect ECOFF: f_magic == 0x0160 BE at offset 0. */
+        int is_ecoff = fsz >= 0x140 && fbytes[0] == 0x01 && fbytes[1] == 0x60;
+        if (is_ecoff) {
+            unsigned nscns = (fbytes[2] << 8) | fbytes[3];
+            /* Strip ECOFF wrapper for the flash window — flash[0]
+             * needs to be the magic block, which lives at file offset
+             * 0x140 (start of .text data) for Xncd-style binaries. */
+            size_t flash_payload = (fsz - 0x140 < alloc_sz) ? (fsz - 0x140) : alloc_sz;
+            memcpy(b.flash, fbytes + 0x140, flash_payload);
+            /* Pre-load each section into shadow DRAM at its paddr.
+             * Strips the high-byte (0x80→0x0E) to get the shadow offset.
+             * Ranges are in [0x0EC00000, 0x0F000000) → shadow buffer. */
+            int loaded = 0;
+            for (unsigned i = 0; i < nscns; i++) {
+                u8 *sh = fbytes + 0x4C + i*40;
+                u32 paddr  = ((u32)sh[8]<<24)|((u32)sh[9]<<16)|((u32)sh[10]<<8)|sh[11];
+                u32 ssize  = ((u32)sh[16]<<24)|((u32)sh[17]<<16)|((u32)sh[18]<<8)|sh[19];
+                u32 scnptr = ((u32)sh[20]<<24)|((u32)sh[21]<<16)|((u32)sh[22]<<8)|sh[23];
+                if (scnptr == 0 || ssize == 0) continue;  /* .bss, etc. */
+                u32 phys = paddr & 0x1FFFFFFFu;  /* strip KSEG bits */
+                if (phys < 0x0EC00000u || phys + ssize > 0x0F000000u) continue;
+                memcpy(b.shadow + (phys - 0x0EC00000u),
+                       fbytes + scnptr, ssize);
+                loaded++;
+                fprintf(stderr, "flash: pre-loaded section [%u] paddr=0x%08x size=0x%x → shadow+0x%x\n",
+                        i, paddr, ssize, phys - 0x0EC00000u);
+            }
+            fprintf(stderr, "flash: ECOFF detected, %d sections pre-loaded into shadow\n", loaded);
+        } else {
+            /* Raw flash dump — just copy verbatim. */
+            memcpy(b.flash, fbytes, fsz < alloc_sz ? fsz : alloc_sz);
+        }
+        b.flash_size = alloc_sz;
+        free(fbytes);
+        fprintf(stderr, "flash: loaded %s (%zu bytes) at phys 0x1F800000 (8 MiB window)\n",
+                flash_path, fsz);
+    }
 
     /* Attach MMIO devices. Order matters if regions overlap; we want
      * the video-control/cart-ID register to shadow the first 4 bytes
@@ -376,8 +443,25 @@ int main(int argc, char **argv) {
     static u8 in_buf[4096];
     static size_t in_head = 0, in_tail = 0;
     u64 next_poll = 10000;
+    u64 next_fb_refresh = 1000000;   /* refresh window every ~1M cycles */
+
+    fb_init(!no_window);
+
     while (!cpu.halted && (max_cycles == 0 || cpu.cycles < max_cycles)) {
+        if (fb_should_quit()) { fprintf(stderr, "fb: window closed\n"); break; }
         mips_step(&cpu);
+        if (cpu.cycles >= next_fb_refresh) {
+            fb_tick(&b);
+            next_fb_refresh = cpu.cycles + 1000000;
+            /* Drain any queued window-keyboard bytes into in_buf. */
+            unsigned char kc;
+            while (fb_poll_input(&kc)) {
+                size_t nx = (in_tail + 1) % sizeof(in_buf);
+                if (nx == in_head) break;
+                in_buf[in_tail] = kc;
+                in_tail = nx;
+            }
+        }
         if (cpu.cycles >= next_poll) {
             int delta = (int)(cpu.cycles - (next_poll - 10000));
             lance_glue_tick(lance, delta);

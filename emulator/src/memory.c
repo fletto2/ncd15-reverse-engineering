@@ -249,7 +249,38 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return 0x04000000u;
         }
+        /* Card-type byte at shadow[0x168]: signals which kind of local
+         * boot card is installed. Type 1 = linear flash at KSEG1
+         * 0xBF800000. Set to 1 when --flash is given. The boot's
+         * sub_0ec0f41c reads this byte to decide between local-flash
+         * boot vs. network boot. */
+        if (pa == 0x0EC00168u && size == 1 && b->flash &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            /* Card-type byte: linear flash = 1. Only respond to byte
+             * reads from shadow-resident code, not the boot-time
+             * memory test that lw-pattern-checks the same region. */
+            return 1;
+        }
+        /* Boot-priority field at runtime addr 0x0EC00DD4 (dis annotates
+         * as data_0x0EC00D4C because the annotator doesn't track $s0).
+         * The auto-boot loop in sub_0ec0eb6c reads `lw 0xd4c($s0)` with
+         * $s0=0x0EC00088 — actual addr is 0x0EC00DD4 — and per-iteration
+         * matches a 4-bit nibble against the attempt counter. Bits 0-3
+         * are the local-flash priority. Set to 1 to fire local-flash
+         * on the first auto-boot iteration. Gated on shadow-resident
+         * PC to skip the boot-time memory test. */
+        if (pa == 0x0EC00DD4u && size == 4 && b->flash &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return 0x00000001u;
+        }
         return ld_be(b->shadow + (pa - 0x0EC00000u), size);
+    }
+
+    /* Linear-flash window at phys 0x1F800000 (KSEG1 0xBF800000). The
+     * monitor reads the first ~0x40 bytes for the magic ("Xncd19r"
+     * at offset 0x10) and then sectors after that. */
+    if (b->flash && pa >= 0x1F800000u && pa < 0x1F800000u + b->flash_size) {
+        return ld_be(b->flash + (pa - 0x1F800000u), size);
     }
 
     /* Main DRAM: 4 MiB at phys 0, aliased every 4 MiB up to 0x0EC00000. */

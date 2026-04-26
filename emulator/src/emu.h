@@ -146,6 +146,8 @@ typedef struct bus {
     u32 inject_mask;      /* data_0x0EC000EC */
     u32 inject_server;    /* data_0x0EC00104 */
     u32 inject_gateway;   /* data_0x0EC000CC */
+    u8 *flash;            /* linear-flash card buffer (KSEG1 0xBF800000+) */
+    size_t flash_size;
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
@@ -221,5 +223,11 @@ int  nvram_save_file(struct nvram *n, const char *path);
 /* Direct word access for tooling / initial-image setup. */
 void nvram_set_word(struct nvram *n, unsigned addr, u16 val);
 u16  nvram_get_word(struct nvram *n, unsigned addr);
+
+/* --- SDL2 framebuffer window (src/fb.c) --- */
+void fb_init(int enabled);
+void fb_tick(bus *b);
+int  fb_should_quit(void);
+int  fb_poll_input(unsigned char *out);
 
 #endif

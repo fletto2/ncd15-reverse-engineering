@@ -134,7 +134,29 @@ static void exec_special(mips_cpu *cpu, u32 pc, u32 insn) {
             cpu->bus->call_stack[cpu->bus->call_depth++] = s;
         do_branch(cpu, s);
         break;
-    case 0x0C: fprintf(stderr, "syscall at 0x%08x\n", pc); cpu->halted = true; break;
+    case 0x0C: { /* SYSCALL */
+        /* The X-server uses syscall as a putchar primitive: $a0 = fd (1
+         * = console), $a1 = byte. Real hardware presumably has a
+         * handler at the exception vector that does this. We don't have
+         * that handler, so emulate it here: route ($a0=1, $a1=byte) to
+         * DUART channel B (stdout), then return as if the handler did
+         * `mfc0 EPC; addiu EPC,4; jr EPC; rfe`. Other syscall numbers
+         * become no-ops returning 0. */
+        if (cpu->r[4] == 1) {  /* $a0 == 1 (stdout) */
+            unsigned char c = (unsigned char)cpu->r[5];  /* $a1 */
+            bus_write(cpu->bus, 0xBE88002Cu, c, 1);
+        } else if (getenv("NCD15_TRACE_SYSCALL")) {
+            fprintf(stderr, "[syscall] pc=%08x v0=%08x a0=%08x a1=%08x a2=%08x a3=%08x\n",
+                    pc, cpu->r[2], cpu->r[4], cpu->r[5], cpu->r[6], cpu->r[7]);
+        }
+        cpu->r[2] = 0;  /* $v0 = 0 (success) */
+        /* Skip the syscall instruction itself. If in delay slot we'd
+         * need to handle the branch; X-server's syscall is not in a
+         * delay slot so skip. */
+        cpu->next_pc = pc + 4;
+        cpu->branch_taken = false;
+        return;
+    }
     case 0x0D: fprintf(stderr, "break at 0x%08x code=%x\n", pc, (insn>>6)&0xfffff); cpu->halted = true; break;
     case 0x10: wr_reg(cpu, rd, cpu->hi); break;                       /* MFHI */
     case 0x11: cpu->hi = s; break;                                    /* MTHI */
