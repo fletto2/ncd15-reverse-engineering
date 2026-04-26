@@ -334,12 +334,49 @@ int main(int argc, char **argv) {
                         i, paddr, ssize, phys - 0x0EC00000u);
             }
             fprintf(stderr, "flash: ECOFF detected, %d sections pre-loaded into shadow\n", loaded);
+            /* Real flash cards interleave a self-relocating bootstrap with
+             * LZW-compressed sections. Our ECOFF dumps don't have that
+             * format — sections are already in linked layout. Patch a
+             * 2-instruction stub at flash[0] that jumps straight to the
+             * linked entry. The X-server's bootstrap measures its own
+             * relocation offset via `bal`/`subu`; running from the
+             * linked address makes that offset zero, so it skips its
+             * unpack loop and proceeds directly to bss-clear + main. */
+            /* aouthdr layout: 0x14 magic/vstamp/bldrev (8B) + tsize/dsize/bsize
+             * (12B) brings us to 0x24 = entry. */
+            u32 entry = ((u32)fbytes[0x24]<<24)|((u32)fbytes[0x25]<<16)|
+                        ((u32)fbytes[0x26]<<8) |fbytes[0x27];
+            u16 hi = (entry >> 16) & 0xFFFF;
+            u16 lo = entry & 0xFFFF;
+            /* lui $t0, hi */
+            b.flash[0] = 0x3C; b.flash[1] = 0x08;
+            b.flash[2] = (u8)(hi >> 8); b.flash[3] = (u8)hi;
+            /* if low half nonzero, ori $t0, $t0, lo; jr $t0 (12 B). */
+            if (lo) {
+                b.flash[4] = 0x35; b.flash[5] = 0x08;
+                b.flash[6] = (u8)(lo >> 8); b.flash[7] = (u8)lo;
+                b.flash[8] = 0x01; b.flash[9] = 0x00;
+                b.flash[10] = 0x00; b.flash[11] = 0x08;
+                /* delay slot nop already present at [0x0C..]. */
+            } else {
+                /* jr $t0 directly. */
+                b.flash[4] = 0x01; b.flash[5] = 0x00;
+                b.flash[6] = 0x00; b.flash[7] = 0x08;
+                /* nop already at [0x08..]. */
+            }
+            fprintf(stderr, "flash: ECOFF entry redirect installed → 0x%08x\n", entry);
         } else {
             /* Raw flash dump — just copy verbatim. */
             memcpy(b.flash, fbytes, fsz < alloc_sz ? fsz : alloc_sz);
         }
         b.flash_size = alloc_sz;
-        free(fbytes);
+        if (is_ecoff) {
+            /* Keep file bytes for lazy re-preload on flash entry. */
+            b.ecoff_bytes = fbytes;
+            b.ecoff_size  = fsz;
+        } else {
+            free(fbytes);
+        }
         fprintf(stderr, "flash: loaded %s (%zu bytes) at phys 0x1F800000 (8 MiB window)\n",
                 flash_path, fsz);
     }

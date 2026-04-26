@@ -280,6 +280,27 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
      * monitor reads the first ~0x40 bytes for the magic ("Xncd19r"
      * at offset 0x10) and then sectors after that. */
     if (b->flash && pa >= 0x1F800000u && pa < 0x1F800000u + b->flash_size) {
+        /* On first read of the flash window, lazily re-blit ECOFF
+         * sections into shadow. The monitor zeros shadow[0x100000+]
+         * during its boot path, so we can't preload eagerly. */
+        if (!b->ecoff_preloaded && b->ecoff_bytes && b->ecoff_size >= 0x140) {
+            unsigned nscns = (b->ecoff_bytes[2] << 8) | b->ecoff_bytes[3];
+            for (unsigned i = 0; i < nscns; i++) {
+                u8 *sh = b->ecoff_bytes + 0x4C + i*40;
+                u32 paddr  = ((u32)sh[8]<<24)|((u32)sh[9]<<16)|((u32)sh[10]<<8)|sh[11];
+                u32 ssize  = ((u32)sh[16]<<24)|((u32)sh[17]<<16)|((u32)sh[18]<<8)|sh[19];
+                u32 scnptr = ((u32)sh[20]<<24)|((u32)sh[21]<<16)|((u32)sh[22]<<8)|sh[23];
+                if (scnptr == 0 || ssize == 0) continue;
+                if ((size_t)scnptr + ssize > b->ecoff_size) continue;
+                u32 phys = paddr & 0x1FFFFFFFu;
+                if (phys < 0x0EC00000u || phys + ssize > 0x0F000000u) continue;
+                memcpy(b->shadow + (phys - 0x0EC00000u),
+                       b->ecoff_bytes + scnptr, ssize);
+            }
+            b->ecoff_preloaded = true;
+            if (getenv("NCD15_TRACE_BOOT"))
+                fprintf(stderr, "[boot] lazy-preloaded ECOFF sections at flash entry\n");
+        }
         return ld_be(b->flash + (pa - 0x1F800000u), size);
     }
 

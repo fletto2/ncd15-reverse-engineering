@@ -302,6 +302,17 @@ void mips_step(mips_cpu *cpu) {
                 pc, prev_pc, cpu->r[31], (unsigned long long)cpu->cycles);
         trap_count++;
     }
+    /* Trace flash/X-server entry transitions (NCD15_TRACE_BOOT=1).
+     * Logs every JAL/JALR target and every change of "code region". */
+    if (getenv("NCD15_TRACE_BOOT")) {
+        u32 pa = pc & 0x1FFFFFFFu;
+        u32 ppa = prev_pc & 0x1FFFFFFFu;
+        /* Region change: bits 24:20 differ. */
+        if ((pa & 0x1FF00000u) != (ppa & 0x1FF00000u)) {
+            fprintf(stderr, "[boot] region pc=0x%08x prev=0x%08x sp=0x%08x ra=0x%08x cyc=%llu\n",
+                    pc, prev_pc, cpu->r[29], cpu->r[31], (unsigned long long)cpu->cycles);
+        }
+    }
     prev_pc = pc;
     cpu->bus->last_pc = pc;
     cpu->bus->last_ra = cpu->r[31];

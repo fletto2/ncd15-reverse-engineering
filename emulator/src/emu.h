@@ -148,6 +148,13 @@ typedef struct bus {
     u32 inject_gateway;   /* data_0x0EC000CC */
     u8 *flash;            /* linear-flash card buffer (KSEG1 0xBF800000+) */
     size_t flash_size;
+    /* When --flash points at an ECOFF dump, stash the original file
+     * bytes plus parsed section table here. The monitor's BL flow
+     * tends to clobber shadow[0x100000+] before jumping to flash, so
+     * we re-blit the sections lazily on first flash-window read. */
+    u8 *ecoff_bytes;
+    size_t ecoff_size;
+    bool ecoff_preloaded;
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
