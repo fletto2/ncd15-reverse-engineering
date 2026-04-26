@@ -99,9 +99,17 @@ def main():
     if args.ip:
         write_ip_pairswapped(data, 8, args.ip)
     if args.mask:
-        write_ip_pairswapped(data, 19, args.mask)
+        # Mask is the X-server's only field stored in straight byte order
+        # at word-aligned bytes 20-23 (not pair-swapped like the IPs). The
+        # monitor's loader reads the same bytes — found by scanning the
+        # X-server's parsed-config struct at runtime.
+        ip = parse_ip(args.mask)
+        data[20:24] = ip
     if args.gateway:
-        write_ip_pairswapped(data, 23, args.gateway)
+        # Gateway is pair-swapped at word-aligned bytes 24-27 (not 23-26
+        # as earlier RE'd from the monitor — the monitor reads the same
+        # word-aligned bytes; the prior offset was off-by-one).
+        write_ip_pairswapped(data, 24, args.gateway)
     if args.server:
         write_ip_pairswapped(data, 106, args.server)
 

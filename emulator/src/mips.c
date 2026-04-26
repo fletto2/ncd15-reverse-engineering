@@ -593,4 +593,69 @@ void mips_dump(const mips_cpu *cpu) {
     }
     fprintf(stderr, " hi=%08x lo=%08x  status=%08x cause=%08x epc=%08x\n",
             cpu->hi, cpu->lo, cpu->cp0_status, cpu->cp0_cause, cpu->cp0_epc);
+    /* Optional: scan shadow + dram for IP-shaped patterns to locate the
+     * X-server's parsed-config globals. Used to RE the NVRAM layout
+     * (mknvram.py offsets). */
+    if (getenv("NCD15_SCAN_IP")) {
+        u32 needles[80];
+        const char *labels[80];
+        char labelbuf[80][16];
+        size_t n = 0;
+        needles[n] = 0xC0A80164u; labels[n] = "ip"; n++;
+        needles[n] = 0xC0A8010Fu; labels[n] = "server"; n++;
+        needles[n] = 0xC0A80101u; labels[n] = "gateway"; n++;
+        needles[n] = 0xFFFFFF00u; labels[n] = "mask"; n++;
+        needles[n] = 0xa8c00f01u; labels[n] = "server-pair-swap"; n++;
+        needles[n] = 0xa8c00101u; labels[n] = "gateway-pair-swap"; n++;
+        needles[n] = 0x010Fc0A8u; labels[n] = "server-half-swap"; n++;
+        needles[n] = 0x0F01a8c0u; labels[n] = "server-bswap"; n++;
+        needles[n] = 0x0101c0a8u; labels[n] = "gateway-half-swap"; n++;
+        needles[n] = 0xa8c00101u; labels[n] = "gateway-pswap-be"; n++;
+        needles[n] = 0x0101c0a8u; labels[n] = "gateway-bswap-pswap"; n++;
+        needles[n] = 0x01018ec0u; labels[n] = "gateway-typo1"; n++;
+        /* Marker IPs 192.168.1.WORD at each word boundary 0..63 */
+        for (int w = 0; w < 64; w++) {
+            needles[n] = 0xC0A80100u | (u8)w;
+            snprintf(labelbuf[n], sizeof labelbuf[n], "marker-w%d", w);
+            labels[n] = labelbuf[n];
+            n++;
+        }
+        u8 *bufs[2] = { cpu->bus->shadow, cpu->bus->dram };
+        const char *names[2] = { "shadow", "dram" };
+        for (size_t k = 0; k < n; k++) {
+            for (int b = 0; b < 2; b++) {
+                for (size_t i = 0; i + 4 <= NCD15_DRAM_SIZE; i += 1) {
+                    u32 w = ((u32)bufs[b][i]<<24)|((u32)bufs[b][i+1]<<16)|
+                            ((u32)bufs[b][i+2]<<8) |bufs[b][i+3];
+                    if (w == needles[k])
+                        fprintf(stderr, "  %s needle at %s+0x%zx\n", labels[k], names[b], i);
+                }
+            }
+        }
+        /* Dump multiple IP-cluster regions. */
+        size_t ranges[][2] = {
+            {0x2B7600, 0x2B7C00},  /* full config dict */
+        };
+        for (size_t r = 0; r < sizeof(ranges)/sizeof(ranges[0]); r++) {
+            fprintf(stderr, "  -- shadow[0x%zx..0x%zx] --\n", ranges[r][0], ranges[r][1]);
+            for (size_t i = ranges[r][0]; i < ranges[r][1]; i += 16) {
+                fprintf(stderr, "  +%05zx: ", i);
+                for (int j = 0; j < 16; j++) fprintf(stderr, "%02x%s",
+                    cpu->bus->shadow[i+j], (j&3)==3?" ":"");
+                fprintf(stderr, "\n");
+            }
+        }
+        /* Also dump every 4-byte aligned word that starts with 0xC0A801 or
+         * 0xA8C001 prefix — IPs in 192.168.1.* (BE) or pair-swapped form. */
+        fprintf(stderr, "  -- 192.168.1.*-pattern words --\n");
+        for (int b = 0; b < 2; b++) {
+            for (size_t i = 0; i + 4 <= NCD15_DRAM_SIZE; i += 4) {
+                u32 w = ((u32)bufs[b][i]<<24)|((u32)bufs[b][i+1]<<16)|
+                        ((u32)bufs[b][i+2]<<8) |bufs[b][i+3];
+                if ((w & 0xFFFF0000u) == 0xC0A80000u ||
+                    (w & 0x0000FFFFu) == 0x0000A8C0u)
+                    fprintf(stderr, "  ip-like 0x%08x at %s+0x%zx\n", w, names[b], i);
+            }
+        }
+    }
 }

@@ -133,13 +133,18 @@ static void nvram_sk_rise(nvram *n) {
                 n->tx_shift = n->mem[addr];
             } else n->tx_shift = 0xffff;
             if (getenv("NCD15_TRACE_NVRAM")) {
-                fprintf(stderr, "[nvram] READ word[%d] = 0x%04x (file off %d)\n",
-                        addr, n->tx_shift, addr * 2);
+                /* Pull last_pc from the bus via global. */
+                extern bus *g_dbg_bus;
+                u32 caller = g_dbg_bus ? g_dbg_bus->last_pc : 0;
+                fprintf(stderr, "[nvram] READ word[%d] = 0x%04x (file off %d) caller_pc=0x%08x\n",
+                        addr, n->tx_shift, addr * 2, caller);
             }
             n->tx_count = 0;
             n->state = READ_OUT;
             break;
         case 1: /* WRITE */
+            if (getenv("NCD15_TRACE_NVRAM"))
+                fprintf(stderr, "[nvram] WRITE word[%d] starting (ewen=%d)\n", addr, n->ewen);
             n->rx_shift = 0;
             n->rx_count = 0;
             n->state = WRITE_IN;
