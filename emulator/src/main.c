@@ -25,6 +25,13 @@
 #include <linux/if_ether.h>
 #include <netinet/in.h>
 
+static u32 vram_arb_read(void *ctx, u32 off, unsigned sz) {
+    (void)ctx; (void)off; (void)sz; return 0xFFFFFFFFu;
+}
+static void vram_arb_write(void *ctx, u32 off, u32 v, unsigned sz) {
+    (void)ctx; (void)off; (void)v; (void)sz;
+}
+
 /* Stub per-address access counters. Buckets are 16-byte wide so we
  * group DUART-register-sized neighbourhoods together. */
 #define STUB_BUCKETS 512
@@ -399,6 +406,16 @@ int main(int argc, char **argv) {
         else
             fprintf(stderr, "nvram: %s not found, starting blank\n", nvram_path);
     }
+
+    /* VRAM access-arbiter stub at phys 0x1E200000 (KSEG1 0xBE200000).
+     * The X-server polls bit 0 in tight loops before each VRAM read/write
+     * — real HW sets it when the pixel-clock side is idle. We don't have
+     * that conflict, so always report ready. */
+    bus_add_mmio(&b, (mmio_region){
+        .start = 0x1E200000u, .length = 0x10,
+        .read  = vram_arb_read, .write = vram_arb_write,
+        .ctx   = NULL, .name = "vram-arb",
+    });
 
     struct vidctl *v = vidctl_new();
     bus_add_mmio(&b, (mmio_region){
