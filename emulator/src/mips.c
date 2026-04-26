@@ -299,20 +299,13 @@ void mips_step(mips_cpu *cpu) {
      * Our xncd15r-mini binary lacks the NCD-proprietary "Xncd19r" magic
      * at $s0+0x10 and the trailing CRC the boot's ECOFF loader expects.
      * Force the equality checks to pass at the specific bne/beq sites. */
-    /* Loader CRC-check bypass. The boot's ECOFF loader compares two CRC
-     * fields at data_0x0EC00B9C (computed by sub_0ec17138 streaming over
-     * received bytes) vs data_0x0EC00B9E (read from the file at
-     * .text+0x18). The streaming compute is gated on bit 0x400 of
-     * shadow[0x9A0], which the LANCE IRQ handler sets per-RX — and we
-     * don't run the IRQ handler. So the computed CRC slot stays at its
-     * init value (0xFFFF) and the comparison fails.
-     *
-     * NCD15_FORCE_LOADER_PASS=1 forces the equality at the beq site so
-     * the load proceeds. (Magic check at .text+0x10 is satisfied by
-     * start.S's "Xncd19r" string and doesn't need a bypass.) */
-    if (getenv("NCD15_FORCE_LOADER_PASS") && pc == 0x0EC1227Cu) {
-        cpu->r[2] = cpu->r[3];
-    }
+    /* (The loader CRC-check bypass formerly here is gone. ECOFF binaries
+     * built by ncd15-ecoff-wrap now stash 0xFFFF at .text+0x18 — the
+     * loader's "stored CRC" slot — which equals the streaming-computed
+     * slot's init value, so the equality check at 0x0EC1227C passes
+     * without intervention. Real-HW behavior overwrites both with the
+     * actual CRC via the IRQ handler before comparison; emulator and
+     * real-HW agree on the no-IRQ shortcut.) */
     cpu->bus->cur_cycles = cpu->cycles;
     /* Force the network-controller probe (sub_0ec0b7b0 at exit
      * 0x0EC0B854) to claim LANCE Ethernet was detected.

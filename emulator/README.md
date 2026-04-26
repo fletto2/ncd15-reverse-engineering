@@ -35,7 +35,7 @@ make
 ./ncd15-emu --nvram nv.bin /path/to/NCD15-19rBM-V271-splice.u8
 
 # TFTP-boot from a host TFTP server (file staged as /srv/tftp/Xncd19r):
-NCD15_FORCE_LOADER_PASS=1 ./ncd15-emu \
+./ncd15-emu \
     --raweth eth0 --nvram nv.bin \
     --ip 192.168.1.65 --mask 255.255.255.0 \
     --server 192.168.1.15 --gateway 192.168.1.1 \
@@ -44,13 +44,15 @@ NCD15_FORCE_LOADER_PASS=1 ./ncd15-emu \
 
 ## Known caveats
 
-- **`NCD15_FORCE_LOADER_PASS=1`** is currently required for a real
-  TFTP boot. It bypasses one `beq` in the boot's ECOFF loader that
-  compares two CRC-16 fields (computed vs. file-stored). The
-  streaming computation in `sub_0ec17138` is gated on bit `0x400`
-  of `shadow[0x9A0]` — the LANCE IRQ handler is supposed to set
-  this per-RX, and we don't run interrupts. Until that path is
-  wired through, this flag is required.
+- **TFTP-resolution flakiness** — the boot tries multiple filenames
+  in sequence (`C0A80141`, `Xncd19r.40`, `Xncd19r`, etc.) and
+  retries each up to 10 times. Sometimes the chip's RX of the Pi's
+  "file not found" reply doesn't get registered with the host's
+  TFTP retry counter quickly enough, so the boot bails at "TFTP
+  aborted after 10 retries" on the *first* filename and never
+  tries `Xncd19r`. Re-run; ~20% success rate per attempt in our
+  testing. Likely an IRQ-handler-driven RX-completion path we
+  haven't fully synthesized.
 
 - **Tick-counter pacing** — `data_0x0EC00730` is auto-incremented
   in the bus dispatch as `cpu->cycles / 50000` (see

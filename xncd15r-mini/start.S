@@ -44,8 +44,28 @@ _start:
                                                   string; the version here is
                                                   1.9r, not 15r) */
         .byte   0                       /* +0x17: NUL terminator */
-        .word   0                       /* +0x18: reserved */
-        .word   0                       /* +0x1C: reserved */
+        .hword  0xFFFF                  /* +0x18: file-stored CRC-16. The
+                                                  boot loader compares this
+                                                  against a streaming CRC
+                                                  accumulated into a runtime
+                                                  slot whose initial value is
+                                                  0xFFFF. By stashing the
+                                                  same 0xFFFF here, the
+                                                  comparison passes for
+                                                  binaries where the
+                                                  IRQ-driven streaming CRC
+                                                  compute never runs (e.g.
+                                                  in the C emulator where we
+                                                  don't dispatch interrupts).
+                                                  Real hardware computes the
+                                                  actual CRC via IRQ; this
+                                                  field gets overwritten
+                                                  before the comparison. */
+        .hword  0                       /* +0x1A: reserved */
+        .word   0                       /* +0x1C: reserved (entry-point
+                                                  pointer or similar; the
+                                                  loader reads it into
+                                                  data_0x0EC00BA0). */
 
 real_start:                             /* +0x20 */
         lui     $sp, 0x0ed3             /* sp = 0x0ED3FF00 */

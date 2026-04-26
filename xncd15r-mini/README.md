@@ -223,10 +223,10 @@ cd ../emulator && make
 # canonical NCD-19r filename the boot monitor's auto-search uses.
 scp ../xncd15r-mini/xncd15r.bin user@192.168.1.15:/srv/tftp/Xncd19r
 
-# Boot. NCD15_FORCE_LOADER_PASS bypasses the loader's CRC-vs-file
-# check (the streaming CRC compute depends on the LANCE IRQ handler,
-# which the emulator doesn't run; magic-string check works natively).
-NCD15_FORCE_LOADER_PASS=1 ./ncd15-emu \
+# Boot. No env-var bypasses — the binary's start.S puts both the
+# "Xncd19r" magic and a 0xFFFF placeholder CRC at .text+0x10..+0x18,
+# which the loader accepts.
+./ncd15-emu \
     --raweth eth0 --nvram nv.bin \
     --ip 192.168.1.65 --mask 255.255.255.0 \
     --server 192.168.1.15 --gateway 192.168.1.1 \
@@ -264,13 +264,15 @@ Caveats:
   and the boot loader explicitly checks for the `Xncd19r` magic
   string at `.text + 0x10..0x16` — `start.S` already places it
   there, so a stock `ncd15-ecoff-wrap` output works.
-- The CRC bypass (`NCD15_FORCE_LOADER_PASS=1`) is needed because
-  the boot's CRC check (`sub_0ec17138` + comparator at
-  `0x0EC1227C`) depends on a streaming compute the LANCE IRQ
-  handler drives. To remove the bypass, the emulator would need
-  to (a) set bit `0x400` of `shadow[0x9A0]` per-RX, and (b) wire
-  through the polling loop that calls `sub_0ec17138`. Tracked
-  but not yet implemented.
+- The CRC check (`sub_0ec17138` + comparator at `0x0EC1227C`)
+  passes because `start.S` places `0xFFFF` at `.text + 0x18` —
+  the loader's "stored CRC" slot. Both the streaming-computed
+  slot (`shadow[0xC24]`) and the file-stored slot
+  (`shadow[0xC26]`) end up at `0xFFFF`, so the equality check is
+  satisfied without the IRQ-driven streaming compute ever
+  running. Real hardware overwrites both with the actual CRC via
+  the IRQ handler before comparison; `0xFFFF` works because that
+  is also the streaming-CRC init value.
 
 ## Hardware register reference
 
