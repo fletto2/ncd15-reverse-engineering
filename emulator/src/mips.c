@@ -22,7 +22,9 @@ static void maybe_init_trace(void) {
     }
 }
 
+struct mips_cpu *g_cpu = NULL;
 void mips_reset(mips_cpu *cpu, bus *b) {
+    g_cpu = cpu;
     for (int i = 0; i < 32; i++) cpu->r[i] = 0;
     cpu->hi = cpu->lo = 0;
     cpu->pc = 0xBFC00000u;      /* reset vector */
@@ -237,6 +239,15 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
             break;
         case 13: cpu->cp0_cause    = v; break;
         case 14: cpu->cp0_epc      = v; break;
+        case 7:
+            /* R3052-specific cache-control register. The cache-flush
+             * sequences in both monitor and X-server set bit 13 (0x2000)
+             * here before bursts of `sw zero, n(zero)` stores at 16-byte
+             * strides; on real HW those stores hit cache tags only and
+             * leave DRAM alone. Track the bit so bus_write can suppress
+             * the writes. */
+            cpu->bus->cache_isolated = (v & 0x2000u) != 0;
+            break;
         default: break;   /* silently ignore */
         }
     } else if (rs == 0x10) {     /* CO funct — RFE, TLBR, etc. */
@@ -281,6 +292,19 @@ static void take_exception(mips_cpu *cpu, u32 pc, u32 exccode) {
  * RX, LANCE RX, etc.) we'll raise IP from the respective device
  * model, not on a periodic schedule. */
 static void check_interrupts(mips_cpu *cpu, u32 pc) {
+    /* Periodic timer source. Once an exception handler has been
+     * installed at DRAM[0x80] (signalled by ecoff_preloaded), assert
+     * Cause.IP5 every ~50K cycles. Status.IM5 is enabled by both
+     * monitor and X-server. The synthetic handler in memory.c
+     * increments the tick counter at 0x8EEC2D9C and acks the IRQ. */
+    bus *b = cpu->bus;
+    if (b->ecoff_preloaded) {
+        u64 next = b->next_irq_cycle;
+        if (cpu->cycles >= next) {
+            cpu->cp0_cause |= (1u << 13);    /* IP5 */
+            b->next_irq_cycle = cpu->cycles + 50000;
+        }
+    }
     if (!(cpu->cp0_status & 1)) return;            /* IEc cleared */
     u32 pending = (cpu->cp0_cause  >> 8) & 0xff;
     u32 mask    = (cpu->cp0_status >> 8) & 0xff;

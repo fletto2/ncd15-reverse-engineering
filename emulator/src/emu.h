@@ -155,6 +155,8 @@ typedef struct bus {
     u8 *ecoff_bytes;
     size_t ecoff_size;
     bool ecoff_preloaded;
+    u64 next_irq_cycle;
+    bool cache_isolated;  /* CP0 reg 7 bit 13 — see mips.c */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);

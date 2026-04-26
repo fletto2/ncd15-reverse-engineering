@@ -297,9 +297,49 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
                 memcpy(b->shadow + (phys - 0x0EC00000u),
                        b->ecoff_bytes + scnptr, ssize);
             }
+            /* Install a synthetic exception handler at DRAM[0x80].
+             * Real NCD15 boot software (which we don't have a source
+             * for) leaves a handler here before transferring control;
+             * neither the monitor ROM nor the X-server image installs
+             * one. The handler increments the X-server's tick counter
+             * at 0x8EEC2D9C (which its WaitForCounter routine spins
+             * on), acks the HW IRQ in CP0 Cause, and RFEs back to the
+             * interrupted PC. Paired with the periodic IP5 source in
+             * mips_step. */
+            static const u32 xncd_handler[] = {
+                0x401a6800u, /* mfc0 k0, c0_cause            */
+                0x00000000u,
+                0x3c1b8eecu, /* lui  k1, 0x8EEC              */
+                0x977a2d9cu, /* lhu  k0, 0x2D9C(k1)          */
+                0x00000000u,
+                0x275a0001u, /* addiu k0, k0, 1              */
+                0xa77a2d9cu, /* sh   k0, 0x2D9C(k1)          */
+                0x401a6800u, /* mfc0 k0, c0_cause            */
+                0x00000000u,
+                0x3c1bffffu, /* lui  k1, 0xFFFF              */
+                0x377b03ffu, /* ori  k1, k1, 0x03FF (~IP[7:2])*/
+                0x035bd024u, /* and  k0, k0, k1 (clear IPs)  */
+                0x409a6800u, /* mtc0 k0, c0_cause            */
+                0x00000000u,
+                0x401a7000u, /* mfc0 k0, c0_epc              */
+                0x00000000u,
+                0x03400008u, /* jr   k0                      */
+                0x42000010u, /* rfe  (delay slot)            */
+            };
+            for (size_t i = 0; i < sizeof xncd_handler / sizeof *xncd_handler; i++) {
+                u32 w = xncd_handler[i];
+                u8 *p = b->dram + 0x80 + i*4;
+                p[0] = (u8)(w >> 24); p[1] = (u8)(w >> 16);
+                p[2] = (u8)(w >>  8); p[3] = (u8)w;
+            }
+            /* Invalidate any stale icache lines covering phys [0x80, 0xD0)
+             * so the next fetch picks up the fresh handler bytes. */
+            extern struct mips_cpu *g_cpu;
+            if (g_cpu)
+                icache_flush_all(&g_cpu->icache);
             b->ecoff_preloaded = true;
             if (getenv("NCD15_TRACE_BOOT"))
-                fprintf(stderr, "[boot] lazy-preloaded ECOFF sections at flash entry\n");
+                fprintf(stderr, "[boot] lazy-preloaded ECOFF sections + IRQ handler\n");
         }
         return ld_be(b->flash + (pa - 0x1F800000u), size);
     }
@@ -335,6 +375,12 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
 
     /* ROM window is read-only. */
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
+
+    /* Cache isolation: tracked via CP0 reg 7 bit 13 (R3052-specific).
+     * When isolated, stores hit the cache only; suppress them here so
+     * the synthetic exception handler at DRAM[0x80] survives the
+     * X-server's icache-flush sweep across phys 0..0x4000. */
+    if (b->cache_isolated) return;
 
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
         cfg_trace_write(pa, value, size, b->last_pc);
