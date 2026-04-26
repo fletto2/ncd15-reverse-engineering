@@ -204,6 +204,74 @@ data starting at file offset `0xC4`) are:
 Zero persistent side-effects. Power-cycle = fully recovered. NVRAM
 only changes if you used `SE`; that's undoable by another `SE`.
 
+## Booting the same image inside the emulator
+
+The C emulator under `../emulator/` boots the V2.7.1 monitor and
+can pull `xncd15r.bin` from a real TFTP server over a host
+Ethernet interface. Verified end-to-end against a Raspberry Pi
+running `tftpd.py` on the same LAN. Recipe:
+
+```bash
+cd ../emulator && make
+
+# Generate an NVRAM image with MAC + IP layout the monitor expects.
+./scripts/mknvram.py --out nv.bin --mac 02:00:5e:de:ad:01 \
+    --ip 192.168.1.65 --mask 255.255.255.0 \
+    --gateway 192.168.1.1 --server 192.168.1.15
+
+# Stage xncd15r.bin on the TFTP server as 'Xncd19r' — this is the
+# canonical NCD-19r filename the boot monitor's auto-search uses.
+scp ../xncd15r-mini/xncd15r.bin user@192.168.1.15:/srv/tftp/Xncd19r
+
+# Boot. NCD15_FORCE_LOADER_PASS bypasses the loader's CRC-vs-file
+# check (the streaming CRC compute depends on the LANCE IRQ handler,
+# which the emulator doesn't run; magic-string check works natively).
+NCD15_FORCE_LOADER_PASS=1 ./ncd15-emu \
+    --raweth eth0 --nvram nv.bin \
+    --ip 192.168.1.65 --mask 255.255.255.0 \
+    --server 192.168.1.15 --gateway 192.168.1.1 \
+    /path/to/NCD15-19rBM-V271-splice.u8
+```
+
+Expected console output (channel B → stdout):
+
+```
+Network controller passed  02:00:5E:DE:AD:01
+TFTP load <ESC> to abort
+Using IP address - 192.168.001.065
+Using Subnet Mask - 255.255.255.000
+Using Host - 192.168.001.015 file 'Xncd19r'
+Used file Xncd19r
+Used host 192.168.001.015
+
+Starting server
+
+=== custom Xncd15r running at 0x0ED00000 ===
+hello from MIPS-I bare metal
+```
+
+Caveats:
+
+- `--raweth` needs `cap_net_raw+ep`; the binary will `setcap`
+  itself on first run if it's on a non-`nosuid` mount.
+- The emulator's auto-incrementing tick at `data_0x0EC00730` is
+  cycle-paced (~1 tick / 50K cycles), which is what makes the
+  ARP/RARP timing line up. On a heavily loaded host the TFTP
+  retries can race and the boot bails at "TFTP aborted" on the
+  first filename; rerun.
+- `Xncd19r` (not `xncd15r`) is the filename the monitor's
+  auto-search expects. Real NCD19r firmware ships as `Xncd19r`,
+  and the boot loader explicitly checks for the `Xncd19r` magic
+  string at `.text + 0x10..0x16` — `start.S` already places it
+  there, so a stock `ncd15-ecoff-wrap` output works.
+- The CRC bypass (`NCD15_FORCE_LOADER_PASS=1`) is needed because
+  the boot's CRC check (`sub_0ec17138` + comparator at
+  `0x0EC1227C`) depends on a streaming compute the LANCE IRQ
+  handler drives. To remove the bypass, the emulator would need
+  to (a) set bit `0x400` of `shadow[0x9A0]` per-RX, and (b) wire
+  through the polling loop that calls `sub_0ec17138`. Tracked
+  but not yet implemented.
+
 ## Hardware register reference
 
 DUART MC68681 @ `0xBE880000`, 4-byte register stride:

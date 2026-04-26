@@ -127,9 +127,12 @@ struct lance_t {
     int intr_out_state;
     int idon;
 
-    /* Internal loopback buffer (for MODE_LOOP transmit→receive) */
-    uint8_t lb_buf[36];
+    /* Internal loopback buffer (for MODE_LOOP transmit→receive AND for
+     * the self-MAC hairpin echo we use to pass NCD15's wire-presence
+     * probe). 100 bytes is enough for any min-Ethernet frame +FCS. */
+    uint8_t lb_buf[100];
     int     lb_length;
+    int     lb_hairpin;
 
     /* TX poll timer (CPU cycles until next transmit_poll). Initialized
      * to LANCE_TX_POLL_CYCLES on init/reset; the host calls lance_tick()

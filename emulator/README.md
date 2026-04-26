@@ -1,11 +1,90 @@
-# NCD15 emulator — staging area
+# NCD15 emulator
 
-Goal: run the NCD15 boot monitor (and eventually Xncd15r) in software,
-so we can debug our custom boot images without physical hardware.
+Working C emulator that runs the V2.7.1 boot monitor end-to-end,
+including full POST, network init (ARP/RARP/BOOTP), TFTP boot of an
+ECOFF image from a host TFTP server (via AF_PACKET on a raw
+Ethernet interface), and execution of the loaded user code.
 
-This directory is **staging**. No emulator is built yet — only the
-upstream sources we'll reuse are vendored here, plus notes on what
-needs to be written.
+Verified against a Raspberry Pi serving `xncd15r-mini/xncd15r.bin`
+from a `tftpd.py` instance on the same LAN. The boot reaches the
+user program's banner output:
+
+```
+Network controller passed  02:00:5E:DE:AD:01
+TFTP load <ESC> to abort
+Using IP address - 192.168.001.065
+Using Subnet Mask - 255.255.255.000
+Using Host - 192.168.001.015 file 'Xncd19r'
+Used file Xncd19r
+
+Starting server
+
+=== custom Xncd15r running at 0x0ED00000 ===
+hello from MIPS-I bare metal
+```
+
+## Quick start
+
+```bash
+make
+./scripts/mknvram.py --out nv.bin --mac 02:00:5e:de:ad:01 \
+    --ip 192.168.1.65 --mask 255.255.255.0 \
+    --gateway 192.168.1.1 --server 192.168.1.15
+
+# Interactive monitor (no network):
+./ncd15-emu --nvram nv.bin /path/to/NCD15-19rBM-V271-splice.u8
+
+# TFTP-boot from a host TFTP server (file staged as /srv/tftp/Xncd19r):
+NCD15_FORCE_LOADER_PASS=1 ./ncd15-emu \
+    --raweth eth0 --nvram nv.bin \
+    --ip 192.168.1.65 --mask 255.255.255.0 \
+    --server 192.168.1.15 --gateway 192.168.1.1 \
+    /path/to/NCD15-19rBM-V271-splice.u8
+```
+
+## Known caveats
+
+- **`NCD15_FORCE_LOADER_PASS=1`** is currently required for a real
+  TFTP boot. It bypasses one `beq` in the boot's ECOFF loader that
+  compares two CRC-16 fields (computed vs. file-stored). The
+  streaming computation in `sub_0ec17138` is gated on bit `0x400`
+  of `shadow[0x9A0]` — the LANCE IRQ handler is supposed to set
+  this per-RX, and we don't run interrupts. Until that path is
+  wired through, this flag is required.
+
+- **Tick-counter pacing** — `data_0x0EC00730` is auto-incremented
+  in the bus dispatch as `cpu->cycles / 50000` (see
+  `src/memory.c`). This stands in for the periodic interrupt the
+  real chip raises that the firmware uses for spin-loop deadlines.
+  The constant is tuned so the wire-presence probe and IP
+  resolution retries land within their deadlines; on a heavily
+  loaded host the TFTP retries can flake.
+
+- **IRQ-handler state mirrors** — `lance_glue_mirror_csr0`
+  synthesizes several slots the boot reads but no static code
+  writes (`shadow[0x148E]` int-counter, `shadow[0x870]` /
+  `shadow[0x8F8]` CSR0 mirrors, `shadow[0x72A]` init-done bit).
+  Documented inline in `src/lance_glue.c`.
+
+- **ARP-cache snoop** — `lance_glue_recv` parses incoming ARP
+  replies for the boot server's IP and writes the resolved MAC
+  directly to `shadow[0xFE]` (the real IRQ handler's job).
+  Without it, the chip RXes the reply but the host's TFTP code
+  doesn't see the cache update and the request is silently
+  dropped.
+
+## Original staging notes
+
+The text below is the original design doc from when the emulator was
+just a directory of vendored upstream sources. Kept for context on
+which approaches were considered. The actual emulator under `src/`
+is hand-written C — neither GXemul nor MAME ended up in the build.
+
+---
+
+Goal: run the NCD15 boot monitor (and eventually Xncd15r) in
+software, so we can debug our custom boot images without physical
+hardware.
 
 ## Upstream sources vendored
 

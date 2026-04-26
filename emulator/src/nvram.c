@@ -181,12 +181,13 @@ u32 nvram_read(void *ctx, u32 offset, unsigned size) {
     if (n->state == READ_OUT) {
         if (n->tx_count == 1) out = 0;  /* leading dummy 0 */
         else if (n->tx_count >= 2 && n->tx_count <= 17) {
-            /* NCD15 shifts DO LSB-first. Confirmed empirically: with
-             * this ordering, a probe image of bytes 0..127 produces
-             * DA output MAC = 02:03:04:05:06:07 (direct mapping to
-             * NVRAM bytes 2..7). NV D display shows bit-reversed
-             * bytes in this mode, but the file format stays clean. */
-            int bit = n->tx_count - 2;
+            /* 93C46 clocks DO MSB-first (bit 15 first, bit 0 last). The
+             * monitor's accumulator at sub_0ec04618 does `sll $s0,1; or
+             * $s0,bit`, which also builds the value MSB-first. Result:
+             * the monitor reconstructs the same 16-bit value the chip
+             * holds. (Earlier code clocked LSB-first which yielded a
+             * bit-reversed mirror — visible only via the probe trace.) */
+            int bit = 15 - (n->tx_count - 2);
             out = (n->tx_shift >> bit) & 1;
         }
     }

@@ -123,8 +123,17 @@ static void exec_special(mips_cpu *cpu, u32 pc, u32 insn) {
     case 0x04: wr_reg(cpu, rd, t << (s & 31)); break;                 /* SLLV */
     case 0x06: wr_reg(cpu, rd, t >> (s & 31)); break;                 /* SRLV */
     case 0x07: wr_reg(cpu, rd, (u32)((i32)t >> (s & 31))); break;     /* SRAV */
-    case 0x08: do_branch(cpu, s); break;                              /* JR */
-    case 0x09: wr_reg(cpu, rd, pc + 8); do_branch(cpu, s); break;     /* JALR */
+    case 0x08:                                                          /* JR */
+        if (rs == 31 && cpu->bus->call_depth > 0)
+            cpu->bus->call_depth--;
+        do_branch(cpu, s);
+        break;
+    case 0x09:                                                          /* JALR */
+        wr_reg(cpu, rd, pc + 8);
+        if (cpu->bus->call_depth < 16)
+            cpu->bus->call_stack[cpu->bus->call_depth++] = s;
+        do_branch(cpu, s);
+        break;
     case 0x0C: fprintf(stderr, "syscall at 0x%08x\n", pc); cpu->halted = true; break;
     case 0x0D: fprintf(stderr, "break at 0x%08x code=%x\n", pc, (insn>>6)&0xfffff); cpu->halted = true; break;
     case 0x10: wr_reg(cpu, rd, cpu->hi); break;                       /* MFHI */
@@ -273,6 +282,37 @@ void mips_step(mips_cpu *cpu) {
     }
     prev_pc = pc;
     cpu->bus->last_pc = pc;
+    cpu->bus->last_ra = cpu->r[31];
+    /* Trace and optionally short-circuit the NCD15 wire-presence probe
+     * (sub_0ec17c50). Real-HW behavior depends on a half-duplex Ethernet
+     * wire echoing back self-addressed frames within ~10 tick-units;
+     * our auto-incrementing tick counter at data_0x0EC00730 advances
+     * faster than the probe's spin-loop deadline can be satisfied.
+     * NCD15_FORCE_PROBE_PASS=1 forces $v0=0 at the function-exit JR,
+     * letting the auto-TFTP path proceed past "Check network connection". */
+    if (pc == 0x0EC17E44u) {
+        if (getenv("NCD15_TRACE_PROBE"))
+            fprintf(stderr, "[probe-result] sub_0ec17c50 returns $v0=%u\n", cpu->r[2]);
+        if (getenv("NCD15_FORCE_PROBE_PASS")) cpu->r[2] = 0;
+    }
+    /* Loader file-validation bypasses for NCD15_FORCE_LOADER_PASS=1.
+     * Our xncd15r-mini binary lacks the NCD-proprietary "Xncd19r" magic
+     * at $s0+0x10 and the trailing CRC the boot's ECOFF loader expects.
+     * Force the equality checks to pass at the specific bne/beq sites. */
+    /* Loader CRC-check bypass. The boot's ECOFF loader compares two CRC
+     * fields at data_0x0EC00B9C (computed by sub_0ec17138 streaming over
+     * received bytes) vs data_0x0EC00B9E (read from the file at
+     * .text+0x18). The streaming compute is gated on bit 0x400 of
+     * shadow[0x9A0], which the LANCE IRQ handler sets per-RX — and we
+     * don't run the IRQ handler. So the computed CRC slot stays at its
+     * init value (0xFFFF) and the comparison fails.
+     *
+     * NCD15_FORCE_LOADER_PASS=1 forces the equality at the beq site so
+     * the load proceeds. (Magic check at .text+0x10 is satisfied by
+     * start.S's "Xncd19r" string and doesn't need a bypass.) */
+    if (getenv("NCD15_FORCE_LOADER_PASS") && pc == 0x0EC1227Cu) {
+        cpu->r[2] = cpu->r[3];
+    }
     cpu->bus->cur_cycles = cpu->cycles;
     /* Force the network-controller probe (sub_0ec0b7b0 at exit
      * 0x0EC0B854) to claim LANCE Ethernet was detected.
@@ -328,6 +368,8 @@ void mips_step(mips_cpu *cpu) {
         wr_reg(cpu, 31, pc + 8);
         cpu->branch_taken = true;
         cpu->branch_target = ((pc + 4) & 0xf0000000u) | (TARGET(insn) << 2);
+        if (cpu->bus->call_depth < 16)
+            cpu->bus->call_stack[cpu->bus->call_depth++] = cpu->branch_target;
         break;
     }
     case 0x04: if (cpu->r[RS(insn)] == cpu->r[RT(insn)])               /* BEQ */

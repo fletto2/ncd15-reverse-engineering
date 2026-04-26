@@ -17,6 +17,25 @@ u32 mips_va_to_pa(u32 va) {
     return va;                                       /* KUSEG */
 }
 
+bus *g_dbg_bus = NULL;
+/* Trace every write into the config-slot region 0x0EC000C0..0x0EC00150 so
+ * we can map which code populates which slot from NVRAM. Toggled via env
+ * NCD15_TRACE_CFG=1. */
+static int cfg_trace = -1;
+static void cfg_trace_write(u32 pa, u32 value, unsigned size, u32 pc) {
+    if (cfg_trace < 0) {
+        const char *e = getenv("NCD15_TRACE_CFG");
+        cfg_trace = (e && *e == '1') ? 1 : 0;
+    }
+    if (!cfg_trace) return;
+    if (pa < 0x0EC000C0u || pa >= 0x0EC00150u) return;
+    /* `pc` is the current instruction. When this fires inside the shared
+     * memcpy at sub_0ec049d0, ra is the caller (post-jal+8). */
+    extern bus *g_dbg_bus;
+    fprintf(stderr, "[CFG W] pa=%08x sz=%u val=%08x pc=%08x ra=%08x\n",
+            pa, size, value, pc, g_dbg_bus ? g_dbg_bus->last_ra : 0);
+}
+
 /* Big-endian word read from a byte buffer. */
 static u32 ld_be(const u8 *p, unsigned size) {
     switch (size) {
@@ -85,6 +104,7 @@ void lance_shmem_mmio_write(void *ctx, u32 off, u32 v, unsigned size) {
 
 void bus_init(bus *b, u8 *rom_bytes) {
     memset(b, 0, sizeof(*b));
+    g_dbg_bus = b;
     b->rom = rom_bytes;
     b->dram = (u8*)calloc(NCD15_DRAM_SIZE, 1);
     b->shadow = (u8*)calloc(NCD15_DRAM_SIZE, 1);  /* 4 MiB shadow bank */
@@ -161,9 +181,15 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
          * resident code so delay loops advance. */
         if (pa == 0x0EC00730u && size == 4 &&
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            /* Cycle-derived tick. The original auto-increment-per-read
+             * advanced too fast for real-network timing — the ARP-reply
+             * round trip (~50 ms ≈ 600K cycles at 12 MHz) takes longer
+             * than the boot's spin-loop deadline counted in per-read
+             * ticks. Pace the tick to roughly match real-HW boot timing
+             * (one tick per 50K CPU cycles → ~240 Hz, the ballpark of
+             * the missing IRQ handler's update rate). */
+            u32 v = (u32)(b->cur_cycles / 50000u);
             u8 *p = b->shadow + 0x730;
-            u32 v = ((u32)p[0]<<24)|((u32)p[1]<<16)|((u32)p[2]<<8)|p[3];
-            v++;
             p[0]=v>>24; p[1]=v>>16; p[2]=v>>8; p[3]=v;
             return v;
         }
@@ -178,6 +204,14 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
         if (pa == 0x0EC000ECu && size == 4 && b->inject_mask &&
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return b->inject_mask;
+        }
+        if (pa == 0x0EC00104u && size == 4 && b->inject_server &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return b->inject_server;
+        }
+        if (pa == 0x0EC000CCu && size == 4 && b->inject_gateway &&
+            b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
+            return b->inject_gateway;
         }
         /* POST-error counter at data_0x0EC0148C. The boot POST in
          * sub_0ec02cac_passed increments this on every failed
@@ -251,6 +285,7 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
     if (pa >= NCD15_ROM_KUSEG && pa < NCD15_ROM_KUSEG + NCD15_ROM_SIZE) return;
 
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
+        cfg_trace_write(pa, value, size, b->last_pc);
         st_be(b->shadow + (pa - 0x0EC00000u), value, size);
         return;
     }

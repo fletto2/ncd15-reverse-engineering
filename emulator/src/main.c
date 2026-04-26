@@ -223,6 +223,9 @@ int main(int argc, char **argv) {
     const char *nvram_path = NULL;
     const char *ip_str = NULL;
     const char *mask_str = NULL;
+    const char *server_str = NULL;
+    const char *gateway_str = NULL;
+    const char *dump_shadow_path = NULL;
     bool trace_bus = false;
     u64 max_cycles = 0;    /* 0 == unbounded */
 
@@ -241,6 +244,12 @@ int main(int argc, char **argv) {
             ip_str = argv[++i];
         } else if (!strcmp(argv[i], "--mask") && i+1 < argc) {
             mask_str = argv[++i];
+        } else if (!strcmp(argv[i], "--server") && i+1 < argc) {
+            server_str = argv[++i];
+        } else if (!strcmp(argv[i], "--gateway") && i+1 < argc) {
+            gateway_str = argv[++i];
+        } else if (!strcmp(argv[i], "--dump-shadow") && i+1 < argc) {
+            dump_shadow_path = argv[++i];
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "unknown option: %s\n", argv[i]);
             return 1;
@@ -263,8 +272,10 @@ int main(int argc, char **argv) {
     /* Build bus */
     bus b; bus_init(&b, rom_bytes);
     b.trace = trace_bus;
-    if (ip_str)   b.inject_ip   = parse_ipv4(ip_str);
-    if (mask_str) b.inject_mask = parse_ipv4(mask_str);
+    if (ip_str)      b.inject_ip      = parse_ipv4(ip_str);
+    if (mask_str)    b.inject_mask    = parse_ipv4(mask_str);
+    if (server_str)  b.inject_server  = parse_ipv4(server_str);
+    if (gateway_str) b.inject_gateway = parse_ipv4(gateway_str);
 
     /* Attach MMIO devices. Order matters if regions overlap; we want
      * the video-control/cart-ID register to shadow the first 4 bytes
@@ -370,6 +381,7 @@ int main(int argc, char **argv) {
         if (cpu.cycles >= next_poll) {
             int delta = (int)(cpu.cycles - (next_poll - 10000));
             lance_glue_tick(lance, delta);
+            lance_glue_mirror_csr0(lance);
             next_poll = cpu.cycles + 10000;
             /* Slurp from stdin into our own buffer. */
             if ((in_tail + 1) % sizeof(in_buf) != in_head) {
@@ -393,12 +405,28 @@ int main(int argc, char **argv) {
                 for (;;) {
                     ssize_t n = read(net_fd, eth, sizeof eth);
                     if (n <= 0) break;
+                    if (getenv("NCD15_TRACE_RX"))
+                        fprintf(stderr, "[RX] %zd bytes dst=%02x:%02x:%02x:%02x:%02x:%02x src=%02x:%02x:%02x:%02x:%02x:%02x type=%02x%02x\n",
+                                n, eth[0],eth[1],eth[2],eth[3],eth[4],eth[5],
+                                eth[6],eth[7],eth[8],eth[9],eth[10],eth[11],
+                                eth[12],eth[13]);
                     lance_glue_recv(lance, eth, (int)n);
                 }
             }
         }
     }
 
+    if (dump_shadow_path) {
+        FILE *f = fopen(dump_shadow_path, "wb");
+        if (f) {
+            /* First 0x2000 bytes of shadow cover all known runtime config
+             * slots (0x88, 0xC8, 0xCC, 0xEC, 0xF8..0xFD, 0x104, 0x13C,
+             * 0xC38..0xCB7 NVRAM mirror). */
+            fwrite(b.shadow, 1, NCD15_DRAM_SIZE, f);
+            fclose(f);
+            fprintf(stderr, "dump-shadow: wrote %s (0x2000 bytes)\n", dump_shadow_path);
+        }
+    }
     if (nvram_path) {
         if (nvram_save_file(duart_nvram(d), nvram_path) == 0)
             fprintf(stderr, "nvram: saved to %s\n", nvram_path);

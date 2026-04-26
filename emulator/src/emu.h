@@ -135,12 +135,17 @@ typedef struct bus {
     size_t nregions;
     bool trace;           /* log every access */
     u32 last_pc;          /* updated by the CPU before each access */
+    u32 last_ra;          /* $ra at the moment of access — for tracing callers */
+    u32 call_stack[16];   /* shallow JAL/JALR call-target stack for diagnostics */
+    int call_depth;
     u64 cur_cycles;       /* updated by CPU each step (for tracing) */
     /* User-supplied network config, injected into the monitor's
      * runtime IP-config slots via memory-read intercepts. Zero
      * means "no override". */
     u32 inject_ip;        /* data_0x0EC000C8 */
     u32 inject_mask;      /* data_0x0EC000EC */
+    u32 inject_server;    /* data_0x0EC00104 */
+    u32 inject_gateway;   /* data_0x0EC000CC */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);
@@ -183,6 +188,7 @@ void  lance_glue_recv(void *glue, const u8 *buf, int len);
 /* Advance the LANCE chip by N CPU cycles. Drives the deferred IDON
  * after INIT and the periodic TX-poll. */
 void  lance_glue_tick(void *glue, int cycles);
+void  lance_glue_mirror_csr0(void *glue);
 
 /* --- Memory controller stub (0xFFFE0000) --- */
 

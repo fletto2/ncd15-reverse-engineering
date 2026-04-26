@@ -23,6 +23,7 @@
  * back through the receive path without ever touching the host network.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "lance.h"
 
@@ -163,7 +164,6 @@ void lance_regs_w(lance_t *l, int offset, uint16_t data)
             LOG("STRT receiver %s transmitter %s\n",
                 (l->mode & LANCE_MODE_DRX) ? "OFF" : "ON",
                 (l->mode & LANCE_MODE_DTX) ? "OFF" : "ON");
-
             l->csr[0] |= LANCE_CSR0_STRT;
             l->csr[0] &= ~LANCE_CSR0_STOP;
 
@@ -179,12 +179,34 @@ void lance_regs_w(lance_t *l, int offset, uint16_t data)
 
             /* Trigger an immediate transmit poll on the next tick */
             l->tx_poll_counter = 1;
+            /* Also fire it synchronously RIGHT NOW. The NCD15 wire-presence
+             * probe (sub_0ec17c50) has a per-iteration deadline of +10 in
+             * the auto-incrementing tick counter at data_0x0EC00730, which
+             * is much shorter than our 10K-cycle lance_tick interval — so
+             * waiting for the next tick blows past the deadline and the
+             * probe times out. Firing immediately on STRT works because
+             * sub_0ec177b4 writes the TX descriptor BEFORE STRT. */
+            lance_transmit_poll(l);
         }
 
         /* TDMD — transmit demand */
         if ((data & LANCE_CSR0_TDMD) && !(l->csr[0] & LANCE_CSR0_TDMD)) {
             l->csr[0] |= LANCE_CSR0_TDMD;
             l->tx_poll_counter = 1;
+            /* Implicit-start: NCD15 firmware writes TDMD after INIT
+             * without an explicit STRT in between (auto-TFTP IP-search
+             * phase). Real chip's behavior in that path isn't fully
+             * understood, but enabling TXON/RXON at TDMD-time when
+             * STRT hasn't been set yet lets the chip transmit. Mode's
+             * DRX/DTX flags still gate which side gets enabled. */
+            if (!(l->csr[0] & LANCE_CSR0_STRT)) {
+                l->csr[0] |= LANCE_CSR0_STRT;
+                if (!(l->mode & LANCE_MODE_DRX)) l->csr[0] |= LANCE_CSR0_RXON;
+                if (!(l->mode & LANCE_MODE_DTX)) l->csr[0] |= LANCE_CSR0_TXON;
+            }
+            /* Same rationale as the STRT case — fire poll synchronously
+             * so the TX completes within the host's spin-loop deadline. */
+            lance_transmit_poll(l);
         }
 
         /* INEA — interrupt enable (read/write while not stopped) */
@@ -495,8 +517,11 @@ static int lance_address_filter(lance_t *l, const uint8_t *buf)
 
 int lance_recv(lance_t *l, const uint8_t *buf, int length)
 {
-    /* Discard short packets */
-    if (length < 64) {
+    /* AF_PACKET delivers frames with the FCS stripped, so a min-Ethernet
+     * frame arrives as 60 bytes (60 + 4 FCS = 64 wire-min). Accept down
+     * to 60 here — the lance_receive path handles FCS correctly when
+     * MODE_DTCR isn't set. */
+    if (length < 60) {
         LOG("recv: runt packet length %d discarded\n", length);
         return -1;
     }
@@ -513,7 +538,14 @@ int lance_recv(lance_t *l, const uint8_t *buf, int length)
 
 static int lance_receive(lance_t *l, const uint8_t *buf, int length)
 {
-    if (!(l->csr[0] & LANCE_CSR0_RXON))
+    /* RXON gate bypasses:
+     *   - MODE_LOOP+MODE_INTL (POST loopback test sets DRX → RXON clear)
+     *   - hairpin self-addressed echo (NCD15 wire-presence probe, mode=0x0001
+     *     with DRX, but the chip's MAC filter would still accept its own frame
+     *     on a real shared wire). */
+    int internal_lb = (l->mode & LANCE_MODE_LOOP) && (l->mode & LANCE_MODE_INTL);
+    int self_addressed = length >= 6 && memcmp(buf, l->physical_addr, 6) == 0;
+    if (!internal_lb && !self_addressed && !(l->csr[0] & LANCE_CSR0_RXON))
         return -1;
     if (!lance_address_filter(l, buf))
         return -1;
@@ -634,12 +666,16 @@ static void lance_transmit_poll(lance_t *l)
     }
 
 check_loopback:
-    /* Pending loopback data → feed it back into the receive path */
-    if (l->lb_length && (l->mode & LANCE_MODE_LOOP)) {
-        fprintf(stderr, "[LANCE LB→RX] %d bytes\n", l->lb_length);
+    /* Pending loopback data → feed it back into the receive path. Deliver
+     * if MODE_LOOP set (POST loopback test) OR if hairpin flag set
+     * (self-addressed wire-presence probe). */
+    if (l->lb_length && ((l->mode & LANCE_MODE_LOOP) || l->lb_hairpin)) {
+        fprintf(stderr, "[LANCE LB→RX] %d bytes %s\n", l->lb_length,
+                l->lb_hairpin ? "(hairpin)" : "");
         int result = lance_receive(l, l->lb_buf, l->lb_length);
         fprintf(stderr, "[LANCE LB→RX] result=%d csr0=0x%04x\n", result, l->csr[0]);
         l->lb_length = 0;
+        l->lb_hairpin = 0;
         lance_recv_complete(l, result);
     }
 }
@@ -746,6 +782,21 @@ static void lance_transmit(lance_t *l)
     if (l->send_cb)
         l->send_cb(buf, length, l->cb_ctx);
     lance_send_complete(l, length);
+
+    /* Hairpin self-receive: real LANCE chips on a shared wire see their
+     * own transmissions and accept them via the MAC filter. The NCD15
+     * boot's wire-presence probe (sub_0ec17c50) sends a frame with
+     * dst=src=our_PADR and expects RINT to fire (int_cnt == 2). Echo
+     * self-addressed frames into our RX path so the probe passes.
+     * Filter: only echo if dst MAC == our PADR (matches the probe's
+     * intent and avoids double-delivering normal TX). */
+    if (length >= 12 &&
+        memcmp(buf, l->physical_addr, 6) == 0 &&
+        length <= (int)sizeof(l->lb_buf)) {
+        memcpy(l->lb_buf, buf, length);
+        l->lb_length = length;
+        l->lb_hairpin = 1;
+    }
 }
 
 static void lance_send_complete(lance_t *l, int result)
