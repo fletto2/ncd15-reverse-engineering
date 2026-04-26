@@ -132,6 +132,10 @@ static void nvram_sk_rise(nvram *n) {
             if (addr < NVRAM_WORDS) {
                 n->tx_shift = n->mem[addr];
             } else n->tx_shift = 0xffff;
+            if (getenv("NCD15_TRACE_NVRAM")) {
+                fprintf(stderr, "[nvram] READ word[%d] = 0x%04x (file off %d)\n",
+                        addr, n->tx_shift, addr * 2);
+            }
             n->tx_count = 0;
             n->state = READ_OUT;
             break;
