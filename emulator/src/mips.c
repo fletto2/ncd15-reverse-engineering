@@ -632,9 +632,11 @@ void mips_dump(const mips_cpu *cpu) {
                 }
             }
         }
-        /* Dump multiple IP-cluster regions. */
+        /* Dump the X-server's IP-config struct (around shadow+0x2EE1B0)
+         * + the config dict at shadow+0x2B7700+. */
         size_t ranges[][2] = {
-            {0x2B7600, 0x2B7C00},  /* full config dict */
+            {0x2EE1B0, 0x2EE240},
+            {0x2B7600, 0x2B7C00},
         };
         for (size_t r = 0; r < sizeof(ranges)/sizeof(ranges[0]); r++) {
             fprintf(stderr, "  -- shadow[0x%zx..0x%zx] --\n", ranges[r][0], ranges[r][1]);

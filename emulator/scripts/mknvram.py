@@ -76,6 +76,8 @@ def main():
     ap.add_argument("--gateway", default=None)
     ap.add_argument("--server", default=None,
                     help="First boot host IP (TFTP server)")
+    ap.add_argument("--broadcast", default=None,
+                    help="Broadcast IP (defaults to IP|~mask if --ip and --mask given)")
     args = ap.parse_args()
 
     mac = parse_mac(args.mac)
@@ -96,20 +98,51 @@ def main():
 
     have_static = any([args.ip, args.mask, args.gateway, args.server])
 
+    # The X-server's setup_interfaces (at 0x8EE4DC50..0x8EE4E708) reads
+    # mask/gateway/broadcast as 4-byte logical IPs out of an interface
+    # struct at shadow+0x2EE1B0+. The struct's mirror starts at struct+8
+    # and stores each 93C46 word in HIGH-LOW byte order, with word[w] =
+    # (file[2w+1] << 8) | file[2w]. That makes mirror[2j]   = file[17+2j]
+    # and mirror[2j+1] = file[16+2j].
+    #
+    # Each 4-byte logical field at struct[F..F+3] = mirror[F-8..F-5] thus
+    # spans three NVRAM words. With base = F+7 (= file address of the
+    # logical b0 byte), the field's logical bytes [b0, b1, b2, b3] land at:
+    #
+    #   file[base+0] = b0   file[base+3] = b1
+    #   file[base+2] = b2   file[base+5] = b3
+    #
+    # i.e. byte 1 is at +3 and byte 3 is at +5; bytes +1 and +4 in the
+    # NVRAM are unused for this field. The setup_interfaces bcopy targets:
+    #
+    #   F=11 (mask):       base=18  -> file[18, 21, 20, 23]
+    #   F=15 (gateway):    base=22  -> file[22, 25, 24, 27]
+    #   F=19 (broadcast):  base=26  -> file[26, 29, 28, 31]
+    #
+    # The "free" bytes overlap with the NEXT field's b0/b2, so adjacent
+    # fields share NVRAM bytes — that's how three 4-byte IPs fit into
+    # 14 NVRAM bytes (18..31).
+    def write_xncd_field(data, base, ip_str):
+        ip = parse_ip(ip_str)
+        data[base + 0] = ip[0]
+        data[base + 2] = ip[2]
+        data[base + 3] = ip[1]
+        data[base + 5] = ip[3]
+
     if args.ip:
         write_ip_pairswapped(data, 8, args.ip)
     if args.mask:
-        # Mask is the X-server's only field stored in straight byte order
-        # at word-aligned bytes 20-23 (not pair-swapped like the IPs). The
-        # monitor's loader reads the same bytes — found by scanning the
-        # X-server's parsed-config struct at runtime.
-        ip = parse_ip(args.mask)
-        data[20:24] = ip
+        write_xncd_field(data, 18, args.mask)
     if args.gateway:
-        # Gateway is pair-swapped at word-aligned bytes 24-27 (not 23-26
-        # as earlier RE'd from the monitor — the monitor reads the same
-        # word-aligned bytes; the prior offset was off-by-one).
-        write_ip_pairswapped(data, 24, args.gateway)
+        write_xncd_field(data, 22, args.gateway)
+    if args.broadcast:
+        write_xncd_field(data, 26, args.broadcast)
+    elif args.ip and args.mask:
+        # Default broadcast = IP | ~mask (standard CIDR)
+        ip = parse_ip(args.ip); mk = parse_ip(args.mask)
+        bc = bytes(((a | (~b)) & 0xFF) for a, b in zip(ip, mk))
+        bc_str = ".".join(str(b) for b in bc)
+        write_xncd_field(data, 26, bc_str)
     if args.server:
         write_ip_pairswapped(data, 106, args.server)
 
