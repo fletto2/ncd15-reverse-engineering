@@ -337,6 +337,36 @@ void mips_step(mips_cpu *cpu) {
                     pc, prev_pc, cpu->r[29], cpu->r[31], (unsigned long long)cpu->cycles);
         }
     }
+    /* setup_interfaces tracepoints (NCD15_TRACE_SETUPIF=1). */
+    if (getenv("NCD15_TRACE_SETUPIF")) {
+        static int siv[16] = {0};
+        static const struct { u32 pc; const char *tag; } sites[] = {
+            {0x8ee4dc50u, "setup_interfaces ENTRY"},
+            {0x8ee4e2fcu, "bcopy mask"},
+            {0x8ee4e54cu, "broadcast check"},
+            {0x8ee4e564u, "beq broadcast"},
+            {0x8ee4e574u, "BROADCAST WARN PRINT"},
+            {0x8ee4e588u, "after BRDADDR bcopy"},
+            {0x8ee4e708u, "post-BRDADDR landing"},
+            {0x8ee4e720u, "s2 check (route-or-skip)"},
+            {0x8ee4e738u, "struct[6] LOOPBACK check"},
+            {0x8ee4e748u, "gateway != 0 check"},
+            {0x8ee4e750u, "gateway-reachable check"},
+            {0x8ee4e874u, "skip-route-add target"},
+            {0x8ee4e76cu, "beq same-network"},
+            {0x8ee4e774u, "BAD-IP/GW WARN PRINT"},
+            {0x8ee4e780u, "GW-INACCESSIBLE PRINT"},
+            {0x8ee4e790u, "after gateway check"},
+            {0x8ee4e858u, "CANNOT ADD ROUTE PRINT"},
+        };
+        for (size_t k = 0; k < sizeof(sites)/sizeof(sites[0]); k++) {
+            if (pc == sites[k].pc && siv[k] < 4) {
+                fprintf(stderr, "[setup_if] %s pc=0x%08x cyc=%llu (#%d)\n",
+                        sites[k].tag, pc, (unsigned long long)cpu->cycles, siv[k]);
+                siv[k]++;
+            }
+        }
+    }
     prev_pc = pc;
     cpu->bus->last_pc = pc;
     cpu->bus->last_ra = cpu->r[31];
@@ -636,6 +666,7 @@ void mips_dump(const mips_cpu *cpu) {
          * + the config dict at shadow+0x2B7700+. */
         size_t ranges[][2] = {
             {0x2EE1B0, 0x2EE240},
+            {0x2F2B10, 0x2F2BA0},
             {0x2B7600, 0x2B7C00},
         };
         for (size_t r = 0; r < sizeof(ranges)/sizeof(ranges[0]); r++) {

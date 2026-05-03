@@ -382,6 +382,7 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
      * X-server's icache-flush sweep across phys 0..0x4000. */
     if (b->cache_isolated) return;
 
+
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
         cfg_trace_write(pa, value, size, b->last_pc);
         st_be(b->shadow + (pa - 0x0EC00000u), value, size);

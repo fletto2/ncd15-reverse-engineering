@@ -152,6 +152,19 @@ def main():
         # of NVRAM word 8, which the loader reads via `lw 0xc48($v0)` at
         # 0x0EC117FC and masks against 0x06000000.
         data[17] &= ~0x06
+        # The X-server's setup_interfaces (sub_0x8EE4DC50) reads a config
+        # byte at struct[10] = mirror[2] = file[19], shifts right 2, and
+        # masks 0x3 to dispatch routing setup. With 0xFF (the initial
+        # blank-chip value) bits 2..3 are 11 -> path 3 -> no route
+        # added -> sendto returns ENETUNREACH. Clear bits 2..3 to select
+        # path 0 (process static IP route).
+        data[19] &= ~0x0c
+        # Also: at 0x8EE4E738 the X-server checks "byte at file[111] & 0x08".
+        # If the bit is set, setup_interfaces skips the route-add (treats
+        # the interface as a loopback or otherwise route-less). With 0xFF
+        # default the check fires. Clear bit 3 of file[111] so eth0 gets
+        # a real route added.
+        data[111] &= ~0x08
 
     with open(args.out, "wb") as f:
         f.write(bytes(data))
