@@ -305,6 +305,17 @@ static void check_interrupts(mips_cpu *cpu, u32 pc) {
             b->next_irq_cycle = cpu->cycles + 50000;
         }
     }
+    /* LANCE /INT: edge-triggered into Cause.IP2. Real HW would assert
+     * IP2 level-style as long as the chip's INTR line is low, but our
+     * synthetic handler clears Cause.IP[7:2] in software each entry.
+     * Re-asserting IP2 every cycle would cause infinite re-entry. So
+     * latch the rising edge into Cause.IP2 once; the chip's own INTR
+     * mechanism (CSR0.INTR / INEA) sequences subsequent edges as the
+     * X-server's driver acks events. */
+    if (b->lance_irq && !b->lance_irq_prev) {
+        cpu->cp0_cause |= (1u << 10);    /* IP2 */
+    }
+    b->lance_irq_prev = b->lance_irq;
     if (!(cpu->cp0_status & 1)) return;            /* IEc cleared */
     u32 pending = (cpu->cp0_cause  >> 8) & 0xff;
     u32 mask    = (cpu->cp0_status >> 8) & 0xff;

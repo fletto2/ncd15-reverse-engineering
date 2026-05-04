@@ -157,6 +157,8 @@ typedef struct bus {
     bool ecoff_preloaded;
     u64 next_irq_cycle;
     bool cache_isolated;  /* CP0 reg 7 bit 13 — see mips.c */
+    bool lance_irq;       /* mirror of LANCE /INT line */
+    bool lance_irq_prev;  /* previous-step value, for edge detection */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);

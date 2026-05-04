@@ -54,11 +54,19 @@ static void lance_dma_out(uint32_t addr, uint16_t data, void *ctx) {
     addr &= 0xFFFFFEu;
     bus_write(g->b, 0x0EC00000u + addr, data, 2);
 }
+/* The LANCE asserts /INT (active low: state=0) when it has work for
+ * the host. NCD15 wires that to one of the R3052's IP lines; the
+ * monitor enables IM5+IM7 in Status (0x0000A001) and the X-server
+ * widens to 0xFF01. Mirror the LANCE state into Cause.IP2 (= bit 10):
+ * state=0 -> set IP2, state=1 -> clear IP2. The CPU's check_interrupts
+ * picks it up next mips_step. */
 static void lance_intr(int state, void *ctx) {
-    /* We don't emulate interrupts yet — the monitor works by polling
-     * the LANCE CSR0 INTR bit rather than taking interrupts, so this
-     * is fine. */
-    (void)state; (void)ctx;
+    lance_glue *g = (lance_glue*)ctx;
+    if (state == 0) {
+        g->b->lance_irq = true;
+    } else {
+        g->b->lance_irq = false;
+    }
 }
 
 /* Callback from the LANCE engine when it wants to transmit a frame.
