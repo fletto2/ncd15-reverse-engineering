@@ -339,7 +339,7 @@ void mips_step(mips_cpu *cpu) {
     }
     /* setup_interfaces tracepoints (NCD15_TRACE_SETUPIF=1). */
     if (getenv("NCD15_TRACE_SETUPIF")) {
-        static int siv[16] = {0};
+        static int siv[32] = {0};
         static const struct { u32 pc; const char *tag; } sites[] = {
             {0x8ee4dc50u, "setup_interfaces ENTRY"},
             {0x8ee4e2fcu, "bcopy mask"},
@@ -353,6 +353,14 @@ void mips_step(mips_cpu *cpu) {
             {0x8ee4e748u, "gateway != 0 check"},
             {0x8ee4e750u, "gateway-reachable check"},
             {0x8ee4e874u, "skip-route-add target"},
+            {0x8ee35030u, "establish_listeners ENTRY"},
+            {0x8ee35140u, "TCP-bind site"},
+            {0x8ee35168u, "TCP BIND FAILED"},
+            {0x8ee354dcu, "check sockets-bitmap"},
+            {0x8ee354ecu, "CANNOT ESTABLISH LISTENERS"},
+            {0x8ee85210u, "LANCE init fn ENTRY"},
+            {0x8ee36c14u, "establish_listeners caller"},
+            {0x8ee36ba0u, "outer-listener fn ENTRY"},
             {0x8ee4e76cu, "beq same-network"},
             {0x8ee4e774u, "BAD-IP/GW WARN PRINT"},
             {0x8ee4e780u, "GW-INACCESSIBLE PRINT"},
@@ -362,8 +370,7 @@ void mips_step(mips_cpu *cpu) {
         for (size_t k = 0; k < sizeof(sites)/sizeof(sites[0]); k++) {
             if (pc == sites[k].pc && siv[k] < 4) {
                 fprintf(stderr, "[setup_if] %s pc=0x%08x cyc=%llu (#%d)\n",
-                        sites[k].tag, pc, (unsigned long long)cpu->cycles, siv[k]);
-                siv[k]++;
+                        sites[k].tag, pc, (unsigned long long)cpu->cycles, siv[k]++);
             }
         }
     }
