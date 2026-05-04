@@ -382,6 +382,13 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
      * X-server's icache-flush sweep across phys 0..0x4000. */
     if (b->cache_isolated) return;
 
+    /* Trace any write to the first 64 bytes of VRAM (phys 0x0F000000+).
+     * The very first row of pixels has a stray-white-line glitch we're
+     * tracking down. Gated on NCD15_TRACE_VRAM=1. */
+    if (pa >= 0x0F000000u && pa < 0x0F000040u && getenv("NCD15_TRACE_VRAM"))
+        fprintf(stderr, "[vram] write pa=0x%08x val=0x%x size=%u from pc=0x%08x cyc=%llu\n",
+                pa, value, size, b->last_pc, (unsigned long long)b->cur_cycles);
+
 
     if (pa >= 0x0EC00000u && pa < 0x0F000000u) {
         cfg_trace_write(pa, value, size, b->last_pc);
