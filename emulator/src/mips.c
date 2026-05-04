@@ -309,11 +309,22 @@ static void check_interrupts(mips_cpu *cpu, u32 pc) {
      * IP2 level-style as long as the chip's INTR line is low, but our
      * synthetic handler clears Cause.IP[7:2] in software each entry.
      * Re-asserting IP2 every cycle would cause infinite re-entry. So
-     * latch the rising edge into Cause.IP2 once; the chip's own INTR
-     * mechanism (CSR0.INTR / INEA) sequences subsequent edges as the
-     * X-server's driver acks events. */
-    if (b->lance_irq && !b->lance_irq_prev) {
-        cpu->cp0_cause |= (1u << 10);    /* IP2 */
+     * latch the rising edge into Cause.IP2 once; deassertion clears
+     * the cause bit too, so the monitor (whose IM2 is masked) doesn't
+     * leave a stale IP2 set when the X-server later unmasks IM2. */
+    /* Gate LANCE IRQ delivery on "X-server is running" — first PC
+     * fetch into the X-server text region (0x8ED00000+) marks the
+     * boundary. Before that, LANCE IRQs from the monitor's loopback
+     * test would route through the dispatching handler at DRAM[0x80]
+     * to the X-server's exception code, which crashes because
+     * X-server state isn't set up yet. */
+    if ((pc & 0xFFF00000u) == 0x8ED00000u) b->xncd_running = true;
+    if (b->xncd_running) {
+        if (b->lance_irq && !b->lance_irq_prev) {
+            cpu->cp0_cause |= (1u << 10);    /* IP2 rising edge */
+        } else if (!b->lance_irq && b->lance_irq_prev) {
+            cpu->cp0_cause &= ~(1u << 10);   /* IP2 falling edge */
+        }
     }
     b->lance_irq_prev = b->lance_irq;
     if (!(cpu->cp0_status & 1)) return;            /* IEc cleared */

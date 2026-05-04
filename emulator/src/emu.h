@@ -159,6 +159,10 @@ typedef struct bus {
     bool cache_isolated;  /* CP0 reg 7 bit 13 — see mips.c */
     bool lance_irq;       /* mirror of LANCE /INT line */
     bool lance_irq_prev;  /* previous-step value, for edge detection */
+    bool xncd_running;    /* set true once CPU first enters X-server text;
+                           * gates LANCE-IRQ delivery so monitor isn't
+                           * disturbed by LANCE INTR during its loopback
+                           * test. */
 } bus;
 
 void bus_init(bus *b, u8 *rom_bytes);

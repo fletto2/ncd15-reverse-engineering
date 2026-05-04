@@ -306,25 +306,48 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
              * on), acks the HW IRQ in CP0 Cause, and RFEs back to the
              * interrupted PC. Paired with the periodic IP5 source in
              * mips_step. */
+            /* Dispatch by interrupt source. If Cause.IP2 is set
+             * (LANCE), jump straight to the X-server's own exception
+             * handler at 0x8EE83860 — it has the full register-save
+             * prologue, dispatcher table at 0x8EEC2650, and LANCE
+             * driver wired in. For other sources (our IP5 timer,
+             * primarily) keep the lightweight tick path that just
+             * bumps 0x8EEC2D9C and RFEs. */
             static const u32 xncd_handler[] = {
-                0x401a6800u, /* mfc0 k0, c0_cause            */
+                /* index 0..6: read Cause AND Status, AND together to
+                 * get only ENABLED+PENDING interrupts, then check IP2.
+                 * Monitor masks IM2 but its LANCE test does set
+                 * Cause.IP2; checking Cause alone would wrongly dispatch
+                 * us to the X-server handler during monitor boot. */
+                0x401a6800u, /* mfc0  k0, c0_cause           */
+                0x401b6000u, /* mfc0  k1, c0_sr              */
                 0x00000000u,
-                0x3c1b8eecu, /* lui  k1, 0x8EEC              */
-                0x977a2d9cu, /* lhu  k0, 0x2D9C(k1)          */
+                0x035bd024u, /* and   k0, k0, k1             */
+                0x335b0400u, /* andi  k1, k0, 0x400          */
+                0x13600005u, /* beqz  k1, +5 (timer_path)    */
+                0x00000000u, /* nop (delay slot)             */
+                /* index 7..9: LANCE → jump to X-server handler */
+                0x3c1a8ee8u, /* lui   k0, 0x8EE8             */
+                0x375a3860u, /* ori   k0, k0, 0x3860         */
+                0x03400008u, /* jr    k0                     */
+                0x00000000u, /* nop (delay slot)             */
+                /* index 9+: timer_path */
+                0x3c1b8eecu, /* lui   k1, 0x8EEC             */
+                0x977a2d9cu, /* lhu   k0, 0x2D9C(k1)         */
                 0x00000000u,
                 0x275a0001u, /* addiu k0, k0, 1              */
-                0xa77a2d9cu, /* sh   k0, 0x2D9C(k1)          */
-                0x401a6800u, /* mfc0 k0, c0_cause            */
+                0xa77a2d9cu, /* sh    k0, 0x2D9C(k1)         */
+                0x401a6800u, /* mfc0  k0, c0_cause           */
                 0x00000000u,
-                0x3c1bffffu, /* lui  k1, 0xFFFF              */
-                0x377b03ffu, /* ori  k1, k1, 0x03FF (~IP[7:2])*/
-                0x035bd024u, /* and  k0, k0, k1 (clear IPs)  */
-                0x409a6800u, /* mtc0 k0, c0_cause            */
+                0x3c1bffffu, /* lui   k1, 0xFFFF             */
+                0x377b03ffu, /* ori   k1, k1, 0x03FF         */
+                0x035bd024u, /* and   k0, k0, k1             */
+                0x409a6800u, /* mtc0  k0, c0_cause           */
                 0x00000000u,
-                0x401a7000u, /* mfc0 k0, c0_epc              */
+                0x401a7000u, /* mfc0  k0, c0_epc             */
                 0x00000000u,
-                0x03400008u, /* jr   k0                      */
-                0x42000010u, /* rfe  (delay slot)            */
+                0x03400008u, /* jr    k0                     */
+                0x42000010u, /* rfe (delay slot)             */
             };
             for (size_t i = 0; i < sizeof xncd_handler / sizeof *xncd_handler; i++) {
                 u32 w = xncd_handler[i];
