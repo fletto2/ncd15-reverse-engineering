@@ -29,8 +29,12 @@ typedef int64_t  i64;
 
 /* KSEG1 accesses subtract 0xA0000000 to get physical addresses. So
  * KSEG1 0xBE880000 → phys 0x1E880000, etc. */
-#define NCD15_VRAM_PHYS     0x0F000000u  /* KSEG1 0xAF000000 (phys 0xAF..-0xA0..) */
-#define NCD15_VRAM_SIZE     0x00100000u
+/* Framebuffer is at phys 0x0EC80000, INSIDE the shadow DRAM bank
+ * (which spans 0x0EC00000..0x0F000000). VRAM is not a separate
+ * memory region — it's a window the video controller scans out
+ * of DRAM. fb.c reads from `b->shadow + 0x80000`. */
+#define NCD15_VRAM_PHYS     0x0EC80000u  /* KSEG1 0xAEC80000 */
+#define NCD15_VRAM_SIZE     0x00080000u  /* 512 KiB (boot bzero size) */
 
 #define NCD15_DUART_PHYS    0x1E880000u  /* KSEG1 0xBE880000 */
 #define NCD15_LANCE_PHYS    0x1E482000u  /* KSEG1 0xBE482000 — registers */
@@ -42,10 +46,9 @@ typedef int64_t  i64;
                                               * addressed 128 KB. */
 #define NCD15_LANCE_SHMEM_SIZE  0x00020000u  /* 128 KB on the LANCE side */
 #define NCD15_CRTC_PHYS     0x1E380000u  /* KSEG1 0xBE380000 */
-#define NCD15_KBD_PHYS      0x0EC80000u  /* KSEG1 0xAEC80000 = phys 0x0EC80000 */
 #define NCD15_NVRAM_PHYS    0x1E4AA000u  /* KSEG1 0xBE4AA000 — 93C46 bit-bang */
 #define NCD15_MEMCTL_PHYS   0xFFFE0000u  /* KSEG2 pass-through on R3052 */
-#define NCD15_VIDCTL_PHYS   0x0F000000u  /* KSEG1 0xAF000000 */
+#define NCD15_VIDCTL_PHYS   0x0F000000u  /* KSEG1 0xAF000000 — cart/vidctl regs */
 
 /* --- Minimal I-cache for the R3052 ---
  *

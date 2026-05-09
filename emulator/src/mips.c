@@ -404,6 +404,101 @@ void mips_step(mips_cpu *cpu) {
     prev_pc = pc;
     cpu->bus->last_pc = pc;
     cpu->bus->last_ra = cpu->r[31];
+    /* Milestones inside sub_0ec11774_dump (TFTP loader) — gated on
+     * NCD15_TRACE_TFTP=1. */
+    if (getenv("NCD15_TRACE_TFTP")) {
+        const char *m = NULL;
+        if      (pc == 0x0EC11774) m = "ENTER sub_0ec11774_dump";
+        else if (pc == 0x0EC117B4) m = "  jalr data_0x0EC008E0";
+        else if (pc == 0x0EC117E8) m = "  read inject_ip";
+        else if (pc == 0x0EC119D8) m = "  in_use_by probe";
+        else if (pc == 0x0EC11A48) m = "  print Using IP";
+        else if (pc == 0x0EC11A8C) m = "  print Using Subnet";
+        else if (pc == 0x0EC11AFC) m = "  beq same-subnet";
+        else if (pc == 0x0EC11C34) m = "  ARP-server poll start";
+        else if (pc == 0x0EC11C58) m = "  ARP request server";
+        else if (pc == 0x0EC11CEC) m = "  past ARP resolve";
+        else if (pc == 0x0EC11D00) m = "  HOST IP TIMEOUT print";
+        else if (pc == 0x0EC11D18) m = "  copy server-MAC";
+        else if (pc == 0x0EC11D5C) m = "  s5==0xa branch";
+        else if (pc == 0x0EC11D78) m = "  s5==0xb (Using_Host)";
+        else if (pc == 0x0EC11D88) m = "  s5 default";
+        else if (pc == 0x0EC11E90) m = "  s5==1 packet-build entry";
+        else if (pc == 0x0EC127F4) {
+            fprintf(stderr, "[ecoff] ENTER sub_0ec127f4 a0=0x%08x a1=0x%08x a2=0x%08x\n",
+                    cpu->r[4], cpu->r[5], cpu->r[6]);
+        }
+        else if (pc == 0x0EC12830 || pc == 0x0EC12860 || pc == 0x0EC12880 ||
+                 pc == 0x0EC128B8 || pc == 0x0EC129F8 || pc == 0x0EC12A84) {
+            fprintf(stderr, "[ecoff] CHECK pc=0x%08x v0=0x%x v1=0x%x s2=0x%x\n",
+                    pc, cpu->r[2], cpu->r[3], cpu->r[18]);
+        }
+        else if (pc == 0x0EC12A2C) {
+            /* lbu $v1, 0x10($s0) — log $s0 and the 8 bytes at $s0+0x10 */
+            u32 s0 = cpu->r[16];
+            u32 a0 = cpu->r[4];
+            u32 s3 = cpu->r[19];
+            u8 buf[8];
+            for (int i = 0; i < 8; i++) {
+                u32 a = s0 + 0x10 + i;
+                if (a >= 0x0EC00000 && a < 0x0F000000)
+                    buf[i] = cpu->bus->shadow[a - 0x0EC00000];
+                else if (a < 0x00400000)
+                    buf[i] = cpu->bus->dram[a & (NCD15_DRAM_SIZE - 1)];
+                else buf[i] = 0xff;
+            }
+            fprintf(stderr, "[ecoff_check] s3=0x%08x a0=0x%08x s0=0x%08x bytes[+0x10]: %02x %02x %02x %02x %02x %02x %02x %02x ('%c%c%c%c%c%c%c%c')\n",
+                    s3, a0, s0,
+                    buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],
+                    buf[0]>=0x20&&buf[0]<0x7f?buf[0]:'.',
+                    buf[1]>=0x20&&buf[1]<0x7f?buf[1]:'.',
+                    buf[2]>=0x20&&buf[2]<0x7f?buf[2]:'.',
+                    buf[3]>=0x20&&buf[3]<0x7f?buf[3]:'.',
+                    buf[4]>=0x20&&buf[4]<0x7f?buf[4]:'.',
+                    buf[5]>=0x20&&buf[5]<0x7f?buf[5]:'.',
+                    buf[6]>=0x20&&buf[6]<0x7f?buf[6]:'.',
+                    buf[7]>=0x20&&buf[7]<0x7f?buf[7]:'.');
+        }
+        else if (pc == 0x0EC11EC4) {
+            /* lw v0, -0x658(at) — log $at + EA */
+            u32 at = cpu->r[1];
+            u32 ea = at - 0x658;
+            fprintf(stderr, "[tftp] lw at=0x%08x ea=0x%08x s0=%d\n",
+                    at, ea, (i32)cpu->r[16]);
+        }
+        else if (pc == 0x0EC11ECC) {
+            fprintf(stderr, "[tftp] JR target v0=0x%08x s0=%d\n",
+                    cpu->r[2], (i32)cpu->r[16]);
+        }
+        else if (pc == 0x0EC152E0) m = "  ENTER sub_0ec152e0 (filename)";
+        else if (pc == 0x0EC103DC) m = "  ENTER sub_0ec103dc (ARP send)";
+        else if (pc == 0x0EC0F558) m = "  ENTER sub_0ec0f558 (?)";
+        else if (pc == 0x0EC11ED4) m = "  case0: bcast-MAC path";
+        else if (pc == 0x0EC11F1C) m = "  set bit-9 of 918";
+        else if (pc == 0x0EC11F38) m = "  check bit-8 of bd0";
+        else if (pc == 0x0EC11F58) m = "  branch1 fallthrough";
+        else if (pc == 0x0EC120F8) m = "  SUCCESS path 120f8";
+        else if (pc == 0x0EC1207C) m = "  jump-table fail 1207c";
+        else if (pc == 0x0EC12100) m = "  s5==2 path";
+        else if (pc == 0x0EC121B8) m = "  s5==0 path";
+        else if (pc == 0x0EC121C8) m = "  data_032c-nonzero path";
+        else if (pc == 0x0EC1225C) m = "  s5-other path";
+        else if (pc == 0x0EC1229C) m = "  fn-ptr 84C escape (118D0)";
+        else if (pc == 0x0EC122B4) m = "  fn-ptr 84C escape (11944)";
+        else if (pc == 0x0EC122CC) m = "  fn-ptr 84C escape (11B9C)";
+        else if (pc == 0x0EC122E4) m = "  fn-ptr 84C escape (11C80)";
+        else if (pc == 0x0EC12378) m = "  EXIT-error 0xec12378";
+        else if (pc == 0x0EC12380) m = "  EXIT-error 0xec12380";
+        if (m) {
+            static u32 prev; static u32 hit_count;
+            if (pc != prev) {
+                fprintf(stderr, "[tftp] pc=%08x s5=%d %s\n", pc, (i32)cpu->r[21], m);
+                prev = pc; hit_count = 1;
+            } else if (++hit_count % 50000 == 0) {
+                fprintf(stderr, "[tftp] (still at %08x ×%u)\n", pc, hit_count);
+            }
+        }
+    }
     /* Trace and optionally short-circuit the NCD15 wire-presence probe
      * (sub_0ec17c50). Real-HW behavior depends on a half-duplex Ethernet
      * wire echoing back self-addressed frames within ~10 tick-units;

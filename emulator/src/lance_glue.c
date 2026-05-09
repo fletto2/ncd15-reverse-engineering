@@ -73,6 +73,33 @@ static void lance_intr(int state, void *ctx) {
  * Forward to the host-side network backend if wired. */
 static void lance_send_frame(const uint8_t *buf, int length, void *ctx) {
     lance_glue *g = (lance_glue*)ctx;
+    if (getenv("NCD15_TRACE_LANCE_TX")) {
+        /* Decode Ethernet: bytes 12-13 = ethertype */
+        u16 et = (buf[12] << 8) | buf[13];
+        const char *kind = "?";
+        if (et == 0x0806) kind = "ARP";
+        else if (et == 0x0800) {
+            /* IP — bytes 14+ */
+            u8 proto = buf[23];
+            if (proto == 0x01) kind = "IP/ICMP";
+            else if (proto == 0x06) kind = "IP/TCP";
+            else if (proto == 0x11) {
+                /* UDP — bytes 34-35 src port, 36-37 dst port */
+                u16 sp = (buf[34] << 8) | buf[35];
+                u16 dp = (buf[36] << 8) | buf[37];
+                if (dp == 69 || sp == 69) kind = "UDP/TFTP";
+                else if (dp == 67 || dp == 68) kind = "UDP/BOOTP";
+                else kind = "UDP";
+                fprintf(stderr, "[LANCE-TX] %d bytes %s sp=%u dp=%u\n",
+                        length, kind, sp, dp);
+                if (g->host_send) g->host_send(buf, length, g->host_send_ctx);
+                return;
+            }
+            else kind = "IP/?";
+        }
+        fprintf(stderr, "[LANCE-TX] %d bytes %s ethertype=0x%04x\n",
+                length, kind, et);
+    }
     if (g->host_send) g->host_send(buf, length, g->host_send_ctx);
 }
 

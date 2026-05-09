@@ -419,13 +419,13 @@ int main(int argc, char **argv) {
 
     struct vidctl *v = vidctl_new();
     bus_add_mmio(&b, (mmio_region){
-        /* 8 bytes, not 4: the monitor's cart-ID probe (sub_0ec02bf8)
-         * writes a bit to byte 0 and a 0xFF "control sample" to byte 4,
-         * then reads byte 0. On real HW byte 4 is also part of the
-         * cart-register block (writes absorbed); without that, vram[4..7]
-         * gets stuck at 0xFF and shows as a small white speck at the
-         * top-left of the SDL window. */
-        .start  = NCD15_VIDCTL_PHYS, .length = 8,
+        /* 4-byte cart-ID register block. (Was widened to 8 to absorb
+         * a "control sample" 0xFF write at byte 4 that was leaking
+         * into what we thought was VRAM at 0xAF000004 — but VRAM is
+         * actually at 0xAEC80000, 3.5 MiB away, so byte 4 of vidctl
+         * has nothing to do with VRAM. The widening was a
+         * compensating hack for the wrong VRAM address.) */
+        .start  = NCD15_VIDCTL_PHYS, .length = 4,
         .read   = vidctl_read, .write = vidctl_write,
         .ctx    = v, .name = "vidctl",
     });

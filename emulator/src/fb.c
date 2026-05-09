@@ -1,10 +1,16 @@
 /* NCD15 framebuffer renderer — SDL2 window for the 1 bpp ECL display.
  *
- * Real hardware: 1024 × 800 @ 70 Hz, monochrome ECL. ~100 KB framebuffer
- * at phys 0x0F000000 (KSEG1 0xAF000000). 1 bpp packed, byte-addressed.
- * This module reads that buffer periodically and blits it to an SDL2
- * window with each bit expanded to a pixel (white = bit set, black = clear,
- * matching the white-on-black ECL phosphor convention).
+ * Real hardware: 1024 × 800 @ 70 Hz, monochrome ECL. Framebuffer at
+ * phys 0x0EC80000 (KSEG1 0xAEC80000), 512 KiB total. Confirmed from
+ * monitor.dis sub_0ec06440 (`lui v0, 0xaec8`) and the boot bzero call
+ * `bzero(0xAEC80000, 0x80000)` at 0x0EC037E8. Row stride is 256 bytes
+ * (1024 active pixels + 128 bytes padding per row); pixel-write helper
+ * uses `addr = base + (x>>3) + (y << 8)`. Bit order MSB-left (mask =
+ * `0x80 >> (x & 7)`). The framebuffer overlaps the shadow region at
+ * shadow_offset 0x80000.
+ *
+ * The cart-ID / vidctl regs at phys 0x0F000000 are something else
+ * entirely (NOT the framebuffer), 3.5 MiB above VRAM.
  *
  * Build: link with `pkg-config --libs sdl2`. Define NCD15_NO_SDL to stub out.
  *
@@ -30,8 +36,9 @@ int  fb_poll_input(unsigned char *out) { (void)out; return 0; }
 
 #define FB_W   1024
 #define FB_H   800
-#define FB_BYTES_PER_ROW (FB_W / 8)   /* 128 bytes per row */
-#define FB_BYTES (FB_BYTES_PER_ROW * FB_H)
+#define FB_ACTIVE_BYTES_PER_ROW (FB_W / 8)   /* 128 bytes used per row */
+#define FB_ROW_STRIDE   256                  /* hardware row stride (y << 8) */
+#define FB_SHADOW_OFFSET 0x80000             /* phys 0x0EC80000 - 0x0EC00000 */
 
 static SDL_Window   *g_win;
 static SDL_Renderer *g_ren;
@@ -93,7 +100,7 @@ void fb_init(int enabled)
  * frequent). */
 void fb_tick(bus *b)
 {
-    if (!g_enabled || !b->vram) return;
+    if (!g_enabled || !b->shadow) return;
 
     /* Pump SDL events so the window stays responsive. */
     SDL_Event e;
@@ -125,12 +132,14 @@ void fb_tick(bus *b)
     if (SDL_LockTexture(g_tex, NULL, &pixels, &pitch) != 0) return;
 
     Uint32 *dst = (Uint32 *)pixels;
-    const unsigned char *src = b->vram;
-    /* Each input byte = 8 horizontal pixels, MSB = leftmost. */
+    const unsigned char *src = b->shadow + FB_SHADOW_OFFSET;
+    /* Each input byte = 8 horizontal pixels, MSB = leftmost.
+     * Row stride is 256 bytes on hardware; we read only the first 128
+     * bytes (1024 active pixels) and skip the remaining 128 padding. */
     for (int y = 0; y < FB_H; y++) {
-        const unsigned char *row = src + y * FB_BYTES_PER_ROW;
+        const unsigned char *row = src + y * FB_ROW_STRIDE;
         Uint32 *out = dst + y * (pitch / 4);
-        for (int x = 0; x < FB_BYTES_PER_ROW; x++) {
+        for (int x = 0; x < FB_ACTIVE_BYTES_PER_ROW; x++) {
             unsigned char b8 = row[x];
             for (int bit = 7; bit >= 0; bit--) {
                 *out++ = (b8 >> bit) & 1 ? 0xFFFFFFFFu : 0xFF000000u;

@@ -239,6 +239,20 @@ u32 bus_read(bus *b, u32 va, unsigned size) {
             b->last_pc >= 0x0EC00000u && b->last_pc < 0x0F000000u) {
             return 0xBE482004u;   /* RAP */
         }
+        /* TFTP-loop "TX in progress" bit at 0x0EC00C58 bit 9 (0x200).
+         * The loop in sub_0ec11774_dump (case 1, PC=0x0EC11FA4) reads
+         * `lw v0, 0xbd0($s1)` with $s1=0x0EC00088 → actual VA
+         * 0x0EC00C58, ANDs with 0x200, retries iter if set. Real HW
+         * has a LANCE TX-complete IRQ that clears the bit on TX-done;
+         * we don't run IRQs, so clear bit 9 on shadow-resident reads
+         * inside sub_0ec11774's range. Lets case 1 fall through to
+         * call sub_0ec152e0 (filename builder) and the rest of the
+         * TFTP RRQ construction path. */
+        if (pa == 0x0EC00C58u && size == 4 &&
+            b->last_pc >= 0x0EC11774u && b->last_pc < 0x0EC1238Cu) {
+            u32 v = ld_be(b->shadow + 0xC58, 4);
+            return v & ~0x200u;
+        }
         /* Network-mode flag at data_0x0EC00DC0. Bit 26 (0x04000000)
          * means "Ethernet, not token-ring"; if clear, BT prints
          * "Warning: use 'tr 4' or 'tr 16'" and bails with "Check
@@ -405,10 +419,10 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
      * X-server's icache-flush sweep across phys 0..0x4000. */
     if (b->cache_isolated) return;
 
-    /* Trace any write to the first 64 bytes of VRAM (phys 0x0F000000+).
-     * The very first row of pixels has a stray-white-line glitch we're
-     * tracking down. Gated on NCD15_TRACE_VRAM=1. */
-    if (pa >= 0x0F000000u && pa < 0x0F000040u && getenv("NCD15_TRACE_VRAM"))
+    /* Trace writes to the first 64 bytes of VRAM (phys 0x0EC80000+,
+     * the actual framebuffer per monitor.dis sub_0ec06440). Gated on
+     * NCD15_TRACE_VRAM=1. */
+    if (pa >= 0x0EC80000u && pa < 0x0EC80040u && getenv("NCD15_TRACE_VRAM"))
         fprintf(stderr, "[vram] write pa=0x%08x val=0x%x size=%u from pc=0x%08x cyc=%llu\n",
                 pa, value, size, b->last_pc, (unsigned long long)b->cur_cycles);
 
@@ -417,6 +431,43 @@ void bus_write(bus *b, u32 va, u32 value, unsigned size) {
         cfg_trace_write(pa, value, size, b->last_pc);
         st_be(b->shadow + (pa - 0x0EC00000u), value, size);
         return;
+    }
+
+    /* Trace DUART channel B TX (console output) — gated on
+     * NCD15_TRACE_DUART_TX=1. Logs the byte + PC of the writer
+     * so we can reverse-engineer where each printed line comes
+     * from. */
+    if (pa == 0x1E88002Cu && size == 1 && getenv("NCD15_TRACE_DUART_TX")) {
+        extern struct mips_cpu *g_cpu;
+        u32 sp = g_cpu ? g_cpu->r[29] : 0;
+        /* Walk up the stack: putchar (sub_0ec08d20) saved its caller's
+         * $ra at sp+0x1C. That caller is sub_0ec07de4 — read its
+         * caller's $ra from sp+0x30+0x28. */
+        u32 chain[6] = {0};
+        /* Frame stack offsets to caller-RA, computed from saved-RA
+         * positions in each callee:
+         *   sub_0ec02760: leaf
+         *   sub_0ec08d20: -0x20, ra@+0x1C  →  +0x1C
+         *   sub_0ec07de4: -0x30, ra@+0x28  →  +0x48
+         *   sub_0ec0838c: -0x18, ra@+0x14  →  +0x64
+         *   sub_0ec04d30: -0x38, ra@+0x30  →  +0x98 (0x68+0x30)
+         *   sub_0ec04eac: -0x78, ra@+0x74  →  +0x114 (0xA0+0x74)
+         *   sub_0ec04bac: -0x18, ra@+0x10  →  +0x170 (0x118+0x10... actually verify)
+         * Frame top of 04eac sits at sp_now+0x118. sub_0ec04bac
+         * pushed at offset 0x18 above that, ra saved at 0x10:
+         * 0x118 + 0x10 = 0x128. (Updating below.)
+         */
+        const int offs[6] = {0x1C, 0x48, 0x64, 0x98, 0x114, 0x128};
+        for (int i = 0; i < 6; i++) {
+            u32 a = sp + offs[i];
+            if (a >= 0x0EC00000 && a + 4 < 0x0F000000)
+                chain[i] = ld_be(b->shadow + (a - 0x0EC00000), 4);
+        }
+        /* Also dump $s1 (current string ptr inside printloop) */
+        u32 s1 = g_cpu ? g_cpu->r[17] : 0;
+        fprintf(stderr, "[duart-tx] '%c' s1=%08x chain=%08x→%08x→%08x→%08x→%08x→%08x\n",
+                (value >= 0x20 && value < 0x7f) ? (char)value : '.',
+                s1, chain[0], chain[1], chain[2], chain[3], chain[4], chain[5]);
     }
     if (pa < 0x0EC00000u) {
         st_be(b->dram + (pa & (NCD15_DRAM_SIZE - 1)), value, size);
