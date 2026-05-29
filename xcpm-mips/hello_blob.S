@@ -11,3 +11,10 @@ _hello_app_start:
     .incbin "app/hello.bin"
     .globl _hello_app_end
 _hello_app_end:
+
+    .balign 4
+    .globl _app2_start
+_app2_start:
+    .incbin "app/sysinfo.bin"
+    .globl _app2_end
+_app2_end:

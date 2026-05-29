@@ -80,6 +80,10 @@ void main(void)
     extern int run_embedded_hello(void);
     run_embedded_hello();
 
+    uart_puts("\r\n--- next app ---\r\n");
+    extern int run_embedded_app2(void);
+    run_embedded_app2();
+
     uart_puts("\r\nLaunching CCP...\r\n");
     extern void ccp_main(void);
     ccp_main();

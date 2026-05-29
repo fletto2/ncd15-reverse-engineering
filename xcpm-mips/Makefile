@@ -75,7 +75,10 @@ main_ncd15.o: main_ncd15.c
 app/hello.bin:
 	$(MAKE) -C app hello.bin
 
-hello_blob.o: hello_blob.S app/hello.bin
+app/sysinfo.bin:
+	$(MAKE) -C app sysinfo.bin
+
+hello_blob.o: hello_blob.S app/hello.bin app/sysinfo.bin
 	$(CC) $(CFLAGS) -c -o $@ hello_blob.S
 
 # Portable core compiled from the shared tree.

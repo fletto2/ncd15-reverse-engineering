@@ -69,3 +69,25 @@ int run_embedded_hello(void)
     uart_puts("\r\n");
     return rc;
 }
+
+extern unsigned char _app2_start[];
+extern unsigned char _app2_end[];
+
+int run_embedded_app2(void)
+{
+    unsigned char *tpa = (unsigned char *)0x0ED40000UL;
+    unsigned long sz = (unsigned long)(_app2_end - _app2_start);
+    unsigned long i;
+
+    uart_puts("[loader] sysinfo.bin: "); xputdec(sz);
+    uart_puts(" bytes -> TPA @ 0x0ED40000\r\n");
+
+    for (i = 0; i < sz; i++) tpa[i] = _app2_start[i];
+
+    app_entry_t entry = (app_entry_t)tpa;
+    int rc = entry(bdos_dispatch);
+
+    uart_puts("[loader] sysinfo.bin: app returned, rc="); xputdec((u32)rc);
+    uart_puts("\r\n");
+    return rc;
+}
