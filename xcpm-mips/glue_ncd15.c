@@ -8,16 +8,15 @@
 #include "xcpm.h"
 #include "fat.h"
 
-/* Referenced by bdos.c d_reset / d_ext (warm-boot BDOS calls) via
- * `j warmboot`. Until the CCP is wired, just announce and idle in an
- * echo loop so the console stays alive. */
+/* Called by bdos.c's d_reset / d_ext_loadrun tail via `j warmboot`
+ * after an app exits. Re-enter the CCP. The CCP self-decompresses
+ * back into TPA each pass, so it's safe to call indefinitely. */
+extern void ccp_main(void);
 void warmboot(void)
 {
-    uart_puts("\r\n[warmboot — no CCP yet; console idle]\r\n> ");
     for (;;) {
-        int c = uart_getc();
-        if (c == '\r') uart_puts("\r\n> ");
-        else           uart_putc(c);
+        ccp_main();
+        uart_puts("\r\n[warmboot] CCP exited; restarting\r\n");
     }
 }
 
@@ -34,10 +33,24 @@ unsigned long ccp_stty_lz_size = 0;
  * image at `cseg` via pgmld_jump.s. The MIPS app-loader (syscall ABI +
  * jalr to TPA entry) lands in a later milestone; for now report failure
  * so BDOS program-load calls return cleanly. */
+extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
+typedef int (*app_entry_t)(u32 (*)(u32, u32, u32));
+
 int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
 {
     (void)cseg; (void)size; (void)cmdtail;
     return -1;
+}
+
+/* Hook called by BDOS 113's .MIP path (try_load_path_mips). Bytes are
+ * already at `base` (= TPA_BASE), so we just cast + jalr with
+ * $a0 = bdos_dispatch. Returns the app's int rc; warmboot is triggered
+ * by d_ext_loadrun's tail. */
+int pgmld_run_mips(u32 base, u32 size, const char *cmdtail)
+{
+    (void)size; (void)cmdtail;
+    app_entry_t entry = (app_entry_t)base;
+    return entry(bdos_dispatch);
 }
 
 /*------------------------------------------------------------------
@@ -48,9 +61,6 @@ int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
  *------------------------------------------------------------------*/
 extern unsigned char _hello_app_start[];
 extern unsigned char _hello_app_end[];
-extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
-
-typedef int (*app_entry_t)(u32 (*)(u32, u32, u32));
 
 int run_embedded_hello(void)
 {

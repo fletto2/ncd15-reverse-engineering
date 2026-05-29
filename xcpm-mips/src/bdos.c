@@ -639,6 +639,7 @@ static u32 d_ext_rmdir(u32 name_p, u32 b)
 extern int pgmld_run_raw (const void *image, u32 size, const char *cmdtail);
 extern int pgmld_run_lzss(const void *blob, u32 blob_size, const char *cmdtail);
 extern int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail);
+extern int pgmld_run_mips    (u32 base, u32 size, const char *cmdtail);
 /* _tpa_base / _ram_end declared in xcpm.h as u32; reuse those declarations. */
 
 /* Stream a file directly into the TPA -- no kernel buffer.  The CCP
@@ -695,6 +696,30 @@ static int try_load_path(const char *path, const char *cmdtail)
     return pgmld_finish_and_run(cseg, size, cmdtail);
 }
 
+/* MIPS-native sibling. Loads a flat MIPS binary directly to TPA base
+ * (no +0x100 PCB/header offset — the .MIP file is linked at TPA_BASE
+ * with _app_start at offset 0). Hands off to pgmld_run_mips, which
+ * casts the base to a function pointer and jalrs with $a0 set to
+ * bdos_dispatch. Used by the .MIP candidate in d_ext_loadrun below. */
+static int try_load_path_mips(const char *path, const char *cmdtail)
+{
+    char full[40];
+    build_path(cur_drive, cur_user, path, full, sizeof(full));
+    fat_file_t fp;
+    if (fat_fopen(full, &fp) != 0) return -1;
+    u32 size = fat_fsize(&fp);
+    u8 *dst = (u8 *)&_tpa_base;
+    u32 got_total = 0;
+    while (got_total < size) {
+        int got = fat_fread(&fp, dst + got_total, size - got_total);
+        if (got <= 0) break;
+        got_total += (u32)got;
+    }
+    fat_fclose(&fp);
+    if (got_total != size) return -3;
+    return pgmld_run_mips((u32)dst, size, cmdtail);
+}
+
 extern void warmboot(void);
 
 static u32 d_ext_loadrun(u32 name_p, u32 tail_p)
@@ -713,7 +738,13 @@ static u32 d_ext_loadrun(u32 name_p, u32 tail_p)
 
     int found = 0;
 
+    /* MIPS-native flat binary, tried first on this port. */
     int len = n;
+    buf[len++] = '.'; buf[len++] = 'M'; buf[len++] = 'I'; buf[len++] = 'P';
+    buf[len] = 0;
+    if (try_load_path_mips(buf, tail) == 0) { found = 1; goto done; }
+
+    len = n;
     buf[len++] = '.'; buf[len++] = '6'; buf[len++] = '8'; buf[len++] = 'K';
     buf[len] = 0;
     if (try_load_path(buf, tail) == 0) { found = 1; goto done; }

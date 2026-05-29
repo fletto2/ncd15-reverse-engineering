@@ -91,8 +91,8 @@ hello_blob.o: hello_blob.S app/hello.bin app/sysinfo.bin
 ramfat.img: app/hello.bin app/sysinfo.bin
 	rm -f $@
 	$(MKFS_FAT) -F 12 -n XCPM -C $@ 128 >/dev/null
-	$(MCOPY) -i $@ app/hello.bin   ::HELLO.BIN
-	$(MCOPY) -i $@ app/sysinfo.bin ::SYSINFO.BIN
+	$(MCOPY) -i $@ app/hello.bin   ::HELLO.MIP
+	$(MCOPY) -i $@ app/sysinfo.bin ::SYSINFO.MIP
 	@printf 'Built ramfat.img: %d bytes\n' $$(stat -c%s $@)
 
 ramfat_blob.o: ramfat_blob.S ramfat.img
