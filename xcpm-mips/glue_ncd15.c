@@ -120,9 +120,9 @@ void list_fat_root(void)
         return;
     }
     uart_puts("  A: directory:\r\n");
-    while (fat_dirnext(&g_fat_iter, &de, lfn, (int)sizeof(lfn)) > 0) {
-        if (de.attr & FAT_ATTR_VOLID) continue;
-        if (de.name[0] == 0xE5 || de.name[0] == 0x00) continue;
+    /* fat_dirnext returns 0 on success, 1 at end-of-dir, -1 on error
+     * (and silently skips LFN / VOLID / deleted internally). */
+    while (fat_dirnext(&g_fat_iter, &de, lfn, (int)sizeof(lfn)) == 0) {
         uart_puts("    ");
         /* 8.3 name with embedded space padding */
         for (int i = 0; i < 8; i++) uart_putc(de.name[i] ? de.name[i] : ' ');

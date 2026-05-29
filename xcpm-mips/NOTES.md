@@ -88,11 +88,23 @@ $EMU --no-window --boot-flash --nvram nv.bin --flash xcpm-ncd15.bin $ROM
       app images (the current ABI requires the linker address to match
       the loader's TPA target — fine for one TPA, not for arbitrary
       mapping).
-- [ ] `libxcpm` header for apps (typedefs + BDOS wrapper macros).
+- [x] **M5c — `libxcpm.h`** for apps: `u8`/`u16`/`u32`/`bdos_fn_t`
+      typedefs + `BDOS_*` constants + inline wrappers (`xputc`,
+      `xputs`, `xputs_d`, `xputhex8`, `xputdec`, `xgetc`). Header-only
+      (no libxcpm.a), so a minimal app is `#include "libxcpm.h"` +
+      `int app_main(bdos_fn_t bdos) { ... }`. `hello.c` refactored
+      against it as proof; emits `BDOS 100 ident: 0x58504D4B
+      (1481657675 decimal)` via `xputhex8` + `xputdec`.
+- [x] **dir-iter fix:** `list_fat_root` used `> 0` for the loop
+      condition; `fat_dirnext` returns 0 on success, 1 at end-of-dir,
+      -1 on error. Now `== 0`. `A: directory:` correctly shows
+      `HELLO    MIP  278 bytes` / `SYSINFO  MIP  887 bytes` / `(2 files)`.
+- [ ] `syscall` ABI at 0x80000080 if we ever want position-independent
+      app images (the current ABI requires the linker address to match
+      the loader's TPA target — fine for one TPA, not for arbitrary
+      mapping).
 - [ ] I-cache flush in the loader for real HW (CP0 reg 7 bit 13 +
       16-byte-stride `sw zero` walk).
-- [ ] Fix `fat_dirnext` dir-iter so `list_fat_root` reports real file
-      count + names (cosmetic).
 
 ## Arch-specific changes (shared tree)
 
