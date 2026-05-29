@@ -158,6 +158,14 @@ typedef struct bus {
     u8 *ecoff_bytes;
     size_t ecoff_size;
     bool ecoff_preloaded;
+    /* --boot-flash: after the monitor finishes POST/DUART/cache init,
+     * jump straight to the preloaded flash ECOFF entry instead of running
+     * the monitor's boot-method selection (which validates images more
+     * strictly than our guest loaders need). For iterating on guest
+     * images (e.g. the XCP/M MIPS port). */
+    bool boot_flash;
+    u32  flash_entry;
+    bool boot_flash_done;
     u64 next_irq_cycle;
     bool cache_isolated;  /* CP0 reg 7 bit 13 — see mips.c */
     bool lance_irq;       /* mirror of LANCE /INT line */

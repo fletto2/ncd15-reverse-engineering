@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
     const char *flash_path = NULL;
     const char *dump_shadow_path = NULL;
     int no_window = 0;
+    int want_boot_flash = 0;
     bool trace_bus = false;
     u64 max_cycles = 0;    /* 0 == unbounded */
 
@@ -259,6 +260,8 @@ int main(int argc, char **argv) {
             gateway_str = argv[++i];
         } else if (!strcmp(argv[i], "--flash") && i+1 < argc) {
             flash_path = argv[++i];
+        } else if (!strcmp(argv[i], "--boot-flash")) {
+            want_boot_flash = 1;
         } else if (!strcmp(argv[i], "--no-window")) {
             no_window = 1;
         } else if (!strcmp(argv[i], "--dump-shadow") && i+1 < argc) {
@@ -284,6 +287,7 @@ int main(int argc, char **argv) {
 
     /* Build bus */
     bus b; bus_init(&b, rom_bytes);
+    b.boot_flash = want_boot_flash;
     b.trace = trace_bus;
     if (ip_str)      b.inject_ip      = parse_ipv4(ip_str);
     if (mask_str)    b.inject_mask    = parse_ipv4(mask_str);
@@ -372,6 +376,7 @@ int main(int argc, char **argv) {
                 /* nop already at [0x08..]. */
             }
             fprintf(stderr, "flash: ECOFF entry redirect installed → 0x%08x\n", entry);
+            b.flash_entry = entry;
         } else {
             /* Raw flash dump — just copy verbatim. */
             memcpy(b.flash, fbytes, fsz < alloc_sz ? fsz : alloc_sz);

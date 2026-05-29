@@ -404,6 +404,27 @@ void mips_step(mips_cpu *cpu) {
     prev_pc = pc;
     cpu->bus->last_pc = pc;
     cpu->bus->last_ra = cpu->r[31];
+    /* --boot-flash: the monitor has finished POST + DUART/cache init by the
+     * time it enters the boot-method driver sub_0ec0eb6c (0x0EC0EB6C).
+     * Redirect straight to the preloaded flash ECOFF entry instead of
+     * letting the monitor run its (stricter) image validation + network
+     * fallback. For iterating on guest images. */
+    if (cpu->bus->boot_flash && !cpu->bus->boot_flash_done &&
+        cpu->bus->flash_entry && pc == 0x0EC0EB6Cu) {
+        cpu->bus->boot_flash_done = true;
+        /* The monitor zeroed shadow[0x100000+] during boot, clobbering the
+         * eager flash preload. The section re-blit is lazy on first read of
+         * the flash window — which the normal BL flow would do but we're
+         * bypassing. Force it: clear the preloaded flag and touch the flash
+         * window so bus_read re-blits our sections into shadow. */
+        cpu->bus->ecoff_preloaded = false;
+        (void)bus_read(cpu->bus, 0xBF800000u, 4);
+        fprintf(stderr, "[boot-flash] redirecting to flash entry 0x%08x\n",
+                cpu->bus->flash_entry);
+        cpu->pc = cpu->bus->flash_entry;
+        cpu->next_pc = cpu->pc + 4;
+        return;
+    }
     /* Milestones inside sub_0ec11774_dump (TFTP loader) — gated on
      * NCD15_TRACE_TFTP=1. */
     if (getenv("NCD15_TRACE_TFTP")) {
