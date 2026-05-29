@@ -6,6 +6,7 @@
  * returns failure. Both get real bodies in the CCP / app-loader milestone.
  *==========================================================================*/
 #include "xcpm.h"
+#include "fat.h"
 
 /* Referenced by bdos.c d_reset / d_ext (warm-boot BDOS calls) via
  * `j warmboot`. Until the CCP is wired, just announce and idle in an
@@ -89,5 +90,68 @@ int run_embedded_app2(void)
 
     uart_puts("[loader] sysinfo.bin: app returned, rc="); xputdec((u32)rc);
     uart_puts("\r\n");
+    return rc;
+}
+
+/*------------------------------------------------------------------
+ * M5a: load + run an app from the RAM-backed FAT filesystem.
+ *   fat_fopen path -> fat_fread bytes into TPA -> jalr with $a0 = bdos.
+ *------------------------------------------------------------------*/
+static fat_dir_iter_t g_fat_iter;   /* static to avoid stack pressure */
+
+void list_fat_root(void)
+{
+    fat_dirent_t de;
+    char lfn[64];
+    int n = 0;
+
+    if (fat_diropen_root(&g_fat_iter) != 0) {
+        uart_puts("  list_fat_root: open failed\r\n");
+        return;
+    }
+    uart_puts("  A: directory:\r\n");
+    while (fat_dirnext(&g_fat_iter, &de, lfn, (int)sizeof(lfn)) > 0) {
+        if (de.attr & FAT_ATTR_VOLID) continue;
+        if (de.name[0] == 0xE5 || de.name[0] == 0x00) continue;
+        uart_puts("    ");
+        /* 8.3 name with embedded space padding */
+        for (int i = 0; i < 8; i++) uart_putc(de.name[i] ? de.name[i] : ' ');
+        uart_putc(' ');
+        for (int i = 8; i < 11; i++) uart_putc(de.name[i] ? de.name[i] : ' ');
+        uart_puts("  ");
+        xputdec(de.file_size);
+        uart_puts(" bytes\r\n");
+        n++;
+    }
+    uart_puts("  ("); xputdec((u32)n); uart_puts(" files)\r\n");
+}
+
+int run_app_from_fat(const char *path)
+{
+    fat_file_t fp;
+    unsigned char *tpa = (unsigned char *)0x0ED40000UL;
+
+    if (fat_fopen(path, &fp) != 0) {
+        uart_puts("[loader] "); uart_puts(path);
+        uart_puts(": fat_fopen failed\r\n");
+        return -1;
+    }
+    u32 sz = fat_fsize(&fp);
+    uart_puts("[loader] "); uart_puts(path); uart_puts(": ");
+    xputdec(sz); uart_puts(" bytes -> TPA @ 0x0ED40000\r\n");
+
+    int got = fat_fread(&fp, tpa, sz);
+    fat_fclose(&fp);
+    if (got <= 0) {
+        uart_puts("[loader] fat_fread returned ");
+        xputdec((u32)got); uart_puts("\r\n");
+        return -1;
+    }
+
+    app_entry_t entry = (app_entry_t)tpa;
+    int rc = entry(bdos_dispatch);
+
+    uart_puts("[loader] "); uart_puts(path);
+    uart_puts(": app returned, rc="); xputdec((u32)rc); uart_puts("\r\n");
     return rc;
 }

@@ -9,6 +9,7 @@
 #include "xcpm.h"
 #include "bdos.h"
 #include "bios.h"
+#include "fat.h"
 
 extern u32 _ram_base, _ram_end, _tpa_base, _tpa_end, _stack_top;
 extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
@@ -76,13 +77,28 @@ void main(void)
 
     selftest();
 
-    uart_puts("\r\nM4: dynamic app load demo\r\n");
+    uart_puts("\r\nM4: dynamic app load demo (embedded blobs)\r\n");
     extern int run_embedded_hello(void);
     run_embedded_hello();
-
     uart_puts("\r\n--- next app ---\r\n");
     extern int run_embedded_app2(void);
     run_embedded_app2();
+
+    /* M5a: RAM-backed FAT for A: drive. Mount, list root dir, then load
+     * HELLO.BIN by FILENAME (not by embedded symbol) and run it via the
+     * same function-pointer ABI. Proves apps can ship in the filesystem
+     * instead of being baked into the kernel ECOFF. */
+    uart_puts("\r\nM5a: FAT-loaded apps\r\n");
+    extern int run_app_from_fat(const char *path);
+    extern void list_fat_root(void);
+    if (fat_mount() == 0) {
+        list_fat_root();
+        run_app_from_fat("/HELLO.BIN");
+        uart_puts("\r\n--- next app (from FAT) ---\r\n");
+        run_app_from_fat("/SYSINFO.BIN");
+    } else {
+        uart_puts("  fat_mount failed -- skipping FAT demo\r\n");
+    }
 
     uart_puts("\r\nLaunching CCP...\r\n");
     extern void ccp_main(void);

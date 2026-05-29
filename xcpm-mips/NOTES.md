@@ -67,17 +67,32 @@ $EMU --no-window --boot-flash --nvram nv.bin --flash xcpm-ncd15.bin $ROM
       stub, and no I-cache flush wrapper — the loader is six lines of
       C, and the app sees BDOS as a normal function call.
 
-## M5 polish (deferred — port goal is met)
+## M5 polish
 
-- RAM-backed FAT block device for A: so apps load by filename rather
-  than baked-in blobs (carve DRAM, `mkfs.fat -C -F 16`, `incbin`).
-- `syscall` ABI at 0x80000080 if we ever want position-independent
-  app images (the current ABI requires the linker address to match
-  the loader's TPA target — fine for one TPA, not for arbitrary
-  mapping).
-- `libxcpm` header for apps (typedefs + BDOS wrapper macros).
-- I-cache flush in the loader for real HW (CP0 reg 7 bit 13 +
-  16-byte-stride `sw zero` walk).
+- [x] **M5a — RAM-backed FAT for A:.** `mkfs.fat -F 12 -n XCPM -C
+      ramfat.img 128` at build time, `mcopy` injects `app/hello.bin` and
+      `app/sysinfo.bin` as `HELLO.BIN` / `SYSINFO.BIN`. `ramfat_blob.S`
+      embeds the 128 KB image as a `.rodata` blob; `src/disk_ramfat.c`
+      serves `blk_read` out of it (blk_write returns -1 by design —
+      apps load by name, they don't mutate the filesystem). `fat.c`
+      mounts cleanly. `glue_ncd15.c` adds `run_app_from_fat(path)`:
+      `fat_fopen` → `fat_fread` into TPA @ 0x0ED40000 → `jalr` with
+      `$a0 = bdos_dispatch`. Both apps now load by filename:
+        [loader] /HELLO.BIN: 278 bytes -> TPA @ 0x0ED40000
+        [loader] /SYSINFO.BIN: 887 bytes -> TPA @ 0x0ED40000
+      Known cosmetic: `list_fat_root()` reports `(0 files)` because
+      `fat_dirnext` ends earlier than expected after the volume label.
+      `fat_fopen` resolves names fine, so it's a dir-iter quirk, not a
+      filesystem bug. Polish target.
+- [ ] `syscall` ABI at 0x80000080 if we ever want position-independent
+      app images (the current ABI requires the linker address to match
+      the loader's TPA target — fine for one TPA, not for arbitrary
+      mapping).
+- [ ] `libxcpm` header for apps (typedefs + BDOS wrapper macros).
+- [ ] I-cache flush in the loader for real HW (CP0 reg 7 bit 13 +
+      16-byte-stride `sw zero` walk).
+- [ ] Fix `fat_dirnext` dir-iter so `list_fat_root` reports real file
+      count + names (cosmetic).
 
 ## Arch-specific changes (shared tree)
 

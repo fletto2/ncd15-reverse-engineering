@@ -49,8 +49,11 @@ LDFLAGS := -nostdlib -Wl,-T,ncd15.ld -Wl,-Map,xcpm-ncd15.map \
 LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name 2>/dev/null)
 
 # Object set: startup + board main + portable XCP/M core.
-PORT_OBJS := start.o main_ncd15.o glue_ncd15.o hello_blob.o
-CORE_OBJS := console_mc68681.o bdos.o bios.o fat.o lzss.o ramdisk.o disk_null.o
+PORT_OBJS := start.o main_ncd15.o glue_ncd15.o hello_blob.o ramfat_blob.o
+CORE_OBJS := console_mc68681.o bdos.o bios.o fat.o lzss.o ramdisk.o disk_ramfat.o
+
+MKFS_FAT  ?= /sbin/mkfs.fat
+MCOPY     ?= mcopy
 CCP_OBJS  := ccpmain.o
 OBJS := $(PORT_OBJS) $(CORE_OBJS) $(CCP_OBJS)
 
@@ -81,6 +84,20 @@ app/sysinfo.bin:
 hello_blob.o: hello_blob.S app/hello.bin app/sysinfo.bin
 	$(CC) $(CFLAGS) -c -o $@ hello_blob.S
 
+# M5a: build a tiny FAT12 image (256 sectors = 128 KB) and populate it
+# with the app binaries via mcopy. disk_ramfat.c serves blk_read out of
+# this blob; the CCP / app loader can fat_fopen("FOO.BIN") and load by
+# name instead of relying on .incbin'd blobs.
+ramfat.img: app/hello.bin app/sysinfo.bin
+	rm -f $@
+	$(MKFS_FAT) -F 12 -n XCPM -C $@ 128 >/dev/null
+	$(MCOPY) -i $@ app/hello.bin   ::HELLO.BIN
+	$(MCOPY) -i $@ app/sysinfo.bin ::SYSINFO.BIN
+	@printf 'Built ramfat.img: %d bytes\n' $$(stat -c%s $@)
+
+ramfat_blob.o: ramfat_blob.S ramfat.img
+	$(CC) $(CFLAGS) -c -o $@ ramfat_blob.S
+
 # Portable core compiled from the shared tree.
 %.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -100,7 +117,7 @@ xcpm-ncd15.dis: xcpm-ncd15.elf
 
 clean:
 	rm -f *.o xcpm-ncd15.elf xcpm-ncd15.raw xcpm-ncd15.bin \
-	      xcpm-ncd15.dis xcpm-ncd15.map
+	      xcpm-ncd15.dis xcpm-ncd15.map ramfat.img
 	$(MAKE) -C app clean
 
 .PHONY: all clean
