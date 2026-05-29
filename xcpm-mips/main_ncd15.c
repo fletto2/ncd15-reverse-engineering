@@ -76,6 +76,10 @@ void main(void)
 
     selftest();
 
+    uart_puts("\r\nM4: dynamic app load demo\r\n");
+    extern int run_embedded_hello(void);
+    run_embedded_hello();
+
     uart_puts("\r\nLaunching CCP...\r\n");
     extern void ccp_main(void);
     ccp_main();

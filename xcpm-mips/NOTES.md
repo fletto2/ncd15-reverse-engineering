@@ -44,12 +44,40 @@ $EMU --no-window --boot-flash --nvram nv.bin --flash xcpm-ncd15.bin $ROM
       Char-by-char echo + ESC[K line-clear render correctly. NUL-flood from
       the earlier echo-loop placeholder did not recur (CCP uses BDOS
       console I/O properly).
-- [ ] **M4 — app loading.** MIPS `syscall` handler installed at
-      0x80000080 (apps: $v0 = BDOS func, $a0/$a1 = params, return in $v0);
-      RAM-backed FAT block device (carve a chunk of DRAM, format FAT16 at
-      build time via `mkfs.fat -C -F 16` and `incbin` the image); crt0 +
-      libxcpm for app builds; load a "hello world" app from RAM-FAT into
-      the TPA and `jalr` to its entry.
+- [x] **M4 — dynamic app loading (function-pointer ABI).** Apps build
+      to flat MIPS binaries linked at TPA base (0x0ED40000) via
+      `app/app.ld`. The kernel embeds `app/hello.bin` as a rodata blob
+      via `hello_blob.S` (`.incbin`), and `run_embedded_hello()` in
+      `glue_ncd15.c` memcpy's the bytes to TPA, casts the base to a
+      function pointer, and `jalr`s with `$a0 = bdos_dispatch`. The
+      app's `_app_start` (offset 0) trampolines to `app_main(bdos)`
+      which calls BDOS 9 through the passed-in pointer and `return 0`s
+      back to the loader. Verified:
+        M4: dynamic app load demo
+        [loader] hello.bin: 275 bytes -> TPA @ 0x0ED40000
+        --- hello.bin: dynamically-loaded MIPS app speaking ---
+        I was just memcpy'd into TPA at 0x0ED40000 and jumped to.
+        I'm calling BDOS via the function pointer you passed in via a0.
+        Returning to the kernel loader now.
+        [loader] app returned, rc=0
+      Workflow for new apps: drop `app/foo.c`, run `make`, kernel
+      re-links with the new blob, run. The function-pointer ABI was
+      picked over a full MIPS `syscall` handler at 0x80000080 because
+      it needs no exception vector setup, no register save/restore
+      stub, and no I-cache flush wrapper — the loader is six lines of
+      C, and the app sees BDOS as a normal function call.
+
+## M5 polish (deferred — port goal is met)
+
+- RAM-backed FAT block device for A: so apps load by filename rather
+  than baked-in blobs (carve DRAM, `mkfs.fat -C -F 16`, `incbin`).
+- `syscall` ABI at 0x80000080 if we ever want position-independent
+  app images (the current ABI requires the linker address to match
+  the loader's TPA target — fine for one TPA, not for arbitrary
+  mapping).
+- `libxcpm` header for apps (typedefs + BDOS wrapper macros).
+- I-cache flush in the loader for real HW (CP0 reg 7 bit 13 +
+  16-byte-stride `sw zero` walk).
 
 ## Arch-specific changes (shared tree)
 

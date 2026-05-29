@@ -38,3 +38,34 @@ int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
     (void)cseg; (void)size; (void)cmdtail;
     return -1;
 }
+
+/*------------------------------------------------------------------
+ * M4: dynamic app-load demo (function-pointer ABI).
+ *   loader memcpy's app bytes to TPA @ 0x0ED40000, then jalrs with
+ *   $a0 = bdos_dispatch; app's _app_start trampolines to app_main(bdos);
+ *   app returns via `jr $ra`. No 0x80000080 handler needed.
+ *------------------------------------------------------------------*/
+extern unsigned char _hello_app_start[];
+extern unsigned char _hello_app_end[];
+extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
+
+typedef int (*app_entry_t)(u32 (*)(u32, u32, u32));
+
+int run_embedded_hello(void)
+{
+    unsigned char *tpa = (unsigned char *)0x0ED40000UL;
+    unsigned long sz = (unsigned long)(_hello_app_end - _hello_app_start);
+    unsigned long i;
+
+    uart_puts("[loader] hello.bin: "); xputdec(sz);
+    uart_puts(" bytes -> TPA @ 0x0ED40000\r\n");
+
+    for (i = 0; i < sz; i++) tpa[i] = _hello_app_start[i];
+
+    app_entry_t entry = (app_entry_t)tpa;
+    int rc = entry(bdos_dispatch);
+
+    uart_puts("[loader] app returned, rc="); xputdec((u32)rc);
+    uart_puts("\r\n");
+    return rc;
+}

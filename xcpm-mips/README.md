@@ -17,7 +17,8 @@ for five small `#ifdef __mips__` guards around 68K-specific inline asm.
 | **M1** | Boots, banner, serial console | ✅ |
 | **M2** | OS core runs (BDOS/BIOS/FAT/ramdisk via direct dispatch) | ✅ |
 | **M3** | CCP shell runs (`ver`, `help`, command echo, prompt) | ✅ |
-| **M4** | App loading (syscall ABI + RAM-FAT + crt0/libxcpm) | in progress |
+| **M4** | Dynamic app loading (function-pointer ABI, embedded blob) | ✅ |
+| M5 | RAM-FAT block device + libxcpm + I-cache flush (polish) | deferred |
 
 See `NOTES.md` for the per-milestone trail and verification output.
 

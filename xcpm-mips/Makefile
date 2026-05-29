@@ -49,7 +49,7 @@ LDFLAGS := -nostdlib -Wl,-T,ncd15.ld -Wl,-Map,xcpm-ncd15.map \
 LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name 2>/dev/null)
 
 # Object set: startup + board main + portable XCP/M core.
-PORT_OBJS := start.o main_ncd15.o glue_ncd15.o
+PORT_OBJS := start.o main_ncd15.o glue_ncd15.o hello_blob.o
 CORE_OBJS := console_mc68681.o bdos.o bios.o fat.o lzss.o ramdisk.o disk_null.o
 CCP_OBJS  := ccpmain.o
 OBJS := $(PORT_OBJS) $(CORE_OBJS) $(CCP_OBJS)
@@ -69,6 +69,14 @@ glue_ncd15.o: glue_ncd15.c
 
 main_ncd15.o: main_ncd15.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+# M4: embed app/hello.bin as a rodata blob. hello.bin is built by a
+# sub-make in app/ which links it at TPA base via app/app.ld.
+app/hello.bin:
+	$(MAKE) -C app hello.bin
+
+hello_blob.o: hello_blob.S app/hello.bin
+	$(CC) $(CFLAGS) -c -o $@ hello_blob.S
 
 # Portable core compiled from the shared tree.
 %.o: $(SRCDIR)/%.c
@@ -90,5 +98,6 @@ xcpm-ncd15.dis: xcpm-ncd15.elf
 clean:
 	rm -f *.o xcpm-ncd15.elf xcpm-ncd15.raw xcpm-ncd15.bin \
 	      xcpm-ncd15.dis xcpm-ncd15.map
+	$(MAKE) -C app clean
 
 .PHONY: all clean
