@@ -18,7 +18,7 @@ CFLAGS   := -march=mips1 -mabi=32 -EB -G0 -fno-pic -mno-abicalls \
 LDFLAGS  := -nostdlib -Wl,-T,app.ld -Wl,--build-id=none \
             -Wl,--no-warn-rwx-segments
 
-all: hello.bin sysinfo.bin
+all: hello.bin sysinfo.bin syscall.bin
 
 hello.bin: hello.elf
 	$(OBJCOPY) -O binary $< $@
@@ -39,6 +39,19 @@ sysinfo.elf: start.o sysinfo.o app.ld
 
 sysinfo.dis: sysinfo.elf
 	$(OBJDUMP) -d $< > $@
+
+syscall.bin: syscall.elf
+	$(OBJCOPY) -O binary $< $@
+	@printf 'Built %s: %d bytes\n' $@ $$(stat -c%s $@)
+
+syscall.elf: start.o syscall.o app.ld
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ start.o syscall.o
+
+syscall.dis: syscall.elf
+	$(OBJDUMP) -d $< > $@
+
+syscall.o: syscall.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 start.o: start.S
 	$(CC) $(CFLAGS) -c -o $@ $<

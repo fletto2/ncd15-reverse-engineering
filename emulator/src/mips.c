@@ -137,24 +137,29 @@ static void exec_special(mips_cpu *cpu, u32 pc, u32 insn) {
         do_branch(cpu, s);
         break;
     case 0x0C: { /* SYSCALL */
-        /* The X-server uses syscall as a putchar primitive: $a0 = fd (1
-         * = console), $a1 = byte. Real hardware presumably has a
-         * handler at the exception vector that does this. We don't have
-         * that handler, so emulate it here: route ($a0=1, $a1=byte) to
-         * DUART channel B (stdout), then return as if the handler did
-         * `mfc0 EPC; addiu EPC,4; jr EPC; rfe`. Other syscall numbers
-         * become no-ops returning 0. */
-        if (cpu->r[4] == 1) {  /* $a0 == 1 (stdout) */
-            unsigned char c = (unsigned char)cpu->r[5];  /* $a1 */
+        /* If a real exception handler has been installed at virtual
+         * 0x80000080 (XCP/M-MIPS does this from start.S; word at phys 0x80
+         * becomes non-zero), deliver the syscall through the normal MIPS
+         * exception path so the kernel's handler can dispatch BDOS. */
+        u32 vec = bus_read(cpu->bus, 0x80000080u, 4);
+        if (vec != 0) {
+            if (getenv("NCD15_TRACE_SYSCALL")) {
+                fprintf(stderr, "[syscall->exc] pc=%08x v0=%08x a0=%08x a1=%08x\n",
+                        pc, cpu->r[2], cpu->r[4], cpu->r[5]);
+            }
+            take_exception(cpu, pc, 8);  /* ExcCode 8 = Sys */
+            return;
+        }
+        /* X-server-era fallback (no kernel handler installed). $a0=1 +
+         * $a1=byte is a putchar primitive; other codes are no-ops. */
+        if (cpu->r[4] == 1) {
+            unsigned char c = (unsigned char)cpu->r[5];
             bus_write(cpu->bus, 0xBE88002Cu, c, 1);
         } else if (getenv("NCD15_TRACE_SYSCALL")) {
             fprintf(stderr, "[syscall] pc=%08x v0=%08x a0=%08x a1=%08x a2=%08x a3=%08x\n",
                     pc, cpu->r[2], cpu->r[4], cpu->r[5], cpu->r[6], cpu->r[7]);
         }
-        cpu->r[2] = 0;  /* $v0 = 0 (success) */
-        /* Skip the syscall instruction itself. If in delay slot we'd
-         * need to handle the branch; X-server's syscall is not in a
-         * delay slot so skip. */
+        cpu->r[2] = 0;
         cpu->next_pc = pc + 4;
         cpu->branch_taken = false;
         return;
@@ -266,7 +271,7 @@ static void exec_cop0(mips_cpu *cpu, u32 pc, u32 insn) {
 
 /* Fire an exception, vector to 0x80000080 (or 0xBFC00180 if BEV=1).
  * For plain interrupts, ExcCode=0. */
-static void take_exception(mips_cpu *cpu, u32 pc, u32 exccode) {
+void take_exception(mips_cpu *cpu, u32 pc, u32 exccode) {
     bool in_ds = cpu->in_delay_slot;
     cpu->cp0_epc = in_ds ? (pc - 4) : pc;
     /* Shift KU/IE stack left by 2 (3 levels: current→prev, prev→old). */

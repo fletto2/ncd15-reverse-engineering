@@ -36,6 +36,29 @@ unsigned long ccp_stty_lz_size = 0;
 extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
 typedef int (*app_entry_t)(u32 (*)(u32, u32, u32));
 
+/*------------------------------------------------------------------
+ * R3052 I-cache invalidate over [base, base+size).
+ *   - set CP0 reg 7 bit 13 (cache-isolate — NOT R3000's Status.IsC)
+ *   - sw zero in 16-byte strides over the region
+ *   - clear the bit
+ * On real HW this marks the cache tags invalid so the CPU re-fetches
+ * the new bytes we just wrote (`memcpy` or `fat_fread`) instead of
+ * executing stale I-cache contents. The NCD15 emulator discards stores
+ * while isolation is set, so this is a no-op there but still safe.
+ *------------------------------------------------------------------*/
+static void icache_flush(unsigned long base, unsigned long size)
+{
+    unsigned long ccr, on, end;
+    end = base + size;
+    asm volatile("mfc0 %0, $7\n\t nop" : "=r"(ccr));
+    on = ccr | (1ul << 13);
+    asm volatile("mtc0 %0, $7\n\t nop\n\t nop\n\t nop" : : "r"(on));
+    for (; base < end; base += 16) {
+        asm volatile("sw $0, 0(%0)" : : "r"(base) : "memory");
+    }
+    asm volatile("mtc0 %0, $7\n\t nop\n\t nop\n\t nop" : : "r"(ccr));
+}
+
 int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
 {
     (void)cseg; (void)size; (void)cmdtail;
@@ -48,7 +71,8 @@ int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
  * by d_ext_loadrun's tail. */
 int pgmld_run_mips(u32 base, u32 size, const char *cmdtail)
 {
-    (void)size; (void)cmdtail;
+    (void)cmdtail;
+    icache_flush((unsigned long)base, size);
     app_entry_t entry = (app_entry_t)base;
     return entry(bdos_dispatch);
 }
@@ -73,6 +97,7 @@ int run_embedded_hello(void)
 
     for (i = 0; i < sz; i++) tpa[i] = _hello_app_start[i];
 
+    icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
     int rc = entry(bdos_dispatch);
 
@@ -95,6 +120,7 @@ int run_embedded_app2(void)
 
     for (i = 0; i < sz; i++) tpa[i] = _app2_start[i];
 
+    icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
     int rc = entry(bdos_dispatch);
 
@@ -158,6 +184,7 @@ int run_app_from_fat(const char *path)
         return -1;
     }
 
+    icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
     int rc = entry(bdos_dispatch);
 

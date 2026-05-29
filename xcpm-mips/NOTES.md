@@ -99,12 +99,32 @@ $EMU --no-window --boot-flash --nvram nv.bin --flash xcpm-ncd15.bin $ROM
       condition; `fat_dirnext` returns 0 on success, 1 at end-of-dir,
       -1 on error. Now `== 0`. `A: directory:` correctly shows
       `HELLO    MIP  278 bytes` / `SYSINFO  MIP  887 bytes` / `(2 files)`.
-- [ ] `syscall` ABI at 0x80000080 if we ever want position-independent
-      app images (the current ABI requires the linker address to match
-      the loader's TPA target — fine for one TPA, not for arbitrary
-      mapping).
-- [ ] I-cache flush in the loader for real HW (CP0 reg 7 bit 13 +
-      16-byte-stride `sw zero` walk).
+- [x] **M5d — syscall ABI at 0x80000080.** start.S installs a
+      position-independent exception-handler stub at virtual
+      0x80000080 (BEV=0 by the time we run, per CLAUDE.md). Stub saves
+      caller-saved regs to `$sp`, calls `bdos_dispatch(v0, a0, a1)`,
+      writes the result back to `$v0`, advances EPC by 4, and
+      `rfe`/`jr $k0`s. libxcpm.h adds `bdos_sys(func, p1, p2)` — an
+      inline `syscall` instruction with $v0/$a0/$a1 set. Apps using
+      `bdos_sys` are fully position-independent (no kernel-address
+      bake-in). New demo app `syscall.c` proves the path: 262 syscall
+      traces from one boot, all correctly delivered:
+        [syscall->exc] pc=0ed40014 v0=0c a0=0 a1=0    BDOS 12
+        [syscall->exc] pc=0ed40020 v0=64 a0=0 a1=0    BDOS 100
+        [syscall->exc] pc=0ed400e8 v0=02 a0=0d a1=0   BDOS 2 '\r'
+        ...
+      Emulator side (mips.c case 0x0C): if word @ 0x80000080 is
+      non-zero, deliver via existing `take_exception(8)` instead of
+      the X-server putchar fallback. Old X-server case still fires
+      when no kernel handler is installed.
+- [x] **M5d — I-cache flush in loaders.** `glue_ncd15.c` adds
+      `icache_flush(base, size)` using CP0 reg 7 bit 13 (R3052's
+      cache-isolate, NOT R3000's Status.IsC) + 16-byte-stride
+      `sw $0` walk + clear. Called at every `jalr`-into-TPA site
+      (embedded-hello, embedded-app2, FAT loader, pgmld_run_mips).
+      Emulator no-ops the stores during isolation (CLAUDE.md note);
+      real HW invalidates cache tags so the CPU re-fetches the new
+      bytes instead of executing stale lines.
 
 ## Arch-specific changes (shared tree)
 

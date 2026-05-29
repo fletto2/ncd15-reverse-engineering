@@ -77,4 +77,26 @@ static inline char xgetc(bdos_fn_t bdos)
     return (char)bdos(BDOS_CONIN, 0, 0);
 }
 
+/*-- syscall ABI ---------------------------------------------------------
+ * Position-independent alternative to the function-pointer ABI. Apps
+ * that prefer not to thread `bdos` through their callgraph can issue a
+ * MIPS `syscall` instruction with $v0 = func, $a0 = p1, $a1 = p2; the
+ * kernel handler at 0x80000080 (installed at boot by start.S) marshals
+ * those into bdos_dispatch and returns the result in $v0.
+ *
+ * Apps using bdos_sys() don't need the loader's $a0 = bdos pointer, so
+ * their `app_main` signature can be `int app_main(void)` and the
+ * binary is fully position-independent within KSEG0. */
+static inline u32 bdos_sys(u32 func, u32 p1, u32 p2)
+{
+    register u32 v0 asm("v0") = func;
+    register u32 a0 asm("a0") = p1;
+    register u32 a1 asm("a1") = p2;
+    asm volatile("syscall"
+                 : "+r"(v0)
+                 : "r"(a0), "r"(a1)
+                 : "memory");
+    return v0;
+}
+
 #endif /* LIBXCPM_H */
