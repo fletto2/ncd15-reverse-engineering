@@ -1,0 +1,6 @@
+*.o
+*.elf
+*.raw
+*.bin
+*.dis
+*.map
