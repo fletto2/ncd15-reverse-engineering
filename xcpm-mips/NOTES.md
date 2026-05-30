@@ -125,6 +125,30 @@ $EMU --no-window --boot-flash --nvram nv.bin --flash xcpm-ncd15.bin $ROM
       Emulator no-ops the stores during isolation (CLAUDE.md note);
       real HW invalidates cache tags so the CPU re-fetches the new
       bytes instead of executing stale lines.
+- [x] **M5e — useful apps.** `DIR.MIP` (BDOS 110), `CAT.MIP`
+      (BDOS 111, takes filename via $a1 cmdtail), `WRITE.MIP`
+      (BDOS 120, takes "name content" via cmdtail). App ABI
+      extended: `int app_main(bdos_fn_t bdos, const char *tail)`
+      with $a1 = the CCP-supplied command tail. `glue_ncd15.c`
+      loaders updated to pass `cmdtail` (or `""`) as $a1; old
+      one-arg apps still link since the extra register is ignored.
+      libxcpm.h gains BDOS_LISTROOT / BDOS_CAT / BDOS_GETCWD
+      constants. A short `readme.txt` is mcopy'd into the FAT
+      image so `CAT README.TXT` shows something useful.
+- [x] **M5f — writeable FAT.** `src/disk_ramfat.c` now backs
+      `blk_read/blk_write` with a 128 KB BSS shadow at
+      `0x0EF80000..0x0EFA0000` (`ncd15.ld` exports `_ramfat_rw`,
+      shrinks `_tpa_end` from 0x0EFC0000 to 0x0EF80000 to make
+      room; stack still has 256 KB above the shadow). `blk_init`
+      copies the rodata "factory" image into the shadow on first
+      mount; per-boot state, so a reset reverts to the embedded
+      `mkfs.fat` image. Verified end-to-end via the CCP:
+        A:\> WRITE T.X HI       -- WRITE.MIP -> BDOS 120
+        Wrote 2 bytes to T.X
+        A:\> DIR                -- T.X visible in listing
+          ... T.X 2 ...
+        A:\> CAT T.X            -- CAT.MIP reads it back
+        HI
 
 ## Arch-specific changes (shared tree)
 

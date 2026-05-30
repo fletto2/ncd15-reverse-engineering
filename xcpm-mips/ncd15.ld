@@ -22,7 +22,8 @@ MEMORY {
 }
 
 _tpa_base   = 0x0ED40000;
-_tpa_end    = 0x0EFC0000;
+_tpa_end    = 0x0EF80000;   /* shrunk to make room for the RW-FAT shadow */
+_ramfat_rw  = 0x0EF80000;   /* 128 KB writeable FAT shadow (disk_ramfat.c) */
 _stack_top  = 0x0EFE0000;
 _ram_base   = 0x0ED00000;
 _ram_end    = 0x0F000000;

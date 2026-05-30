@@ -3,12 +3,14 @@
  *
  * Apps include this and define:
  *
- *     int app_main(bdos_fn_t bdos) { ... }
+ *     int app_main(bdos_fn_t bdos, const char *tail) { ... }
  *
- * The kernel-side loader (glue_ncd15.c run_app_from_fat or
- * pgmld_run_mips) calls _app_start at TPA base (= linker ENTRY), which
- * trampolines to app_main(bdos) with $a0 = bdos_dispatch. No syscalls,
- * no kernel includes -- just a function pointer.
+ * The kernel-side loader calls _app_start at TPA base (= linker ENTRY),
+ * which trampolines to app_main(bdos, tail) with $a0 = bdos_dispatch
+ * and $a1 = the CCP command tail (the bit after the command name --
+ * args + redirects). For apps that don't care about args, `tail` may
+ * be `""`; the parameter is positional so old single-arg signatures
+ * still work, the extra register just gets ignored.
  *==========================================================================*/
 #ifndef LIBXCPM_H
 #define LIBXCPM_H
@@ -28,6 +30,11 @@ typedef u32 (*bdos_fn_t)(u32 func, u32 p1, u32 p2);
 #define BDOS_PRINTSTR    9   /* print dollar-terminated string, p1 = ptr */
 #define BDOS_VERSION    12   /* returns 0x0022 on this kernel */
 #define BDOS_IDENT     100   /* returns 0x58504D4B ("XPMK") */
+
+/* XCP/M extension calls (see src/bdos.c d_ext_* table). */
+#define BDOS_LISTROOT  110   /* print A: dir to console (p1 = 0) */
+#define BDOS_CAT       111   /* print file p1 (NUL-term path) to console */
+#define BDOS_GETCWD    125   /* copy cwd into caller's buffer at p1 */
 
 /*-- Convenience wrappers ------------------------------------------------
  * All take the bdos function pointer as the first arg so apps can call

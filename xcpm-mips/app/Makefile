@@ -18,7 +18,7 @@ CFLAGS   := -march=mips1 -mabi=32 -EB -G0 -fno-pic -mno-abicalls \
 LDFLAGS  := -nostdlib -Wl,-T,app.ld -Wl,--build-id=none \
             -Wl,--no-warn-rwx-segments
 
-all: hello.bin sysinfo.bin syscall.bin
+all: hello.bin sysinfo.bin syscall.bin dir.bin cat.bin write.bin
 
 hello.bin: hello.elf
 	$(OBJCOPY) -O binary $< $@
@@ -51,6 +51,36 @@ syscall.dis: syscall.elf
 	$(OBJDUMP) -d $< > $@
 
 syscall.o: syscall.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+dir.bin: dir.elf
+	$(OBJCOPY) -O binary $< $@
+	@printf 'Built %s: %d bytes\n' $@ $$(stat -c%s $@)
+
+dir.elf: start.o dir.o app.ld
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ start.o dir.o
+
+dir.o: dir.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+cat.bin: cat.elf
+	$(OBJCOPY) -O binary $< $@
+	@printf 'Built %s: %d bytes\n' $@ $$(stat -c%s $@)
+
+cat.elf: start.o cat.o app.ld
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ start.o cat.o
+
+cat.o: cat.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+write.bin: write.elf
+	$(OBJCOPY) -O binary $< $@
+	@printf 'Built %s: %d bytes\n' $@ $$(stat -c%s $@)
+
+write.elf: start.o write.o app.ld
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ start.o write.o
+
+write.o: write.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 start.o: start.S

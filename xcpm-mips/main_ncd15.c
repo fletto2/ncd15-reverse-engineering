@@ -93,6 +93,7 @@ void main(void)
     extern void list_fat_root(void);
     if (fat_mount() == 0) {
         list_fat_root();
+
         run_app_from_fat("/HELLO.MIP");
         uart_puts("\r\n--- next app (from FAT) ---\r\n");
         run_app_from_fat("/SYSINFO.MIP");

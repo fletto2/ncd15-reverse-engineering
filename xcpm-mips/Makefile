@@ -84,6 +84,15 @@ app/sysinfo.bin:
 app/syscall.bin:
 	$(MAKE) -C app syscall.bin
 
+app/dir.bin:
+	$(MAKE) -C app dir.bin
+
+app/cat.bin:
+	$(MAKE) -C app cat.bin
+
+app/write.bin:
+	$(MAKE) -C app write.bin
+
 hello_blob.o: hello_blob.S app/hello.bin app/sysinfo.bin
 	$(CC) $(CFLAGS) -c -o $@ hello_blob.S
 
@@ -91,12 +100,16 @@ hello_blob.o: hello_blob.S app/hello.bin app/sysinfo.bin
 # with the app binaries via mcopy. disk_ramfat.c serves blk_read out of
 # this blob; the CCP / app loader can fat_fopen("FOO.BIN") and load by
 # name instead of relying on .incbin'd blobs.
-ramfat.img: app/hello.bin app/sysinfo.bin app/syscall.bin
+ramfat.img: app/hello.bin app/sysinfo.bin app/syscall.bin app/dir.bin app/cat.bin app/write.bin readme.txt
 	rm -f $@
 	$(MKFS_FAT) -F 12 -n XCPM -C $@ 128 >/dev/null
 	$(MCOPY) -i $@ app/hello.bin   ::HELLO.MIP
 	$(MCOPY) -i $@ app/sysinfo.bin ::SYSINFO.MIP
 	$(MCOPY) -i $@ app/syscall.bin ::SYSCALL.MIP
+	$(MCOPY) -i $@ app/dir.bin     ::DIR.MIP
+	$(MCOPY) -i $@ app/cat.bin     ::CAT.MIP
+	$(MCOPY) -i $@ app/write.bin   ::WRITE.MIP
+	$(MCOPY) -i $@ readme.txt      ::README.TXT
 	@printf 'Built ramfat.img: %d bytes\n' $$(stat -c%s $@)
 
 ramfat_blob.o: ramfat_blob.S ramfat.img

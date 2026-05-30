@@ -34,7 +34,10 @@ unsigned long ccp_stty_lz_size = 0;
  * jalr to TPA entry) lands in a later milestone; for now report failure
  * so BDOS program-load calls return cleanly. */
 extern u32 bdos_dispatch(u32 func, u32 p1, u32 p2);
-typedef int (*app_entry_t)(u32 (*)(u32, u32, u32));
+/* App ABI: $a0 = bdos function pointer, $a1 = command tail string.
+ * Older apps that take only bdos still work — the tail parameter is
+ * just ignored. */
+typedef int (*app_entry_t)(u32 (*)(u32, u32, u32), const char *);
 
 /*------------------------------------------------------------------
  * R3052 I-cache invalidate over [base, base+size).
@@ -71,10 +74,9 @@ int pgmld_finish_and_run(u32 cseg, u32 size, const char *cmdtail)
  * by d_ext_loadrun's tail. */
 int pgmld_run_mips(u32 base, u32 size, const char *cmdtail)
 {
-    (void)cmdtail;
     icache_flush((unsigned long)base, size);
     app_entry_t entry = (app_entry_t)base;
-    return entry(bdos_dispatch);
+    return entry(bdos_dispatch, cmdtail ? cmdtail : "");
 }
 
 /*------------------------------------------------------------------
@@ -99,7 +101,7 @@ int run_embedded_hello(void)
 
     icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
-    int rc = entry(bdos_dispatch);
+    int rc = entry(bdos_dispatch, "");
 
     uart_puts("[loader] app returned, rc="); xputdec((u32)rc);
     uart_puts("\r\n");
@@ -122,7 +124,7 @@ int run_embedded_app2(void)
 
     icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
-    int rc = entry(bdos_dispatch);
+    int rc = entry(bdos_dispatch, "");
 
     uart_puts("[loader] sysinfo.bin: app returned, rc="); xputdec((u32)rc);
     uart_puts("\r\n");
@@ -186,7 +188,7 @@ int run_app_from_fat(const char *path)
 
     icache_flush((unsigned long)tpa, sz);
     app_entry_t entry = (app_entry_t)tpa;
-    int rc = entry(bdos_dispatch);
+    int rc = entry(bdos_dispatch, "");
 
     uart_puts("[loader] "); uart_puts(path);
     uart_puts(": app returned, rc="); xputdec((u32)rc); uart_puts("\r\n");
